@@ -1,0 +1,894 @@
+/* ================================
+   ESTILOS PRINCIPALES - CÓRTATE.CL
+   ================================ */
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* ================================
+   VARIABLES CSS PERSONALIZADAS
+   ================================ */
+:root {
+  --color-primary: #facc15; /* yellow-400 */
+  --color-primary-dark: #eab308; /* yellow-500 */
+  --color-black: #000000;
+  --color-gray-900: #111827;
+  --color-gray-800: #1f2937;
+  --color-gray-700: #374151;
+  --color-gray-600: #4b5563;
+  --color-gray-500: #6b7280;
+  --color-gray-400: #9ca3af;
+  --color-gray-300: #d1d5db;
+  --color-white: #ffffff;
+  
+  /* Fuentes */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Transiciones */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+/* ================================
+   RESET Y BASE
+   ================================ */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  line-height: 1.6;
+}
+
+/* ================================
+   TIPOGRAFÍA
+   ================================ */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* ================================
+   UTILIDADES PERSONALIZADAS
+   ================================ */
+
+/* Botones */
+.btn {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-primary {
+  @apply bg-yellow-400 text-black hover:bg-yellow-500 focus:ring-yellow-400;
+}
+
+.btn-secondary {
+  @apply bg-gray-800 text-white border border-gray-600 hover:bg-gray-700 focus:ring-gray-500;
+}
+
+.btn-success {
+  @apply bg-green-500 text-white hover:bg-green-600 focus:ring-green-500;
+}
+
+.btn-danger {
+  @apply bg-red-500 text-white hover:bg-red-600 focus:ring-red-500;
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-sm;
+}
+
+.btn-lg {
+  @apply px-6 py-3 text-lg;
+}
+
+/* Cards */
+.card {
+  @apply bg-gray-900 rounded-lg border border-gray-700 p-6;
+}
+
+.card-header {
+  @apply border-b border-gray-700 pb-4 mb-4;
+}
+
+/* Inputs */
+.input {
+  @apply w-full px-3 py-2 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-colors;
+}
+
+.input-error {
+  @apply border-red-500 focus:ring-red-500;
+}
+
+/* Estados */
+.status-pending {
+  @apply text-yellow-400 bg-yellow-400/10;
+}
+
+.status-confirmed {
+  @apply text-green-400 bg-green-400/10;
+}
+
+.status-completed {
+  @apply text-gray-400 bg-gray-400/10;
+}
+
+.status-cancelled {
+  @apply text-red-400 bg-red-400/10;
+}
+
+/* Ratings */
+.rating-stars {
+  @apply flex items-center space-x-1;
+}
+
+.star-filled {
+  @apply text-yellow-400;
+}
+
+.star-empty {
+  @apply text-gray-500;
+}
+
+/* ================================
+   COMPONENTES ESPECÍFICOS
+   ================================ */
+
+/* Header sticky */
+.header-blur {
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Loading animations */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* ================================
+   OVERLAYS Y MODALES
+   ================================ */
+.overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 z-40;
+}
+
+.modal {
+  @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+}
+
+.modal-content {
+  @apply bg-gray-900 rounded-xl border border-gray-700 max-w-lg w-full max-h-screen overflow-y-auto;
+}
+
+/* ================================
+   MAPA Y GEOLOCALIZACIÓN
+   ================================ */
+.map-container {
+  @apply w-full h-full rounded-lg overflow-hidden;
+}
+
+.map-marker {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.map-marker:hover {
+  transform: scale(1.1);
+}
+
+/* ================================
+   RESPONSIVE UTILITIES
+   ================================ */
+
+/* Ocultar en móvil */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Ocultar en desktop */
+@media (min-width: 769px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
+
+/* ================================
+   SCROLLBARS PERSONALIZADOS
+   ================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-gray-800);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-600);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-500);
+}
+
+/* ================================
+   ANIMACIONES DE ENTRADA
+   ================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+/* ================================
+   EFECTOS HOVER Y FOCUS
+   ================================ */
+.hover-lift {
+  transition: transform var(--transition-normal);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-black;
+}
+
+/* ================================
+   ESTADOS DE CARGA
+   ================================ */
+.skeleton {
+  @apply bg-gray-700 animate-pulse rounded;
+}
+
+.skeleton-text {
+  @apply h-4 bg-gray-700 animate-pulse rounded;
+}
+
+.skeleton-avatar {
+  @apply w-10 h-10 bg-gray-700 animate-pulse rounded-full;
+}
+
+/* ================================
+   BADGES Y ETIQUETAS
+   ================================ */
+.badge {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-green-500/10 text-green-400 border border-green-500/20;
+}
+
+.badge-warning {
+  @apply bg-yellow-500/10 text-yellow-400 border border-yellow-500/20;
+}
+
+.badge-danger {
+  @apply bg-red-500/10 text-red-400 border border-red-500/20;
+}
+
+.badge-info {
+  @apply bg-blue-500/10 text-blue-400 border border-blue-500/20;
+}
+
+/* ================================
+   UTILIDADES DE SPACING
+   ================================ */
+.section-padding {
+  @apply py-12 px-4 sm:px-6 lg:px-8;
+}
+
+.container-max {
+  @apply max-w-7xl mx-auto;
+}
+
+/* ================================
+   EFECTOS GLASSMORPHISM
+   ================================ */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ================================
+   PRINT STYLES
+   ================================ */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* ================================
+   ACCESIBILIDAD
+   ================================ */
+
+/* Reducir movimiento para usuarios sensibles */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Alto contraste */
+@media (prefers-contrast: high) {
+  .card {
+    border-color: var(--color-white);
+  }
+  
+  .btn-primary {
+    border: 2px solid var(--color-black);
+  }
+}
+
+/* Modo oscuro forzado */
+@media (prefers-color-scheme: dark) {
+  /* Ya estamos en modo oscuro por defecto */
+}
+
+/* ================================
+   CLASES DE UTILIDAD FINAL
+   ================================ */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary), #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary), #f59e0b);
+}
+
+.bg-gradient-dark {
+  background: linear-gradient(135deg, var(--color-gray-900), var(--color-gray-800));
+}
+
+/* Efectos de hover para botones flotantes */
+.float-button {
+  @apply fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110;
+}
+
+/* Efectos de pulsación para notificaciones */
+.pulse-ring {
+  position: relative;
+}
+
+.pulse-ring::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+/* Transiciones suaves para cambios de estado */
+.smooth-transition {
+  transition: all var(--transition-normal);
+}
+
+/* Efectos de enfoque mejorados */
+.focus-visible:focus-visible {
+  @apply outline-none ring-2 ring-yellow-400 ring-offset-2 ring-offset-black;
+}
+
+/* ================================
+   COMPONENTES ESPECÍFICOS CÓRTATE
+   ================================ */
+
+/* Barber card hover effects */
+.barber-card {
+  @apply transition-all duration-300;
+}
+
+.barber-card:hover {
+  @apply transform -translate-y-1 shadow-xl;
+}
+
+/* Rating display */
+.rating-display {
+  @apply flex items-center space-x-1;
+}
+
+.rating-star {
+  @apply w-4 h-4 transition-colors;
+}
+
+/* Map marker styles */
+.map-marker-available {
+  background-color: #16a34a;
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+}
+
+.map-marker-immediate {
+  background-color: #2563eb;
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+}
+
+.map-marker-offline {
+  background-color: #dc2626;
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+}
+
+/* WhatsApp button styles */
+.whatsapp-button {
+  @apply bg-green-500 hover:bg-green-600 text-white transition-colors;
+}
+
+.whatsapp-float {
+  animation: bounce 2s infinite;
+  animation-delay: 3s;
+}
+
+/* Loading states */
+.loading-dots::after {
+  content: '';
+  animation: loading-dots 1.5s infinite;
+}
+
+@keyframes loading-dots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}
+
+/* Toast notifications */
+.toast {
+  @apply fixed top-4 right-4 z-50 max-w-sm w-full bg-gray-900 border border-gray-700 rounded-lg shadow-lg p-4;
+  animation: toast-slide-in 0.3s ease-out;
+}
+
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-success {
+  @apply border-green-500;
+}
+
+.toast-error {
+  @apply border-red-500;
+}
+
+.toast-warning {
+  @apply border-yellow-500;
+}
+
+.toast-info {
+  @apply border-blue-500;
+}
+
+/* Form validation styles */
+.form-group {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-300;
+}
+
+.form-input {
+  @apply input;
+}
+
+.form-error {
+  @apply text-red-400 text-sm;
+}
+
+.form-help {
+  @apply text-gray-500 text-sm;
+}
+
+/* Status indicators */
+.status-indicator {
+  @apply inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.status-online {
+  @apply bg-green-500/10 text-green-400;
+}
+
+.status-offline {
+  @apply bg-gray-500/10 text-gray-400;
+}
+
+.status-busy {
+  @apply bg-yellow-500/10 text-yellow-400;
+}
+
+/* Progress bars */
+.progress-bar {
+  @apply w-full bg-gray-700 rounded-full h-2;
+}
+
+.progress-fill {
+  @apply h-2 bg-yellow-400 rounded-full transition-all duration-300;
+}
+
+/* Image gallery */
+.gallery-grid {
+  @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4;
+}
+
+.gallery-item {
+  @apply aspect-square bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity;
+}
+
+.gallery-image {
+  @apply w-full h-full object-cover;
+}
+
+/* Price display */
+.price {
+  @apply text-yellow-400 font-semibold;
+}
+
+.price-large {
+  @apply text-2xl;
+}
+
+.price-small {
+  @apply text-sm;
+}
+
+/* Distance display */
+.distance {
+  @apply text-gray-400 text-sm flex items-center space-x-1;
+}
+
+/* Search results */
+.search-results {
+  @apply space-y-4;
+}
+
+.search-result-item {
+  @apply p-4 bg-gray-800 rounded-lg hover:bg-gray-750 transition-colors cursor-pointer;
+}
+
+/* Empty states */
+.empty-state {
+  @apply text-center py-12 space-y-4;
+}
+
+.empty-state-icon {
+  @apply w-16 h-16 text-gray-600 mx-auto;
+}
+
+.empty-state-title {
+  @apply text-lg font-semibold text-white;
+}
+
+.empty-state-description {
+  @apply text-gray-400 max-w-md mx-auto;
+}
+
+/* Review components */
+.review-card {
+  @apply bg-gray-800 rounded-lg p-4 space-y-3;
+}
+
+.review-header {
+  @apply flex items-center justify-between;
+}
+
+.review-author {
+  @apply flex items-center space-x-3;
+}
+
+.review-avatar {
+  @apply w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center;
+}
+
+.review-content {
+  @apply text-gray-300 leading-relaxed;
+}
+
+.review-response {
+  @apply bg-gray-700 rounded-lg p-3 border-l-4 border-yellow-400;
+}
+
+/* ================================
+   RESPONSIVE BREAKPOINTS
+   ================================ */
+
+/* Mobile first approach */
+@media (min-width: 640px) {
+  .sm\:text-responsive {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:text-responsive {
+    font-size: clamp(1.125rem, 3vw, 1.5rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:text-responsive {
+    font-size: clamp(1.25rem, 3.5vw, 1.875rem);
+  }
+}
+
+@media (min-width: 1280px) {
+  .xl\:text-responsive {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+  }
+}
+
+/* ================================
+   DARK MODE OVERRIDES (por si acaso)
+   ================================ */
+@media (prefers-color-scheme: light) {
+  /* Si el usuario prefiere modo claro, mantenemos oscuro por diseño */
+  body {
+    background-color: var(--color-black) !important;
+    color: var(--color-white) !important;
+  }
+}
+
+/* ================================
+   COMPATIBILIDAD CON NAVEGADORES
+   ================================ */
+
+/* Safari */
+@supports (-webkit-backdrop-filter: blur(10px)) {
+  .backdrop-blur {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* Firefox */
+@-moz-document url-prefix() {
+  .backdrop-blur {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* IE11 fallbacks */
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .grid > * {
+    flex: 1;
+    min-width: 300px;
+  }
+}
+
+/* ================================
+   OPTIMIZACIONES DE RENDIMIENTO
+   ================================ */
+
+/* GPU acceleration para elementos que se animan */
+.gpu-accelerated {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Lazy loading placeholder */
+.lazy-loading {
+  background: linear-gradient(90deg, var(--color-gray-800) 25%, var(--color-gray-700) 50%, var(--color-gray-800) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ================================
+   UTILITIES FINALES
+   ================================ */
+
+/* Truncate text con tooltip */
+.truncate-tooltip {
+  @apply truncate cursor-help;
+}
+
+/* Aspect ratios personalizados */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-photo {
+  aspect-ratio: 4 / 3;
+}
+
+/* Spacing consistente */
+.space-section {
+  @apply py-16 md:py-24;
+}
+
+.space-component {
+  @apply py-8 md:py-12;
+}
+
+/* Z-index layers */
+.z-dropdown { z-index: 1000; }
+.z-sticky { z-index: 1020; }
+.z-fixed { z-index: 1030; }
+.z-modal-backdrop { z-index: 1040; }
+.z-modal { z-index: 1050; }
+.z-popover { z-index: 1060; }
+.z-tooltip { z-index: 1070; }
+.z-toast { z-index: 1080; }
+
+/* ================================
+   FIN DE ESTILOS
+   ================================ */
