@@ -325,13 +325,13 @@ const MapFilters = ({
                 <button
                   key={option.value}
                   onClick={() => updateFilter('sortBy', option.value)}
-                  className={`p-3 rounded-lg border transition-all text-left ${
+                  className={`p-3 rounded-lg border transition-all text-sm ${
                     localFilters.sortBy === option.value
                       ? 'border-yellow-400 bg-yellow-400/10 text-yellow-400'
                       : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
                   }`}
                 >
-                  <div className="text-sm font-medium">{option.label}</div>
+                  {option.label}
                 </button>
               ))}
             </div>
@@ -341,29 +341,37 @@ const MapFilters = ({
         {/* Footer */}
         <div className="p-6 border-t border-gray-700 bg-gray-800/50">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-sm text-gray-400">
-              {barbersCount} resultado{barbersCount !== 1 ? 's' : ''} encontrado{barbersCount !== 1 ? 's' : ''}
+            <div>
+              <p className="text-sm text-gray-300">
+                <span className="font-medium text-white">{barbersCount}</span> barbero{barbersCount !== 1 ? 's' : ''} encontrado{barbersCount !== 1 ? 's' : ''}
+              </p>
+              {hasChanges && (
+                <p className="text-xs text-yellow-400 mt-1">
+                  Tienes cambios sin aplicar
+                </p>
+              )}
             </div>
             
-            {hasChanges && (
-              <div className="text-sm text-yellow-400">
-                Filtros modificados
-              </div>
-            )}
-          </div>
-
-          <div className="flex space-x-3">
             <button
               onClick={resetFilters}
-              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+              className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors text-sm"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Resetear</span>
             </button>
+          </div>
+
+          <div className="flex space-x-3">
+            <button
+              onClick={onClose}
+              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors font-medium"
+            >
+              Cancelar
+            </button>
             
             <button
               onClick={applyFilters}
-              className="flex-2 bg-yellow-400 hover:bg-yellow-500 text-black py-3 px-6 rounded-lg transition-colors font-medium"
+              className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black py-3 px-4 rounded-lg transition-colors font-medium"
             >
               Aplicar filtros
             </button>
@@ -371,7 +379,7 @@ const MapFilters = ({
         </div>
       </div>
 
-      {/* Estilos para el slider */}
+      {/* Custom CSS for range slider */}
       <style jsx>{`
         .slider::-webkit-slider-thumb {
           appearance: none;
@@ -380,7 +388,7 @@ const MapFilters = ({
           border-radius: 50%;
           background: #facc15;
           cursor: pointer;
-          border: 2px solid #374151;
+          border: 2px solid #000;
         }
 
         .slider::-moz-range-thumb {
@@ -389,7 +397,7 @@ const MapFilters = ({
           border-radius: 50%;
           background: #facc15;
           cursor: pointer;
-          border: 2px solid #374151;
+          border: 2px solid #000;
         }
       `}</style>
     </div>
