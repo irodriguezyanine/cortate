@@ -1,177 +1,259 @@
-import React, { Suspense } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from 'react-query'
-import { ReactQueryDevtools } from 'react-query/devtools'
-import { HelmetProvider } from 'react-helmet-async'
-import { Toaster } from 'react-hot-toast'
-import { ErrorBoundary } from 'react-error-boundary'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { BookingProvider } from './context/BookingContext';
 
-// Context Providers
-import { AuthProvider } from '@context/AuthContext'
-import { BookingProvider } from '@context/BookingContext'
-import { MapProvider } from '@context/MapContext'
+// Layout components
+import Header from './components/common/Header';
+import Footer from './components/common/Footer';
+import WhatsAppFloat from './components/common/WhatsAppFloat';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import ErrorFallback from './components/common/ErrorFallback';
 
-// Layout Components
-import Header from '@components/common/Header'
-import Footer from '@components/common/Footer'
-import WhatsAppFloat from '@components/common/WhatsAppFloat'
-import LoadingSpinner from '@components/common/LoadingSpinner'
-import ErrorFallback from '@components/common/ErrorFallback'
+// Pages
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import MapPage from './pages/MapPage';
+import ListPage from './pages/ListPage';
+import BarberProfilePage from './pages/BarberProfilePage';
+import BookingHistory from './pages/BookingHistory';
+import ClientProfile from './pages/ClientProfile';
+import BarberDashboard from './pages/BarberDashboard';
+import NotFound from './pages/NotFound';
 
-// Page Components (Lazy loaded)
-const Landing = React.lazy(() => import('@pages/Landing'))
-const Login = React.lazy(() => import('@pages/Login'))
-const Register = React.lazy(() => import('@pages/Register'))
-const MapPage = React.lazy(() => import('@pages/MapPage'))
-const ListPage = React.lazy(() => import('@pages/ListPage'))
-const BarberProfile = React.lazy(() => import('@pages/BarberProfile'))
-const ClientProfile = React.lazy(() => import('@pages/ClientProfile'))
-const BarberDashboard = React.lazy(() => import('@pages/BarberDashboard'))
-const BookingHistory = React.lazy(() => import('@pages/BookingHistory'))
-const NotFound = React.lazy(() => import('@pages/NotFound'))
+// Styles
+import './styles/index.css';
 
-// Protected Route Component
-import ProtectedRoute from '@components/common/ProtectedRoute'
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
 
-// Global Styles
-import './styles/index.css'
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
 
-// Create QueryClient instance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 3,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-      refetchOnWindowFocus: false,
-    },
-    mutations: {
-      retry: 1,
-    },
-  },
-})
+  componentDidCatch(error, errorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
 
-// Main App Component
-function App() {
-  return (
-    <ErrorBoundary
-      FallbackComponent={ErrorFallback}
-      onError={(error, errorInfo) => {
-        console.error('App Error:', error, errorInfo)
-        // Here you could send to error reporting service
-      }}
-    >
-      <HelmetProvider>
-        <QueryClientProvider client={queryClient}>
-          <Router>
-            <AuthProvider>
-              <BookingProvider>
-                <MapProvider>
-                  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-                    {/* Header */}
-                    <Header />
-                    
-                    {/* Main Content */}
-                    <main className="relative">
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <Routes>
-                          {/* Public Routes */}
-                          <Route path="/" element={<Landing />} />
-                          <Route path="/login" element={<Login />} />
-                          <Route path="/register" element={<Register />} />
-                          <Route path="/mapa" element={<MapPage />} />
-                          <Route path="/lista" element={<ListPage />} />
-                          <Route path="/barbero/:id" element={<BarberProfile />} />
-                          
-                          {/* Protected Routes - Client */}
-                          <Route 
-                            path="/perfil" 
-                            element={
-                              <ProtectedRoute role="client">
-                                <ClientProfile />
-                              </ProtectedRoute>
-                            } 
-                          />
-                          <Route 
-                            path="/reservas" 
-                            element={
-                              <ProtectedRoute role="client">
-                                <BookingHistory />
-                              </ProtectedRoute>
-                            } 
-                          />
-                          
-                          {/* Protected Routes - Barber */}
-                          <Route 
-                            path="/dashboard" 
-                            element={
-                              <ProtectedRoute role="barber">
-                                <BarberDashboard />
-                              </ProtectedRoute>
-                            } 
-                          />
-                          
-                          {/* Redirects */}
-                          <Route path="/home" element={<Navigate to="/" replace />} />
-                          <Route path="/inicio" element={<Navigate to="/" replace />} />
-                          
-                          {/* 404 */}
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
-                      </Suspense>
-                    </main>
-                    
-                    {/* Footer */}
-                    <Footer />
-                    
-                    {/* WhatsApp Float Button */}
-                    <WhatsAppFloat />
-                    
-                    {/* Toast Notifications */}
-                    <Toaster
-                      position="top-right"
-                      toastOptions={{
-                        duration: 4000,
-                        style: {
-                          background: '#1f2937',
-                          color: '#f3f4f6',
-                          border: '1px solid #D4AF37',
-                        },
-                        success: {
-                          iconTheme: {
-                            primary: '#22c55e',
-                            secondary: '#ffffff',
-                          },
-                        },
-                        error: {
-                          iconTheme: {
-                            primary: '#ef4444',
-                            secondary: '#ffffff',
-                          },
-                        },
-                        loading: {
-                          iconTheme: {
-                            primary: '#D4AF37',
-                            secondary: '#ffffff',
-                          },
-                        },
-                      }}
-                    />
-                  </div>
-                </MapProvider>
-              </BookingProvider>
-            </AuthProvider>
-          </Router>
-          
-          {/* React Query DevTools (only in development) */}
-          {process.env.NODE_ENV === 'development' && (
-            <ReactQueryDevtools initialIsOpen={false} />
-          )}
-        </QueryClientProvider>
-      </HelmetProvider>
-    </ErrorBoundary>
-  )
+  render() {
+    if (this.state.hasError) {
+      return <ErrorFallback error={this.state.error} />;
+    }
+
+    return this.props.children;
+  }
 }
 
-export default App
+// Layout component
+const Layout = ({ children, showHeader = true, showFooter = true }) => {
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      {showHeader && <Header />}
+      <main className="flex-1">
+        {children}
+      </main>
+      {showFooter && <Footer />}
+      <WhatsAppFloat />
+    </div>
+  );
+};
+
+// Main App component
+function App() {
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <BookingProvider>
+          <Router>
+            <div className="App">
+              <Routes>
+                {/* Public routes */}
+                <Route 
+                  path="/" 
+                  element={
+                    <Layout>
+                      <Landing />
+                    </Layout>
+                  } 
+                />
+                
+                <Route 
+                  path="/login" 
+                  element={
+                    <Layout showFooter={false}>
+                      <Login />
+                    </Layout>
+                  } 
+                />
+                
+                <Route 
+                  path="/register" 
+                  element={
+                    <Layout showFooter={false}>
+                      <Register />
+                    </Layout>
+                  } 
+                />
+
+                {/* Map and search routes */}
+                <Route 
+                  path="/map" 
+                  element={
+                    <Layout showFooter={false}>
+                      <MapPage />
+                    </Layout>
+                  } 
+                />
+                
+                <Route 
+                  path="/list" 
+                  element={
+                    <Layout>
+                      <ListPage />
+                    </Layout>
+                  } 
+                />
+
+                {/* Barber profile */}
+                <Route 
+                  path="/barber/:id" 
+                  element={
+                    <Layout>
+                      <BarberProfilePage />
+                    </Layout>
+                  } 
+                />
+
+                {/* Protected client routes */}
+                <Route 
+                  path="/bookings" 
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <BookingHistory />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                <Route 
+                  path="/profile" 
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ClientProfile />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+
+                <Route 
+                  path="/booking/:barberId" 
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <BookingForm />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+
+                {/* Protected barber routes */}
+                <Route 
+                  path="/barber/dashboard" 
+                  element={
+                    <ProtectedRoute requiredRole="barber">
+                      <Layout>
+                        <BarberDashboard />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+
+                <Route 
+                  path="/barber/profile" 
+                  element={
+                    <ProtectedRoute requiredRole="barber">
+                      <Layout>
+                        <BarberProfile />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+
+                <Route 
+                  path="/barber/bookings" 
+                  element={
+                    <ProtectedRoute requiredRole="barber">
+                      <Layout>
+                        <BarberBookings />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+
+                {/* Static pages */}
+                <Route 
+                  path="/how-it-works" 
+                  element={
+                    <Layout>
+                      <HowItWorks />
+                    </Layout>
+                  } 
+                />
+
+                <Route 
+                  path="/terms" 
+                  element={
+                    <Layout>
+                      <TermsOfService />
+                    </Layout>
+                  } 
+                />
+
+                <Route 
+                  path="/privacy" 
+                  element={
+                    <Layout>
+                      <PrivacyPolicy />
+                    </Layout>
+                  } 
+                />
+
+                <Route 
+                  path="/contact" 
+                  element={
+                    <Layout>
+                      <Contact />
+                    </Layout>
+                  } 
+                />
+
+                {/* Redirects */}
+                <Route path="/search" element={<Navigate to="/map" replace />} />
+                <Route path="/barberos" element={<Navigate to="/map" replace />} />
+
+                {/* 404 */}
+                <Route 
+                  path="*" 
+                  element={
+                    <Layout showFooter={false}>
+                      <NotFound />
+                    </Layout>
+                  } 
+                />
+              </Routes>
+            </div>
+          </Router>
+        </BookingProvider>
+      </AuthProvider>
+    </ErrorBoundary>
+  );
+}
+
+export default App;
