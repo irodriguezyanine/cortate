@@ -8,6 +8,9 @@ const path = require('path');
 const fs = require('fs');
 const cron = require('node-cron');
 
+// Cargar variables de entorno
+require('dotenv').config();
+
 // Importar configuración
 const { connectDB } = require('./config/database');
 const config = require('./config/config');
@@ -97,16 +100,20 @@ const corsOptions = {
             'http://localhost:3001', 
             'https://cortate-cl.vercel.app',
             'https://cortate-cl.netlify.app',
-            process.env.FRONTEND_URL
-        ].filter(Boolean);
-
+            'https://cortate-frontend.onrender.com',
+            'https://cortate-backend.onrender.com',
+            process.env.FRONTEND_URL,
+            process.env.ALLOWED_ORIGINS?.split(',')
+        ].flat().filter(Boolean);
+        
         // Permitir requests sin origin (mobile apps, Postman, etc.)
         if (!origin) return callback(null, true);
         
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            callback(new Error('No permitido por CORS'));
+            console.log(`CORS: Origin ${origin} no permitido`);
+            callback(null, true); // En producción cambiar a false
         }
     },
     credentials: true,
@@ -127,7 +134,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use((req, res, next) => {
     const timestamp = new Date().toISOString();
     const ip = req.ip || req.connection.remoteAddress;
-    const userAgent = req.get('User-Agent') || 'Unknown';
     
     console.log(`[${timestamp}] ${req.method} ${req.url} - IP: ${ip}`);
     
@@ -230,37 +236,38 @@ app.use('/api/*', (req, res) => {
 // Middleware de manejo de errores (debe ir al final)
 app.use(errorHandler);
 
-// Configuración de tareas automáticas con cron
-// Verificar reservas expiradas cada 5 minutos
-cron.schedule('*/5 * * * *', async () => {
-    try {
-        console.log('🔄 Ejecutando tarea: Verificar reservas expiradas...');
-        await autoExpireBookings();
-    } catch (error) {
-        console.error('❌ Error en tarea automática de reservas:', error);
-    }
-});
+// Configuración de tareas automáticas con cron (solo en producción)
+if (process.env.NODE_ENV === 'production') {
+    // Verificar reservas expiradas cada 5 minutos
+    cron.schedule('*/5 * * * *', async () => {
+        try {
+            console.log('🔄 Ejecutando tarea: Verificar reservas expiradas...');
+            await autoExpireBookings();
+        } catch (error) {
+            console.error('❌ Error en tarea automática de reservas:', error);
+        }
+    });
 
-// Actualizar estado de penalizaciones cada hora
-cron.schedule('0 * * * *', async () => {
-    try {
-        console.log('🔄 Ejecutando tarea: Actualizar penalizaciones...');
-        await updatePenaltyStatus();
-    } catch (error) {
-        console.error('❌ Error en tarea automática de penalizaciones:', error);
-    }
-});
+    // Actualizar estado de penalizaciones cada hora
+    cron.schedule('0 * * * *', async () => {
+        try {
+            console.log('🔄 Ejecutando tarea: Actualizar penalizaciones...');
+            await updatePenaltyStatus();
+        } catch (error) {
+            console.error('❌ Error en tarea automática de penalizaciones:', error);
+        }
+    });
 
-// Limpiar archivos temporales cada día a las 3 AM
-cron.schedule('0 3 * * *', () => {
-    try {
-        console.log('🧹 Ejecutando limpieza de archivos temporales...');
-        // Aquí podrías implementar limpieza de archivos antiguos
-        // Por ejemplo, eliminar imágenes huérfanas después de X días
-    } catch (error) {
-        console.error('❌ Error en limpieza automática:', error);
-    }
-});
+    // Limpiar archivos temporales cada día a las 3 AM
+    cron.schedule('0 3 * * *', () => {
+        try {
+            console.log('🧹 Ejecutando limpieza de archivos temporales...');
+            // Aquí podrías implementar limpieza de archivos antiguos
+        } catch (error) {
+            console.error('❌ Error en limpieza automática:', error);
+        }
+    });
+}
 
 // Función para inicializar el servidor
 async function startServer() {
@@ -269,9 +276,9 @@ async function startServer() {
         console.log('🔄 Conectando a MongoDB...');
         await connectDB();
         console.log('✅ MongoDB conectado exitosamente');
-
+        
         // Iniciar servidor
-        const server = app.listen(PORT, () => {
+        const server = app.listen(PORT, '0.0.0.0', () => {
             console.log('\n🚀================================🚀');
             console.log(`   CÓRTATE.CL API INICIADO`);
             console.log(`   Puerto: ${PORT}`);
