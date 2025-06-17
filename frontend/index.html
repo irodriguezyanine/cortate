@@ -2,7 +2,7 @@
 <html lang="es-CL">
 <head>
   <meta charset="utf-8" />
-  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  <link rel="icon" href="/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#000000" />
   
@@ -16,7 +16,7 @@
   <meta property="og:url" content="https://cortate.cl" />
   <meta property="og:title" content="Córtate.cl - Encuentra y reserva barberos profesionales" />
   <meta property="og:description" content="La plataforma líder en Chile para conectar hombres con barberos profesionales. Reserva tu corte perfecto." />
-  <meta property="og:image" content="%PUBLIC_URL%/og-image.jpg" />
+  <meta property="og:image" content="/og-image.jpg" />
   <meta property="og:site_name" content="Córtate.cl" />
   <meta property="og:locale" content="es_CL" />
   
@@ -25,13 +25,13 @@
   <meta property="twitter:url" content="https://cortate.cl" />
   <meta property="twitter:title" content="Córtate.cl - Encuentra y reserva barberos profesionales" />
   <meta property="twitter:description" content="La plataforma líder en Chile para conectar hombres con barberos profesionales." />
-  <meta property="twitter:image" content="%PUBLIC_URL%/og-image.jpg" />
+  <meta property="twitter:image" content="/og-image.jpg" />
   
   <!-- Apple Touch Icon -->
-  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  <link rel="apple-touch-icon" href="/logo192.png" />
   
   <!-- Manifest -->
-  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  <link rel="manifest" href="/manifest.json" />
   
   <!-- Preconnect para optimización -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,6 +40,9 @@
   
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Importar CSS principal -->
+  <link rel="stylesheet" href="/src/styles/index.css">
   
   <!-- Schema.org structured data -->
   <script type="application/ld+json">
@@ -78,14 +81,7 @@
   
   <div id="root"></div>
   
-  <!-- Scripts de analytics (si los tienes) -->
-  <!-- Google Analytics -->
-  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_TRACKING_ID"></script> -->
-  <!-- <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'GA_TRACKING_ID');
-  </script> -->
+  <!-- Entry point para Vite -->
+  <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
