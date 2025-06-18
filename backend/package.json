@@ -15,12 +15,10 @@
     "migrate": "node scripts/migrate.js",
     "backup": "node scripts/backup.js",
     "deploy": "node scripts/deploy.js",
-    "check-env": "node scripts/checkEnv.js",
     "docs": "jsdoc -c jsdoc.conf.json",
     "audit": "npm audit --audit-level moderate",
     "security": "npm audit && snyk test",
     "build": "echo 'Backend build completed'",
-    "postinstall": "npm run check-env"
   },
   "keywords": [
     "barberia",
