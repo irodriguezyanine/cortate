@@ -18,7 +18,7 @@
     "docs": "jsdoc -c jsdoc.conf.json",
     "audit": "npm audit --audit-level moderate",
     "security": "npm audit && snyk test",
-    "build": "echo 'Backend build completed'",
+    "build": "echo 'Backend build completed'"
   },
   "keywords": [
     "barberia",
