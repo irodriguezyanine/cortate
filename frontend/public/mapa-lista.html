@@ -1,0 +1,85 @@
+<!-- cortate/frontend/public/mapa-lista.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Explorar Barberías - Córtate.cl</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDj7gIzf_lDToiZQbMN5_XSfZCxDp_rGjg&libraries=places"></script>
+</head>
+<body>
+  <header class="navbar">
+    <div class="container">
+      <div class="logo">CÓRTATE<span class="gold">.CL</span></div>
+      <ul class="nav-links">
+        <li><a href="/index.html">Inicio</a></li>
+        <li><a href="/login.html">Ingresar</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <section class="container" style="padding: 30px;">
+    <h1>Barberías cercanas</h1>
+    <div style="margin-top: 20px;">
+      <label for="servicio">Filtrar por servicio:</label>
+      <select id="servicio">
+        <option value="">Todos</option>
+        <option value="corte">Corte</option>
+        <option value="barba">Corte + Barba</option>
+        <option value="domicilio">A Domicilio</option>
+        <option value="local">En Local</option>
+      </select>
+
+      <label for="precio" style="margin-left: 20px;">Precio máximo (CLP):</label>
+      <input type="number" id="precio" min="0" placeholder="Ej: 10000" />
+    </div>
+    <div id="map" style="width: 100%; height: 400px; margin-top: 20px;"></div>
+    <div id="lista-barberias" class="list-view"></div>
+  </section>
+
+  <footer style="margin-top: 40px;">
+    <div class="container footer-content">
+      <div class="footer-logo">CÓRTATE<span class="gold">.CL</span></div>
+      <p>&copy; 2025 Córtate.cl</p>
+    </div>
+  </footer>
+
+  <script>
+    let map;
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: -33.4372, lng: -70.6506 },
+        zoom: 14,
+      });
+
+      const request = {
+        location: map.getCenter(),
+        radius: '2000',
+        keyword: 'barbería'
+      };
+
+      const service = new google.maps.places.PlacesService(map);
+      service.nearbySearch(request, (results, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          results.forEach(place => {
+            new google.maps.Marker({
+              map,
+              position: place.geometry.location,
+              title: place.name
+            });
+
+            const listDiv = document.getElementById("lista-barberias");
+            const item = document.createElement("div");
+            item.className = "barberia-item";
+            item.innerHTML = `<strong>${place.name}</strong><br>${place.vicinity}`;
+            listDiv.appendChild(item);
+          });
+        }
+      });
+    }
+
+    window.initMap = initMap;
+  </script>
+</body>
+</html>
