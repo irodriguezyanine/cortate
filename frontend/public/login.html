@@ -1,0 +1,52 @@
+<!-- cortate/frontend/public/login.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Iniciar sesión - Córtate.cl</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="container">
+      <div class="logo">CÓRTATE<span class="gold">.CL</span></div>
+      <ul class="nav-links">
+        <li><a href="/index.html">Inicio</a></li>
+        <li><a href="/register.html">Registrarse</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <section class="hero" style="padding: 60px 20px; text-align:center;">
+    <div class="container">
+      <h1>Iniciar sesión</h1>
+      <p class="subtitle">Accede a tu cuenta y comienza a agendar o atender.</p>
+    </div>
+  </section>
+
+  <section class="container" style="max-width: 500px;">
+    <form action="/api/login" method="POST" class="form" style="background:#111; padding:30px; border-radius:8px;">
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" name="email" required placeholder="correo@ejemplo.com" />
+
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" name="password" required />
+
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Iniciar sesión</button>
+    </form>
+
+    <p style="text-align:center; color:#999; margin-top:20px;">
+      ¿No tienes cuenta? <a href="/register.html" class="gold">Regístrate aquí</a>
+    </p>
+  </section>
+
+  <footer style="margin-top: 60px;">
+    <div class="container footer-content">
+      <div class="footer-logo">CÓRTATE<span class="gold">.CL</span></div>
+      <p>&copy; 2025 Córtate.cl</p>
+    </div>
+  </footer>
+</body>
+</html>
