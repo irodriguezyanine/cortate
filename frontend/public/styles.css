@@ -1,31 +1,40 @@
-/* cortate/frontend/public/styles.css */
+/* Tipografía y colores base */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap');
 
 body {
   margin: 0;
-  font-family: 'Rubik', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   background-color: #000;
   color: #fff;
+  line-height: 1.6;
 }
 
 a {
-  color: #FFD700;
   text-decoration: none;
+  color: #FFD700;
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  color: #FFD700;
 }
 
 .container {
-  max-width: 1080px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
+/* Header */
 .navbar {
-  background-color: #111;
-  padding: 15px 0;
+  background-color: #000;
+  padding: 20px 0;
+  border-bottom: 1px solid #FFD70022;
 }
 
 .logo {
-  font-size: 28px;
-  font-weight: bold;
+  font-size: 24px;
+  font-weight: 700;
   color: #fff;
 }
 
@@ -33,144 +42,127 @@ a {
   color: #FFD700;
 }
 
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 20px;
-}
-
-.nav-links li {
-  display: inline-block;
-}
-
-.hero {
-  background-color: #111;
-  padding: 60px 20px;
-  text-align: center;
-}
-
-.hero h1 {
-  font-size: 48px;
-  color: #FFD700;
-}
-
-.hero .subtitle {
-  font-size: 20px;
-  color: #ccc;
-}
-
+/* Botones */
 .btn {
   display: inline-block;
-  padding: 10px 20px;
+  padding: 10px 24px;
   background-color: #FFD700;
   color: #000;
   border-radius: 6px;
-  font-weight: bold;
-  margin-top: 15px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #e6c200;
+}
+
+.btn-primary {
+  background-color: #FFD700;
+  color: #000;
 }
 
 .btn-primary:hover {
-  background-color: #ffcc00;
+  background-color: #e6c200;
 }
 
+/* Hero */
+.hero {
+  padding: 60px 20px;
+  text-align: center;
+  background: #111;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.hero h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.hero .subtitle {
+  color: #bbb;
+  font-weight: 300;
+  margin-bottom: 20px;
+}
+
+/* Tarjetas */
 .card {
-  background-color: #222;
+  background-color: #111;
+  border-radius: 12px;
   padding: 20px;
-  border-radius: 10px;
-  margin-top: 20px;
+  margin: 10px 0;
 }
 
-.section {
-  padding: 60px 0;
+.barberia-item {
+  border-bottom: 1px solid #333;
+  padding: 10px 0;
 }
 
-.section h2 {
-  color: #FFD700;
-  margin-bottom: 30px;
+/* Formulario */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 500px;
+  margin: auto;
 }
 
-.footer-content {
+input, select {
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+}
+
+input:focus, select:focus {
+  outline: 2px solid #FFD700;
+}
+
+/* Footer */
+footer {
   text-align: center;
   padding: 40px 0;
+  background-color: #000;
+  color: #777;
 }
 
-.list-view .barberia-item {
-  background-color: #1a1a1a;
-  margin: 10px 0;
-  padding: 15px;
-  border-radius: 6px;
-  border: 1px solid #333;
-}
-
-.profile-photo {
-  width: 120px;
-  border-radius: 50%;
-  border: 2px solid #FFD700;
-}
-
-.review {
-  background-color: #1a1a1a;
-  margin: 10px 0;
-  padding: 10px 15px;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.form input, .form select {
-  width: 100%;
-  margin-top: 8px;
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #222;
-  border: 1px solid #444;
-  color: #fff;
-  border-radius: 6px;
-}
-
-.form label {
-  font-weight: bold;
+/* Galería */
+.galeria {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 10px;
-  display: block;
 }
 
-.stats-box {
-  background-color: #1a1a1a;
-  padding: 20px;
-  margin: 15px 0;
-  border-radius: 10px;
-  border: 1px solid #333;
+.galeria-img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
 }
 
-.stats-box .highlight {
-  font-size: 24px;
-  color: #FFD700;
-  font-weight: bold;
+.galeria-img:hover {
+  transform: scale(1.05);
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.table th, .table td {
-  padding: 10px;
-  border: 1px solid #444;
-  text-align: left;
-}
+/* Responsive */
+@media screen and (max-width: 600px) {
+  .hero h1 {
+    font-size: 24px;
+  }
 
-.badge {
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-weight: bold;
-}
+  .form {
+    width: 100%;
+  }
 
-.pendiente {
-  background-color: #FF9800;
-  color: black;
-}
-
-.confirmado {
-  background-color: #4CAF50;
-  color: white;
+  .galeria {
+    justify-content: center;
+  }
 }
