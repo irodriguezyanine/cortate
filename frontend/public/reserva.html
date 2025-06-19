@@ -1,0 +1,50 @@
+<!-- cortate/frontend/public/reserva.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reservar un Corte - Córtate.cl</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="container">
+      <div class="logo">CÓRTATE<span class="gold">.CL</span></div>
+    </div>
+  </header>
+
+  <section class="container" style="padding: 30px;">
+    <h1>Reservar un Corte con Juan Fadez</h1>
+    <form class="form" action="/api/reserva" method="POST">
+      <label for="fecha">Fecha:</label>
+      <input type="date" name="fecha" required />
+
+      <label for="hora">Hora:</label>
+      <input type="time" name="hora" required />
+
+      <label for="servicio">Servicio:</label>
+      <select name="servicio" required>
+        <option value="corte">Corte</option>
+        <option value="corte+barba">Corte + Barba</option>
+        <option value="barba">Solo Barba</option>
+      </select>
+
+      <label for="tipo">¿Dónde quieres el servicio?</label>
+      <select name="tipo" required>
+        <option value="local">En local</option>
+        <option value="domicilio">A domicilio</option>
+      </select>
+
+      <button type="submit" class="btn btn-primary">Reservar</button>
+    </form>
+  </section>
+
+  <footer style="margin-top: 60px;">
+    <div class="container footer-content">
+      <div class="footer-logo">CÓRTATE<span class="gold">.CL</span></div>
+      <p>&copy; 2025 Córtate.cl</p>
+    </div>
+  </footer>
+</body>
+</html>
