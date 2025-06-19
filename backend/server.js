@@ -1,67 +1,44 @@
-// ====================================================================
-// ======================> INICIO DE LA CORRECCIÓN <=====================
-// ====================================================================
+// cortate/backend/server.js
 
-const path = require('path'); // ¡Línea 1 que faltaba! Para usar path.join
-const fs = require('fs');     // ¡Línea 2 que faltaba! Para usar fs.existsSync
-
-// ====================================================================
-// ======================> FIN DE LA CORRECCIÓN <======================
-// ====================================================================
-
-// (Aquí iría el resto de tus importaciones y configuraciones de Express)
-// Ejemplo:
 const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 const cors = require('cors');
-require('dotenv').config();
 
-// ... tus rutas de API ...
-// const authRoutes = require('./routes/auth');
+// Load env vars
+dotenv.config();
+
+// Import routes
+const authRoutes = require('./routes/authRoutes');
+const barberRoutes = require('./routes/barberRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
+const statsRoutes = require('./routes/statsRoutes');
 
 const app = express();
 
-// ... tus middlewares (app.use(cors()), app.use(express.json()), etc.) ...
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-// ... tus rutas de API (app.use('/api/auth', authRoutes), etc.) ...
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/barbers', barberRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/stats', statsRoutes);
 
-
-// Servir frontend en producción
-if (process.env.NODE_ENV === 'production') {
-    // Servir archivos estáticos del frontend build
-    const frontendPath = path.join(__dirname, '..', 'frontend', 'dist');
-    
-    // Verificar que el directorio existe
-    if (fs.existsSync(frontendPath)) {
-        app.use(express.static(frontendPath));
-        
-        console.log('📦 Sirviendo frontend desde:', frontendPath);
-        
-        // Manejar todas las rutas del frontend (React Router)
-        app.get('*', (req, res, next) => {
-            // Si la ruta empieza con /api, /uploads o /health, continuar con las rutas del backend
-            if (req.path.startsWith('/api') || 
-                req.path.startsWith('/uploads') || 
-                req.path === '/health') {
-                return next();
-            }
-            
-            // Para cualquier otra ruta, servir el index.html del frontend
-            const indexPath = path.join(frontendPath, 'index.html');
-            if (fs.existsSync(indexPath)) {
-                res.sendFile(indexPath);
-            } else {
-                res.status(404).send('Frontend no encontrado. Por favor construye el proyecto.');
-            }
-        });
-    } else {
-        console.warn('⚠️  Frontend build no encontrado en:', frontendPath);
-        console.warn('⚠️  Ejecuta "npm run build" en el directorio frontend');
-    }
-}
-
-// ... El resto de tu archivo, como app.listen() ...
-// Ejemplo:
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+	useNewUrlParser: true,
+	useUnifiedTopology: true,
+})
+.then(() => {
+	console.log('✅ MongoDB connected');
+	// Start server
+	const PORT = process.env.PORT || 5000;
+	app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+})
+.catch((err) => {
+	console.error('❌ MongoDB connection error:', err);
 });
