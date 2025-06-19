@@ -1,112 +1,15 @@
 services:
-  # ==========================================
-  # BACKEND SERVICE
-  # ==========================================
   - type: web
     name: cortate-backend
-    env: node
-    rootDir: ./backend
-    buildCommand: npm ci --only=production
-    startCommand: npm start
-    plan: free
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python backend/app.py"
     envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 10000
-      - key: MONGODB_URI
-        value: mongodb+srv://ignaciorodriguezyanine:2yP2PDShlNpnAN1C@irodriguezy.mongodb.net/cortate_cl
-      - key: JWT_SECRET
-        value: a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
-      - key: JWT_EXPIRE
-        value: 7d
-      - key: JWT_REFRESH_EXPIRE
-        value: 30d
-      - key: GOOGLE_PLACES_API_KEY
+      - key: SECRET_KEY
+        value: super-secret-key
+      - key: GOOGLE_API_KEY
         value: AIzaSyDj7gIzf_lDToiZQbMN5_XSfZCxDp_rGjg
-      - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: cortate-frontend
-          property: host
-      - key: ALLOWED_ORIGINS
-        fromService:
-          type: web
-          name: cortate-frontend
-          property: host
-      - key: UPLOAD_DIR
-        value: ./uploads
-      - key: MAX_PROFILE_SIZE
-        value: 5242880
-      - key: MAX_GALLERY_SIZE
-        value: 10485760
-      - key: BOOKING_PENDING_EXPIRATION
-        value: 15
-      - key: BOOKING_IMMEDIATE_EXPIRATION
-        value: 5
-      - key: RATE_LIMIT_WINDOW
-        value: 900000
-      - key: RATE_LIMIT_MAX
-        value: 100
-      - key: AUTH_RATE_LIMIT_MAX
-        value: 10
-      - key: TIMEZONE
-        value: America/Santiago
-      - key: LOCALE
-        value: es_CL
-      - key: CURRENCY
-        value: CLP
-      - key: WHATSAPP_ENABLED
-        value: true
-      - key: EMAIL_ENABLED
-        value: false
-      - key: PAYMENTS_ENABLED
-        value: false
-    healthCheckPath: /health
-
-  # ==========================================
-  # FRONTEND SERVICE
-  # ==========================================
-  - type: web
-    name: cortate-frontend
-    env: static
-    rootDir: ./frontend
-    buildCommand: npm ci --only=production && npm run build
-    staticPublishPath: ./dist
+      - key: MONGO_URI
+        value: mongodb+srv://usuario:password@tubasededatos.mongodb.net/?retryWrites=true&w=majority
+    autoDeploy: true
     plan: free
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: public, max-age=86400
-      - path: /static/*
-        name: Cache-Control
-        value: public, max-age=31536000, immutable
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: VITE_API_URL
-        fromService:
-          type: web
-          name: cortate-backend
-          property: host
-          envVarKey: VITE_API_URL
-      - key: VITE_FRONTEND_URL
-        sync: false
-      - key: VITE_GOOGLE_MAPS_API_KEY
-        value: AIzaSyDj7gIzf_lDToiZQbMN5_XSfZCxDp_rGjg
-      - key: VITE_ENVIRONMENT
-        value: production
-      - key: VITE_DEFAULT_CITY
-        value: Santiago
-      - key: VITE_DEFAULT_COUNTRY
-        value: Chile
-      - key: VITE_CURRENCY
-        value: CLP
-      - key: VITE_LOCALE
-        value: es-CL
-      - key: VITE_WHATSAPP_SUPPORT
-        value: 56912345678
