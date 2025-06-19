@@ -1,0 +1,78 @@
+<!-- cortate/frontend/public/dashboard-barbero.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Barbero - Córtate.cl</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="container">
+      <div class="logo">CÓRTATE<span class="gold">.CL</span></div>
+      <ul class="nav-links">
+        <li><a href="/index.html">Inicio</a></li>
+        <li><a href="/logout">Cerrar sesión</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <section class="hero" style="padding: 40px 20px; text-align:center;">
+    <div class="container">
+      <h1>Panel de Barbero</h1>
+      <p class="subtitle">Gestiona tu barbería, tus ingresos y tu reputación.</p>
+    </div>
+  </section>
+
+  <section class="container dashboard">
+    <div class="stats-box">
+      <h3>Total generado</h3>
+      <p class="highlight">$520.000 CLP</p>
+    </div>
+    <div class="stats-box">
+      <h3>Cortes realizados</h3>
+      <p class="highlight">38</p>
+    </div>
+    <div class="stats-box">
+      <h3>Evaluación promedio</h3>
+      <p class="highlight">4.7 ⭐</p>
+    </div>
+  </section>
+
+  <section class="container">
+    <h2>Próximas reservas</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Fecha</th>
+          <th>Servicio</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Juan Pérez</td>
+          <td>20 junio, 12:30</td>
+          <td>Corte + Barba</td>
+          <td><span class="badge pendiente">Pendiente</span></td>
+        </tr>
+        <tr>
+          <td>Ignacio R.</td>
+          <td>21 junio, 15:00</td>
+          <td>Corte</td>
+          <td><span class="badge confirmado">Confirmado</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer style="margin-top: 60px;">
+    <div class="container footer-content">
+      <div class="footer-logo">CÓRTATE<span class="gold">.CL</span></div>
+      <p>&copy; 2025 Córtate.cl</p>
+    </div>
+  </footer>
+</body>
+</html>
