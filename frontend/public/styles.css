@@ -1,77 +1,36 @@
-
 /* cortate/frontend/public/styles.css */
 
-/* General reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-:root {
-  --black: #0e0e0e;
-  --white: #ffffff;
-  --gold: #d4af37;
-  --gray: #222222;
-  --light-gray: #444;
-}
-
 body {
-  background-color: var(--black);
-  color: var(--white);
+  margin: 0;
   font-family: 'Rubik', sans-serif;
-  line-height: 1.6;
+  background-color: #000;
+  color: #fff;
 }
 
 a {
-  color: var(--gold);
+  color: #FFD700;
   text-decoration: none;
 }
 
-a:hover {
-  opacity: 0.8;
-}
-
-.gold {
-  color: var(--gold);
-}
-
 .container {
-  max-width: 1200px;
-  margin: auto;
-  padding: 20px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-.btn {
-  display: inline-block;
-  padding: 12px 24px;
-  margin-top: 10px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
-  transition: background 0.3s ease;
+.navbar {
+  background-color: #111;
+  padding: 15px 0;
 }
 
-.btn-primary {
-  background-color: var(--gold);
-  color: var(--black);
-}
-
-.btn-secondary {
-  background-color: transparent;
-  color: var(--gold);
-  border: 2px solid var(--gold);
-}
-
-header {
-  background-color: var(--gray);
-  padding: 20px 0;
-}
-
-.navbar .logo {
-  font-size: 24px;
+.logo {
+  font-size: 28px;
   font-weight: bold;
+  color: #fff;
+}
+
+.logo .gold {
+  color: #FFD700;
 }
 
 .nav-links {
@@ -80,160 +39,138 @@ header {
   gap: 20px;
 }
 
-.nav-links li a {
-  color: var(--white);
-  font-weight: 500;
+.nav-links li {
+  display: inline-block;
 }
 
 .hero {
+  background-color: #111;
+  padding: 60px 20px;
   text-align: center;
-  padding: 100px 20px;
-  background-image: linear-gradient(to bottom right, #000, #1a1a1a);
 }
 
 .hero h1 {
   font-size: 48px;
-  margin-bottom: 20px;
+  color: #FFD700;
 }
 
 .hero .subtitle {
   font-size: 20px;
-  color: #aaa;
-  margin-bottom: 30px;
-}
-
-.hero-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-}
-
-/* How it works */
-.how-it-works {
-  background-color: var(--gray);
-  padding: 60px 20px;
-  text-align: center;
-}
-
-.section-title {
-  font-size: 32px;
-  margin-bottom: 40px;
-  color: var(--gold);
-}
-
-.steps {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  gap: 40px;
-}
-
-.step {
-  flex: 1;
-  max-width: 300px;
-}
-
-.step-number {
-  font-size: 48px;
-  font-weight: bold;
-  display: block;
-}
-
-.step h3 {
-  margin-top: 10px;
-  font-size: 20px;
-}
-
-.step p {
-  font-size: 16px;
   color: #ccc;
 }
 
-/* Slider */
-.slider {
-  padding: 60px 20px;
-  background-color: var(--black);
-}
-
-.carousel {
-  display: flex;
-  overflow-x: auto;
-  gap: 20px;
-}
-
-.slide {
-  flex: 0 0 auto;
-  background-color: var(--gray);
-  padding: 20px;
-  border-radius: 8px;
-  min-width: 250px;
-  text-align: center;
-}
-
-.slide img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-}
-
-.slide h4 {
-  margin-top: 10px;
-  font-size: 18px;
-  color: var(--gold);
-}
-
-/* Testimonios */
-.opiniones {
-  padding: 60px 20px;
-  background-color: var(--gray);
-  text-align: center;
-}
-
-.testimonials {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 40px;
-}
-
-.testimonial {
-  background-color: var(--black);
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 300px;
-  font-style: italic;
-}
-
-/* CTA peluquero */
-.cta-barbero {
-  background-color: var(--black);
-  padding: 80px 20px;
-  text-align: center;
-}
-
-.cta-barbero-content p {
-  font-size: 18px;
-  margin-bottom: 20px;
-}
-
-/* Footer */
-footer {
-  background-color: var(--gray);
-  padding: 40px 20px;
-  text-align: center;
-  color: #aaa;
-}
-
-.footer-logo {
-  font-size: 20px;
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #FFD700;
+  color: #000;
+  border-radius: 6px;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-top: 15px;
 }
 
-.footer-links {
-  list-style: none;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
+.btn-primary:hover {
+  background-color: #ffcc00;
+}
+
+.card {
+  background-color: #222;
+  padding: 20px;
+  border-radius: 10px;
   margin-top: 20px;
+}
+
+.section {
+  padding: 60px 0;
+}
+
+.section h2 {
+  color: #FFD700;
+  margin-bottom: 30px;
+}
+
+.footer-content {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.list-view .barberia-item {
+  background-color: #1a1a1a;
+  margin: 10px 0;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #333;
+}
+
+.profile-photo {
+  width: 120px;
+  border-radius: 50%;
+  border: 2px solid #FFD700;
+}
+
+.review {
+  background-color: #1a1a1a;
+  margin: 10px 0;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.form input, .form select {
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #222;
+  border: 1px solid #444;
+  color: #fff;
+  border-radius: 6px;
+}
+
+.form label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
+
+.stats-box {
+  background-color: #1a1a1a;
+  padding: 20px;
+  margin: 15px 0;
+  border-radius: 10px;
+  border: 1px solid #333;
+}
+
+.stats-box .highlight {
+  font-size: 24px;
+  color: #FFD700;
+  font-weight: bold;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.table th, .table td {
+  padding: 10px;
+  border: 1px solid #444;
+  text-align: left;
+}
+
+.badge {
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.pendiente {
+  background-color: #FF9800;
+  color: black;
+}
+
+.confirmado {
+  background-color: #4CAF50;
+  color: white;
 }
