@@ -1,7 +1,8 @@
+// frontend/src/App.jsx (Versión Final y Simplificada)
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { BookingProvider } from './context/BookingContext';
+// Ya no necesitamos los Providers aquí
 
 // Layout components
 import Header from './components/common/Header';
@@ -10,7 +11,7 @@ import WhatsAppFloat from './components/common/WhatsAppFloat';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import ErrorFallback from './components/common/ErrorFallback';
 
-// Pages - Estas sí existen
+// Pages
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -22,7 +23,7 @@ import ClientProfile from './pages/ClientProfile';
 import BarberDashboard from './pages/BarberDashboard';
 import NotFound from './pages/NotFound';
 
-// Componentes (no páginas) - Este sí existe en su carpeta
+// Componentes (no páginas)
 import BookingForm from './components/bookings/BookingForm';
 
 // Styles
@@ -57,7 +58,7 @@ const Layout = ({ children, showHeader = true, showFooter = true }) => {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       {showHeader && <Header />}
-      <main className="flex-1">
+      <main className="flex-1 pt-16"> {/* Añadido padding-top para que el contenido no quede debajo del header fijo */}
         {children}
       </main>
       {showFooter && <Footer />}
@@ -70,63 +71,39 @@ const Layout = ({ children, showHeader = true, showFooter = true }) => {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <BookingProvider>
-          <Router>
-            <div className="App">
-              <Routes>
-                {/* Public routes - Estas existen */}
-                <Route path="/" element={<Layout><Landing /></Layout>} />
-                <Route path="/login" element={<Layout showFooter={false}><Login /></Layout>} />
-                <Route path="/register" element={<Layout showFooter={false}><Register /></Layout>} />
-                <Route path="/map" element={<Layout showFooter={false}><MapPage /></Layout>} />
-                <Route path="/list" element={<Layout><ListPage /></Layout>} />
-                <Route path="/barber/:id" element={<Layout><BarberProfilePage /></Layout>} />
+      <Router>
+        {/* Los providers se han movido a main.jsx */}
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Layout><Landing /></Layout>} />
+          <Route path="/login" element={<Layout showFooter={false}><Login /></Layout>} />
+          <Route path="/register" element={<Layout showFooter={false}><Register /></Layout>} />
+          <Route path="/map" element={<Layout showFooter={false}><MapPage /></Layout>} />
+          <Route path="/list" element={<Layout><ListPage /></Layout>} />
+          <Route path="/barber/:id" element={<Layout><BarberProfilePage /></Layout>} />
 
-                {/* Protected client routes - Estas existen */}
-                <Route path="/bookings" element={<ProtectedRoute><Layout><BookingHistory /></Layout></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute><Layout><ClientProfile /></Layout></ProtectedRoute>} />
-                <Route path="/booking/:barberId" element={<ProtectedRoute><Layout><BookingForm /></Layout></ProtectedRoute>} />
+          {/* Protected client routes */}
+          <Route path="/bookings" element={<ProtectedRoute><Layout><BookingHistory /></Layout></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Layout><ClientProfile /></Layout></ProtectedRoute>} />
+          <Route path="/booking/:barberId" element={<ProtectedRoute><Layout><BookingForm /></Layout></ProtectedRoute>} />
 
-                {/* Protected barber routes - Estas existen */}
-                <Route path="/barber/dashboard" element={<ProtectedRoute requiredRole="barber"><Layout><BarberDashboard /></Layout></ProtectedRoute>} />
-                
-                {/* 
-                  COMENTAMOS LAS RUTAS QUE APUNTAN A ARCHIVOS INEXISTENTES
-                  Cuando crees los archivos, podrás descomentar estas secciones.
-                */}
+          {/* Protected barber routes */}
+          <Route path="/barber/dashboard" element={<ProtectedRoute requiredRole="barber"><Layout><BarberDashboard /></Layout></ProtectedRoute>} />
+          
+          {/* Rutas comentadas que no existen todavía */}
+          {/* 
+          <Route path="/barber/profile" element={<ProtectedRoute requiredRole="barber"><Layout><BarberProfilePage /></Layout></ProtectedRoute>} />
+          <Route path="/barber/bookings" element={<ProtectedRoute requiredRole="barber"><Layout><BarberBookings /></Layout></ProtectedRoute>} />
+          */}
 
-                {/* 
-                <Route 
-                  path="/barber/profile" 
-                  element={<ProtectedRoute requiredRole="barber"><Layout><BarberProfilePage /></Layout></ProtectedRoute>} 
-                />
-                
-                <Route 
-                  path="/barber/bookings" 
-                  element={<ProtectedRoute requiredRole="barber"><Layout><BarberBookings /></Layout></ProtectedRoute>} 
-                />
-                */}
-                
-                {/* Static pages - Comentadas porque los archivos no existen */}
-                {/*
-                <Route path="/how-it-works" element={<Layout><HowItWorks /></Layout>} />
-                <Route path="/terms" element={<Layout><TermsOfService /></Layout>} />
-                <Route path="/privacy" element={<Layout><PrivacyPolicy /></Layout>} />
-                <Route path="/contact" element={<Layout><Contact /></Layout>} />
-                */}
+          {/* Redirects */}
+          <Route path="/search" element={<Navigate to="/map" replace />} />
+          <Route path="/barberos" element={<Navigate to="/map" replace />} />
 
-                {/* Redirects */}
-                <Route path="/search" element={<Navigate to="/map" replace />} />
-                <Route path="/barberos" element={<Navigate to="/map" replace />} />
-
-                {/* 404 */}
-                <Route path="*" element={<Layout showFooter={false}><NotFound /></Layout>} />
-              </Routes>
-            </div>
-          </Router>
-        </BookingProvider>
-      </AuthProvider>
+          {/* 404 */}
+          <Route path="*" element={<Layout showFooter={false}><NotFound /></Layout>} />
+        </Routes>
+      </Router>
     </ErrorBoundary>
   );
 }
