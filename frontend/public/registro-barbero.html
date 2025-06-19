@@ -4,65 +4,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Registro de Barbero - Córtate.cl</title>
+  <title>Registro Barbero - Córtate.cl</title>
   <link rel="stylesheet" href="./styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap" rel="stylesheet" />
 </head>
 <body>
   <header class="navbar">
     <div class="container">
       <div class="logo">CÓRTATE<span class="gold">.CL</span></div>
-      <ul class="nav-links">
-        <li><a href="/index.html">Inicio</a></li>
-        <li><a href="/login.html">Iniciar sesión</a></li>
-      </ul>
     </div>
   </header>
 
-  <section class="hero" style="padding: 60px 20px; text-align:center;">
-    <div class="container">
-      <h1>Registro para Barberos</h1>
-      <p class="subtitle">Muestra tus servicios y consigue más clientes hoy.</p>
-    </div>
-  </section>
+  <section class="container" style="padding: 40px 20px;">
+    <h1 style="color: #FFD700;">Registro de Barbero</h1>
+    <p style="color: #ccc;">Crea tu perfil profesional y comienza a recibir clientes</p>
 
-  <section class="container" style="max-width: 700px;">
-    <form action="/api/register-barber" method="POST" enctype="multipart/form-data" class="form" style="background:#111; padding:30px; border-radius:8px;">
-      <label for="barberName">Nombre del barbero o barbería</label>
-      <input type="text" id="barberName" name="barberName" required placeholder="Barbería El Corte"/>
+    <form class="form" action="/api/barberos" method="POST" enctype="multipart/form-data">
+      <label for="nombre">Nombre completo</label>
+      <input type="text" name="nombre" required />
 
       <label for="email">Correo electrónico</label>
-      <input type="email" id="email" name="email" required placeholder="correo@ejemplo.com"/>
+      <input type="email" name="email" required />
 
-      <label for="phone">Teléfono</label>
-      <input type="tel" id="phone" name="phone" required placeholder="+56 9..."/>
+      <label for="telefono">Teléfono</label>
+      <input type="tel" name="telefono" required />
 
-      <label for="password">Contraseña</label>
-      <input type="password" id="password" name="password" required/>
+      <label for="descripcion">Descripción profesional</label>
+      <input type="text" name="descripcion" required />
 
-      <label for="priceCut">Precio corte hombre</label>
-      <input type="number" id="priceCut" name="priceCut" required placeholder="Ej: 5000"/>
-
-      <label for="priceBeard">Precio corte + barba</label>
-      <input type="number" id="priceBeard" name="priceBeard" required placeholder="Ej: 7000"/>
-
-      <label for="attentionType">Tipo de atención</label>
-      <select id="attentionType" name="attentionType" required>
-        <option value="local">En local</option>
-        <option value="domicilio">A domicilio</option>
-        <option value="mixto">Mixto</option>
+      <label for="servicios">Servicios ofrecidos (usa CTRL para varios)</label>
+      <select name="servicios" multiple required>
+        <option value="corte">Corte hombre</option>
+        <option value="corte+barba">Corte + Barba</option>
+        <option value="barba">Solo Barba</option>
+        <option value="niños">Corte niños</option>
+        <option value="exprés">Exprés</option>
       </select>
 
-      <label for="services">Servicios adicionales (opcional)</label>
-      <input type="text" id="services" name="services" placeholder="Diseño, niños, exprés, padre e hijo..."/>
+      <label for="precio_corte">Precio Corte (CLP)</label>
+      <input type="number" name="precio_corte" required />
 
-      <label for="bio">Descripción del perfil</label>
-      <textarea id="bio" name="bio" rows="4" placeholder="Cuéntales a tus clientes sobre ti..."></textarea>
+      <label for="precio_barba">Precio Corte + Barba (CLP)</label>
+      <input type="number" name="precio_barba" required />
 
-      <label for="images">Sube fotos de tu trabajo (hasta 3)</label>
-      <input type="file" id="images" name="images" accept="image/*" multiple/>
+      <label for="tipo_atencion">Tipo de atención</label>
+      <select name="tipo_atencion" required>
+        <option value="local">En local</option>
+        <option value="domicilio">A domicilio</option>
+        <option value="mixto">Ambos</option>
+      </select>
 
-      <button type="submit" class="btn btn-primary" style="width: 100%;">Crear perfil profesional</button>
+      <label for="imagenes">Sube tus mejores trabajos (máx 3 imágenes)</label>
+      <input type="file" name="imagenes" accept="image/*" multiple required />
+
+      <button type="submit" class="btn btn-primary">Crear perfil</button>
     </form>
   </section>
 
