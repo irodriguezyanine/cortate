@@ -238,4 +238,184 @@ const MapView = ({
     if (markersRef.current.length > 0) {
       const bounds = new window.google.maps.LatLngBounds();
       markersRef.current.forEach(marker => {
-        bounds.exten
+        bounds.extend(marker.getPosition());
+      });
+      
+      // Ajustar el mapa para mostrar todos los marcadores
+      mapInstanceRef.current.fitBounds(bounds);
+      
+      // Asegurar zoom mínimo
+      const listener = window.google.maps.event.addListener(mapInstanceRef.current, 'idle', () => {
+        if (mapInstanceRef.current.getZoom() > MAP_CONFIG.MAX_ZOOM) {
+          mapInstanceRef.current.setZoom(MAP_CONFIG.MAX_ZOOM);
+        }
+        window.google.maps.event.removeListener(listener);
+      });
+    }
+  }, [isMapLoaded, barbers, createMarker, clearMarkers]);
+
+  // Obtener ubicación actual del usuario
+  const getCurrentLocation = useCallback(() => {
+    setIsLocating(true);
+    
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by this browser.');
+      setIsLocating(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        
+        setCurrentLocation(location);
+        
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setCenter(location);
+          mapInstanceRef.current.setZoom(MAP_CONFIG.DEFAULT_ZOOM);
+        }
+        
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  }, []);
+
+  // Controles de zoom
+  const zoomIn = useCallback(() => {
+    if (mapInstanceRef.current) {
+      const currentZoom = mapInstanceRef.current.getZoom();
+      mapInstanceRef.current.setZoom(Math.min(currentZoom + 1, MAP_CONFIG.MAX_ZOOM));
+    }
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    if (mapInstanceRef.current) {
+      const currentZoom = mapInstanceRef.current.getZoom();
+      mapInstanceRef.current.setZoom(Math.max(currentZoom - 1, MAP_CONFIG.MIN_ZOOM));
+    }
+  }, []);
+
+  // Effects
+  useEffect(() => {
+    initializeMap();
+  }, [initializeMap]);
+
+  useEffect(() => {
+    updateMarkers();
+  }, [updateMarkers]);
+
+  useEffect(() => {
+    if (selectedBarber && markersRef.current.length > 0) {
+      const marker = markersRef.current.find(m => 
+        m.getTitle() === selectedBarber.name
+      );
+      if (marker) {
+        showInfoWindow(marker, selectedBarber);
+        mapInstanceRef.current?.setCenter(marker.getPosition());
+      }
+    }
+  }, [selectedBarber, showInfoWindow]);
+
+  // Render
+  if (mapError) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+        <div className="text-center p-6">
+          <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Error al cargar el mapa
+          </h3>
+          <p className="text-gray-600 mb-4">{mapError}</p>
+          <button
+            onClick={initializeMap}
+            className="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-lg transition-colors"
+          >
+            <RefreshCw className="h-4 w-4 inline mr-2" />
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full h-full">
+      {/* Mapa */}
+      <div ref={mapRef} className="w-full h-full" />
+      
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+          <LoadingSpinner size="lg" />
+        </div>
+      )}
+      
+      {/* Controles del mapa */}
+      <div className="absolute top-4 right-4 flex flex-col space-y-2 z-20">
+        {/* Ubicación actual */}
+        <button
+          onClick={getCurrentLocation}
+          disabled={isLocating}
+          className="bg-white hover:bg-gray-50 text-gray-700 p-3 rounded-lg shadow-lg border transition-colors disabled:opacity-50"
+          title="Mi ubicación"
+        >
+          {isLocating ? (
+            <RefreshCw className="h-5 w-5 animate-spin" />
+          ) : (
+            <Locate className="h-5 w-5" />
+          )}
+        </button>
+        
+        {/* Zoom in */}
+        <button
+          onClick={zoomIn}
+          className="bg-white hover:bg-gray-50 text-gray-700 p-3 rounded-lg shadow-lg border transition-colors"
+          title="Acercar"
+        >
+          <ZoomIn className="h-5 w-5" />
+        </button>
+        
+        {/* Zoom out */}
+        <button
+          onClick={zoomOut}
+          className="bg-white hover:bg-gray-50 text-gray-700 p-3 rounded-lg shadow-lg border transition-colors"
+          title="Alejar"
+        >
+          <ZoomOut className="h-5 w-5" />
+        </button>
+      </div>
+      
+      {/* Información de marcadores */}
+      <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg border p-3 z-20">
+        <div className="flex items-center space-x-4 text-sm">
+          <div className="flex items-center space-x-1">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <span>Disponible</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+            <span>Inmediato</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+            <span>Ocupado</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MapView;
