@@ -22,6 +22,24 @@ import ClientProfile from './pages/ClientProfile';
 import BarberDashboard from './pages/BarberDashboard';
 import NotFound from './pages/NotFound';
 
+// ====================================================================
+// ======================> INICIO DE LA CORRECCIÓN <=====================
+// ====================================================================
+
+// Faltaban las importaciones para todas estas páginas/componentes:
+import BookingForm from './pages/BookingForm'; // ¡Este era el error principal!
+import BarberProfile from './pages/BarberProfile'; // O la ruta correcta a tu componente de perfil de barbero
+import BarberBookings from './pages/BarberBookings'; // O la ruta correcta
+import HowItWorks from './pages/HowItWorks'; // Página estática
+import TermsOfService from './pages/TermsOfService'; // Página estática
+import PrivacyPolicy from './pages/PrivacyPolicy'; // Página estática
+import Contact from './pages/Contact'; // Página estática
+
+// ====================================================================
+// ======================> FIN DE LA CORRECCIÓN <======================
+// ====================================================================
+
+
 // Styles
 import './styles/index.css';
 
