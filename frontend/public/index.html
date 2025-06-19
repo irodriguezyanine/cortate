@@ -2,64 +2,113 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Córtate.cl - Tu corte donde quieras</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Córtate.cl - Encuentra tu barbero ideal</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    header.hero {
+      background-image: url('https://images.unsplash.com/photo-1603808033195-45f6e220fba3');
+      background-size: cover;
+      background-position: center;
+      color: #fff;
+      padding: 100px 20px;
+      text-align: center;
+    }
+
+    .hero-overlay {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 60px 20px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    .cta-section {
+      background-color: #111;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .cta-section h2 {
+      font-size: 28px;
+      color: #FFD700;
+    }
+
+    .cta-section p {
+      color: #ccc;
+    }
+
+    .features-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .feature-card {
+      background-color: #1a1a1a;
+      border-radius: 12px;
+      padding: 20px;
+      width: 250px;
+      text-align: center;
+      color: #fff;
+    }
+
+    .feature-card h4 {
+      color: #FFD700;
+      margin-bottom: 10px;
+    }
+
+    .footer-clean {
+      background-color: #000;
+      color: #888;
+      padding: 40px 20px;
+      text-align: center;
+      border-top: 1px solid #333;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Navbar -->
-  <header class="navbar container">
-    <div class="logo">Córtate<span class="gold">.cl</span></div>
+  <header class="hero">
+    <div class="hero-overlay">
+      <h1 style="font-size: 38px;">Córtate.cl</h1>
+      <p style="font-size: 18px;">Tu corte, donde y cuando quieras. Agenda barberos con un clic.</p>
+      <a href="/register" class="btn btn-primary" style="margin: 10px;">Registrarse</a>
+      <a href="/login" class="btn" style="margin: 10px;">Iniciar sesión</a>
+    </div>
   </header>
 
-  <!-- Hero -->
-  <section class="hero">
-    <h1>Tu corte donde quieras, cuando quieras</h1>
-    <p class="subtitle">Agenda online, encuentra barberos cerca de ti, y paga en un clic.</p>
-    <a href="/register" class="btn">Registrarse</a>
-    <a href="/login" class="btn btn-primary">Iniciar sesión</a>
-  </section>
-
-  <!-- Cómo funciona -->
-  <section class="container">
+  <section class="cta-section">
     <h2>¿Cómo funciona?</h2>
-    <div class="card">
-      <p>🔎 Busca barberos en tu zona o barberos a domicilio.</p>
-    </div>
-    <div class="card">
-      <p>📅 Agenda un corte inmediato o reserva para más tarde.</p>
-    </div>
-    <div class="card">
-      <p>⭐ Revisa comentarios, fotos reales y reputación del barbero.</p>
-    </div>
-    <div class="card">
-      <p>💈 Disfruta de tu corte y deja tu reseña.</p>
+    <p>Busca barberos por ubicación, elige el tipo de servicio y reserva en segundos.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <h4>📍 Localiza barberos</h4>
+        <p>Conoce quién está disponible en tu zona ahora mismo.</p>
+      </div>
+      <div class="feature-card">
+        <h4>📅 Agenda fácil</h4>
+        <p>Reserva un horario para domicilio o visita a local.</p>
+      </div>
+      <div class="feature-card">
+        <h4>⭐ Opiniones reales</h4>
+        <p>Revisa reseñas, fotos y puntajes antes de elegir.</p>
+      </div>
+      <div class="feature-card">
+        <h4>💳 Paga seguro</h4>
+        <p>Pronto: pagos automáticos desde la app.</p>
+      </div>
     </div>
   </section>
 
-  <!-- Unirse como barbero -->
-  <section class="container">
+  <section class="cta-section">
     <h2>¿Eres barbero?</h2>
-    <div class="card">
-      <p>Únete gratis y empieza a recibir clientes desde hoy. Solo necesitas crear tu perfil, subir fotos y establecer tu disponibilidad.</p>
-      <a href="/registro-barbero" class="btn">Unirse como barbero</a>
-    </div>
+    <p>Únete a la red más moderna de profesionales. Gana visibilidad, reputación y clientes reales.</p>
+    <a href="/registro-barbero" class="btn btn-primary">Quiero unirme</a>
   </section>
 
-  <!-- Opiniones -->
-  <section class="container">
-    <h2>Opiniones de nuestros usuarios</h2>
-    <div class="card">
-      <p>💬 “Me encantó la rapidez y la facilidad. Nunca había reservado un corte tan fácil.” - Carlos</p>
-    </div>
-    <div class="card">
-      <p>💬 “El barbero llegó puntual, y el corte quedó perfecto. Repetiré.” - Matías</p>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer>
+  <footer class="footer-clean">
     <p>© 2025 Córtate.cl — Todos los derechos reservados</p>
   </footer>
 
