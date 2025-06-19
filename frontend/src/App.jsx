@@ -10,7 +10,7 @@ import WhatsAppFloat from './components/common/WhatsAppFloat';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import ErrorFallback from './components/common/ErrorFallback';
 
-// Pages - Estas ya estaban correctas
+// Pages - Estas sí existen
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -22,45 +22,49 @@ import ClientProfile from './pages/ClientProfile';
 import BarberDashboard from './pages/BarberDashboard';
 import NotFound from './pages/NotFound';
 
-// ====================================================================
-// ======================> INICIO DE LA CORRECCIÓN <=====================
-// ====================================================================
-
-// CORRECCIÓN DE RUTAS Y NOMBRES DE ARCHIVO:
-// Apuntamos a los archivos correctos con los nombres correctos.
-
-// BookingForm está en 'components/bookings', no en 'pages'.
+// Componentes (no páginas) - Este sí existe en su carpeta
 import BookingForm from './components/bookings/BookingForm';
-
-// Para el perfil del barbero, ya tenías importado "BarberProfilePage".
-// Pero en las rutas usabas "BarberProfile", que no estaba importado.
-// Así que simplemente reusamos "BarberProfilePage" que ya está importado y es correcto.
-// Por eso, la línea 'import BarberProfile from...' se elimina o comenta.
-// import BarberProfile from './pages/BarberProfile'; // <-- Este archivo no existe, lo eliminamos.
-
-// BarberBookings probablemente está en una página o componente. Si da error, hay que buscar el archivo correcto.
-// Asumiremos por ahora que el archivo se llama "BarberBookingsPage.jsx" en la carpeta "pages".
-import BarberBookings from './pages/BarberBookings';
-
-// Las páginas estáticas. Si dan error, es que los archivos no existen o tienen otro nombre.
-import HowItWorks from './pages/HowItWorks';
-import TermsOfService from './pages/TermsOfService';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import Contact from './pages/Contact';
-
-// ====================================================================
-// ======================> FIN DE LA CORRECCIÓN <======================
-// ====================================================================
-
 
 // Styles
 import './styles/index.css';
 
 // Error Boundary Component
-class ErrorBoundary extends React.Component { /* ... tu código sin cambios ... */ }
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <ErrorFallback error={this.state.error} />;
+    }
+
+    return this.props.children;
+  }
+}
 
 // Layout component
-const Layout = ({ children, showHeader = true, showFooter = true }) => { /* ... tu código sin cambios ... */ };
+const Layout = ({ children, showHeader = true, showFooter = true }) => {
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      {showHeader && <Header />}
+      <main className="flex-1">
+        {children}
+      </main>
+      {showFooter && <Footer />}
+      <WhatsAppFloat />
+    </div>
+  );
+};
 
 // Main App component
 function App() {
@@ -71,39 +75,51 @@ function App() {
           <Router>
             <div className="App">
               <Routes>
-                {/* ... Tus rutas públicas sin cambios ... */}
+                {/* Public routes - Estas existen */}
                 <Route path="/" element={<Layout><Landing /></Layout>} />
+                <Route path="/login" element={<Layout showFooter={false}><Login /></Layout>} />
+                <Route path="/register" element={<Layout showFooter={false}><Register /></Layout>} />
+                <Route path="/map" element={<Layout showFooter={false}><MapPage /></Layout>} />
+                <Route path="/list" element={<Layout><ListPage /></Layout>} />
                 <Route path="/barber/:id" element={<Layout><BarberProfilePage /></Layout>} />
 
-                {/* Protected client routes */}
+                {/* Protected client routes - Estas existen */}
+                <Route path="/bookings" element={<ProtectedRoute><Layout><BookingHistory /></Layout></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Layout><ClientProfile /></Layout></ProtectedRoute>} />
                 <Route path="/booking/:barberId" element={<ProtectedRoute><Layout><BookingForm /></Layout></ProtectedRoute>} />
 
-                {/* Protected barber routes - CORRECCIÓN AQUÍ */}
-                <Route 
-                  path="/barber/dashboard" 
-                  element={
-                    <ProtectedRoute requiredRole="barber"><Layout><BarberDashboard /></Layout></ProtectedRoute>
-                  } 
-                />
+                {/* Protected barber routes - Estas existen */}
+                <Route path="/barber/dashboard" element={<ProtectedRoute requiredRole="barber"><Layout><BarberDashboard /></Layout></ProtectedRoute>} />
+                
+                {/* 
+                  COMENTAMOS LAS RUTAS QUE APUNTAN A ARCHIVOS INEXISTENTES
+                  Cuando crees los archivos, podrás descomentar estas secciones.
+                */}
 
+                {/* 
                 <Route 
                   path="/barber/profile" 
-                  element={
-                    // Usamos el componente correcto que ya estaba importado: BarberProfilePage
-                    <ProtectedRoute requiredRole="barber"><Layout><BarberProfilePage /></Layout></ProtectedRoute>
-                  } 
+                  element={<ProtectedRoute requiredRole="barber"><Layout><BarberProfilePage /></Layout></ProtectedRoute>} 
                 />
-
+                
                 <Route 
                   path="/barber/bookings" 
-                  element={
-                    <ProtectedRoute requiredRole="barber"><Layout><BarberBookings /></Layout></ProtectedRoute>
-                  } 
+                  element={<ProtectedRoute requiredRole="barber"><Layout><BarberBookings /></Layout></ProtectedRoute>} 
                 />
-
-                {/* ... Tus otras rutas sin cambios ... */}
+                */}
                 
+                {/* Static pages - Comentadas porque los archivos no existen */}
+                {/*
+                <Route path="/how-it-works" element={<Layout><HowItWorks /></Layout>} />
+                <Route path="/terms" element={<Layout><TermsOfService /></Layout>} />
+                <Route path="/privacy" element={<Layout><PrivacyPolicy /></Layout>} />
+                <Route path="/contact" element={<Layout><Contact /></Layout>} />
+                */}
+
+                {/* Redirects */}
+                <Route path="/search" element={<Navigate to="/map" replace />} />
+                <Route path="/barberos" element={<Navigate to="/map" replace />} />
+
                 {/* 404 */}
                 <Route path="*" element={<Layout showFooter={false}><NotFound /></Layout>} />
               </Routes>
