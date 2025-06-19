@@ -1,6 +1,7 @@
+// frontend/src/context/BookingContext.jsx (Restaurado y Corregido)
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-// Asumo que tu servicio está bien definido.
 import * as bookingService from '../services/bookingService';
 
 const BookingContext = createContext();
@@ -20,31 +21,27 @@ export const BookingProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Estados específicos para proceso de reserva
   const [selectedBarber, setSelectedBarber] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
-  const [bookingType, setBookingType] = useState('scheduled'); // 'scheduled' o 'immediate'
+  const [bookingType, setBookingType] = useState('scheduled');
   const [notes, setNotes] = useState('');
   const [totalPrice, setTotalPrice] = useState(0);
 
-  // Cargar reservas del usuario al inicializar
   useEffect(() => {
     if (user && token) {
       loadUserBookings();
     } else {
-      // Si el usuario cierra sesión, limpia las reservas
       setBookings([]);
     }
   }, [user, token]);
 
-  // Cargar reservas del usuario
   const loadUserBookings = async () => {
     try {
       setLoading(true);
-      const data = await bookingService.getUserBookings(); // No es necesario pasar el token si tu api.js lo maneja con interceptores
-      setBookings(data || []);
+      const response = await bookingService.getUserBookings(token); // Restaurado el token
+      setBookings(response.data || []);
     } catch (err) {
       setError('Error al cargar las reservas');
       console.error('Error loading bookings:', err);
@@ -53,44 +50,48 @@ export const BookingProvider = ({ children }) => {
     }
   };
 
-  // Crear nueva reserva
   const createBooking = async (bookingData) => {
     try {
       setLoading(true);
       setError(null);
       
-      const newBooking = await bookingService.createBooking(bookingData);
+      const response = await bookingService.createBooking(bookingData, token); // Restaurado el token
       
-      setCurrentBooking(newBooking);
-      await loadUserBookings(); // Recargar lista
-      return newBooking;
-      
+      if (response.success) {
+        setCurrentBooking(response.data);
+        await loadUserBookings();
+        return response;
+      } else {
+        throw new Error(response.message || 'Error al crear la reserva');
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Error al crear la reserva';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setError(err.message || 'Error al crear la reserva');
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // Cancelar reserva
   const cancelBooking = async (bookingId, reason = '') => {
     try {
       setLoading(true);
-      const updatedBooking = await bookingService.cancelBooking(bookingId, reason);
-      await loadUserBookings();
-      return updatedBooking;
+      const response = await bookingService.cancelBooking(bookingId, reason, token); // Restaurado el token
+      
+      if (response.success) {
+        await loadUserBookings();
+        return response;
+      } else {
+        throw new Error(response.message || 'Error al cancelar la reserva');
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Error al cancelar la reserva';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setError(err.message || 'Error al cancelar la reserva');
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // (El resto de tus funciones como confirmBooking, completeBooking... se mantienen igual)
+  // ... (tus otras funciones se mantienen igual)
   const confirmBooking = async (bookingId) => { /* ... tu código ... */ };
   const completeBooking = async (bookingId, completionData = {}) => { /* ... tu código ... */ };
   const updateBookingProcess = (updates) => { /* ... tu código ... */ };
@@ -101,21 +102,10 @@ export const BookingProvider = ({ children }) => {
   const canMakeImmediateBooking = () => { /* ... tu código ... */ };
   const formatForWhatsApp = (booking) => { /* ... tu código ... */ };
 
-  // ====================================================================
-  // ======================> INICIO DE LA CORRECCIÓN <=====================
-  // ====================================================================
-  
-  // ¡AQUÍ ESTÁ LA SOLUCIÓN!
-  // Creamos una función "add" que es simplemente un alias para "createBooking".
-  // Esto hará que cualquier componente que llame a `add` funcione sin crashear.
+  // Agregamos el alias de forma segura
   const add = createBooking;
 
-  // ====================================================================
-  // ======================> FIN DE LA CORRECCIÓN <======================
-  // ====================================================================
-
   const value = {
-    // Estados
     bookings,
     currentBooking,
     loading,
@@ -127,8 +117,6 @@ export const BookingProvider = ({ children }) => {
     bookingType,
     notes,
     totalPrice,
-
-    // Acciones
     createBooking,
     cancelBooking,
     confirmBooking,
@@ -136,16 +124,12 @@ export const BookingProvider = ({ children }) => {
     loadUserBookings,
     updateBookingProcess,
     clearBookingProcess,
-    add, // <-- AÑADIMOS LA FUNCIÓN 'add' AL VALOR DEL CONTEXTO
-
-    // Utilidades
+    add, // <-- Mantenemos el alias por si acaso
     getBookingsByStatus,
     getUpcomingBookings,
     getBookingHistory,
     canMakeImmediateBooking,
     formatForWhatsApp,
-
-    // Setters
     setSelectedBarber,
     setSelectedService,
     setSelectedDate,
