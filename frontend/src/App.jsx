@@ -1,107 +1,69 @@
-// frontend/src/App.jsx (Corregido y Simplificado)
+// frontend/src/App.jsx (Versión de Despliegue Garantizado)
 
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React fromónico, pero si el componente de error intenta usar un contexto, fallará.
 
-// Layout components
+### El Plan Final (Operación "T 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+//ierra Quemada")
+
+Vamos a hacer la prueba más drástica y definitiva. Si esto no funciona, el problema es algo Layout components
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
-import WhatsAppFloat from './components/common/WhatsAppFloat';
-import ProtectedRoute from './components/common/ProtectedRoute';
-import ErrorFallback from './components/common/ErrorFallback';
 
-// Pages
-import Landing from './pages/Landing';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import MapPage from './pages/MapPage';
-import ListPage from './pages/ListPage';
-import BarberProfilePage from './pages/BarberProfilePage';
-import BookingHistory from './pages/BookingHistory';
-import ClientProfile from './pages/ClientProfile';
-import BarberDashboard from './pages/BarberDashboard';
-import NotFound from './pages/NotFound';
-
-// Componentes (no páginas)
-import BookingForm from './components/bookings/BookingForm';
+// ÚNICA PÁGINA QUE VAMOS A RENDERIZAR
+import Landing from './pages/Landing';  muy, muy extraño. El plan es dejar tu `App.jsx` en su forma más minimalista posible, render
 
 // Styles
 import './styles/index.css';
 
-// Error Boundary Component
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+// Layout simple para la prueba
+const Layout = ({izando **una sola cosa simple** que no use ningún contexto ni lógica compleja.
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <ErrorFallback error={this.state.error} />;
-    }
-
-    return this.props.children;
-  }
-}
-
-// Layout component
-const Layout = ({ children, showHeader = true, showFooter = true }) => {
+Si esta versión minimalista se despliega, sab children }) => {
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
-      {showHeader && <Header />}
+    <div className="min-h-screen bg-black text-white flexremos que el 100% de la configuración (backend, build, etc.) es correcta, y que el error está en flex-col">
+      <Header />
       <main className="flex-1 pt-16">
         {children}
       </main>
-      {showFooter && <Footer />}
-      <WhatsAppFloat />
+      <Footer />
     </div>
   );
 };
 
-// Main App component
-function App() {
+
+function uno de los componentes que quitamos. Luego los iremos añadiendo uno por uno hasta encontrar al culpable.
+
+---
+
+### Código App() {
   return (
-    <ErrorBoundary>
-      <Router>
-        {/* Los providers ahora están en main.jsx, aquí solo van las rutas */}
-        <Routes>
-          {/* Rutas Públicas */}
-          <Route path="/" element={<Layout><Landing /></Layout>} />
-          <Route path="/login" element={<Layout showFooter={false}><Login /></Layout>} />
-          <Route path="/register" element={<Layout showFooter={false}><Register /></Layout>} />
-          <Route path="/map" element={<Layout showFooter={false}><MapPage /></Layout>} />
-          <Route path="/list" element={<Layout><ListPage /></Layout>} />
-          <Route path="/barber/:id" element={<Layout><BarberProfilePage /></Layout>} />
+    // ¡SIN ERROR BOUNDARY POR AHORA! Para ver el error real Definitivo para el Despliegue
 
-          {/* Rutas Protegidas de Cliente */}
-          <Route path="/bookings" element={<ProtectedRoute><Layout><BookingHistory /></Layout></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Layout><ClientProfile /></Layout></ProtectedRoute>} />
-          <Route path="/booking/:barberId" element={<ProtectedRoute><Layout><BookingForm /></Layout></ProtectedRoute>} />
+**Paso 1: Archivo `frontend/src/main si lo hay.
+    <Router>
+      <Routes>
+        {/*
+          RUTA ÚNICA:.jsx`**
+Este archivo ya debería estar correcto con la versión que te di (con los `Provider` envolviendo a
+          Cualquier visita a tu sitio web cargará SOLAMENTE la página de Landing.
+          Esto elimina cualquier `App`). Lo mantenemos así, es la forma correcta.
 
-          {/* Rutas Protegidas de Barbero */}
-          <Route path="/barber/dashboard" element={<ProtectedRoute requiredRole="barber"><Layout><BarberDashboard /></Layout></ProtectedRoute>} />
-          
-          {/* Rutas comentadas que no existen todavía */}
-          {/* <Route path="/barber/profile" ... /> */}
-          {/* <Route path="/barber/bookings" ... /> */}
+**Paso 2: Archivo `frontend/ otra página o componente complejo de la ecuación.
+        */}
+        <Route 
+          path="*" 
+          element={
+            <Layout>
+              <Landing />
+            </Layout>
+          } 
+        />
+src/App.jsx` (Versión "Tierra Quemada")**
 
-          {/* Redirecciones */}
-          <Route path="/search" element={<Navigate to="/map" replace />} />
-          <Route path="/barberos" element={<Navigate to="/map" replace />} />
-
-          {/* 404 */}
-          <Route path="*" element={<Layout showFooter={false}><NotFound /></Layout>} />
-        </Routes>
-      </Router>
-    </ErrorBoundary>
+Reemplaza TODO el contenido de tu `      </Routes>
+    </Router>
   );
 }
 
