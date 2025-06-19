@@ -1,0 +1,68 @@
+<!-- cortate/frontend/public/perfil.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil del Barbero - Córtate.cl</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="container">
+      <div class="logo">CÓRTATE<span class="gold">.CL</span></div>
+      <button onclick="logout()" style="background:none;color:#fff;border:none;float:right;">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <section class="container" style="text-align: center; padding: 40px 20px;">
+    <img id="foto" src="https://i.pravatar.cc/120" alt="barbero" class="perfil-foto" style="border-radius:50%;width:120px;height:120px;">
+    <h2 id="nombre" style="color: #fff; margin-top: 10px;">Nombre Barbero</h2>
+    <p id="correo" style="color: #999;">correo@example.com</p>
+
+    <div style="margin-top: 30px;">
+      <a href="#estadisticas" class="btn">Estadísticas</a>
+      <a href="#galeria" class="btn">Galería</a>
+    </div>
+  </section>
+
+  <section class="container" id="estadisticas" style="margin-top: 40px;">
+    <h3 style="color: #FFD700;">Estadísticas</h3>
+    <ul style="color: #ccc; list-style: none; padding: 0;">
+      <li><b>Total de cortes:</b> <span id="cortes">0</span></li>
+      <li><b>Ingresos generados:</b> $<span id="ingresos">0</span></li>
+      <li><b>Penalizaciones:</b> $<span id="penalizaciones">0</span></li>
+    </ul>
+  </section>
+
+  <section class="container" id="galeria" style="margin-top: 40px;">
+    <h3 style="color: #FFD700;">Galería de trabajos</h3>
+    <div class="galeria">
+      <img src="https://images.unsplash.com/photo-1559599238-513959f16c59" class="galeria-img"/>
+      <img src="https://images.unsplash.com/photo-1588776814546-ec8ac40a8a1f" class="galeria-img"/>
+      <img src="https://images.unsplash.com/photo-1594824476966-c2182a516b57" class="galeria-img"/>
+    </div>
+  </section>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("user")) || {};
+    document.getElementById("nombre").innerText = user.nombre || "Barbero";
+    document.getElementById("correo").innerText = user.email || "";
+
+    async function loadStats() {
+      const res = await fetch(`/api/dashboard/${user.id}`);
+      const data = await res.json();
+      document.getElementById("cortes").innerText = data.reservas_recibidas;
+      document.getElementById("ingresos").innerText = data.ingresos_totales;
+      document.getElementById("penalizaciones").innerText = data.monto_penalizaciones;
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    loadStats();
+  </script>
+</body>
+</html>
