@@ -21,14 +21,8 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// ... tus otros listeners ...
-
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/*
-      LA SOLUCIÓN DEFINITIVA:
-      Envolvemos <App /> con los Providers aquí, en el punto más alto.
-    */}
     <AuthProvider>
       <BookingProvider>
         <App />
