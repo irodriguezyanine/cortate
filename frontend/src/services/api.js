@@ -299,6 +299,61 @@ export const apiHelpers = {
   }
 }
 
+// Booking API methods
+export const bookingAPI = {
+  // Crear reserva
+  create: async (bookingData) => {
+    return await apiHelpers.post(endpoints.bookings.base, bookingData);
+  },
+
+  // Obtener reservas del usuario
+  getByUser: async () => {
+    return await apiHelpers.get(endpoints.bookings.me);
+  },
+
+  // Obtener reservas del barbero
+  getByBarber: async () => {
+    return await apiHelpers.get(endpoints.bookings.barber);
+  },
+
+  // Obtener reserva por ID
+  getById: async (id) => {
+    return await apiHelpers.get(`${endpoints.bookings.base}/${id}`);
+  },
+
+  // Confirmar reserva
+  confirm: async (bookingId) => {
+    return await apiHelpers.put(`${endpoints.bookings.base}/${bookingId}/confirm`);
+  },
+
+  // Cancelar reserva
+  cancel: async (bookingId, reason = '') => {
+    return await apiHelpers.put(`${endpoints.bookings.base}/${bookingId}/cancel`, { reason });
+  },
+
+  // Completar reserva
+  complete: async (bookingId, completionData = {}) => {
+    return await apiHelpers.put(`${endpoints.bookings.base}/${bookingId}/complete`, completionData);
+  },
+
+  // Verificar disponibilidad
+  checkAvailability: async (barberId, date, time) => {
+    const params = new URLSearchParams({ date, time });
+    return await apiHelpers.get(`${endpoints.bookings.availability(barberId)}?${params}`);
+  },
+
+  // Obtener slots disponibles
+  getAvailableSlots: async (barberId, date) => {
+    const params = new URLSearchParams({ date });
+    return await apiHelpers.get(`${endpoints.bookings.slots(barberId)}?${params}`);
+  },
+
+  // Crear reserva inmediata
+  createImmediate: async (bookingData) => {
+    return await apiHelpers.post(endpoints.bookings.immediate, bookingData);
+  }
+};
+
 // Request/Response interceptor helpers
 export const addRequestInterceptor = (onFulfilled, onRejected) => {
   return api.interceptors.request.use(onFulfilled, onRejected)
