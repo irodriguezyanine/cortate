@@ -139,26 +139,16 @@ api.interceptors.response.use(
   }
 )
 
-// ====================================================================
-// ====================> INICIO DE LA ADICIÓN <====================
-// ====================================================================
-
 // --- CONFIGURACIÓN PARA GOOGLE PLACES API ---
 // Se crea una instancia separada para la API de Google Places.
 // No lleva los interceptores de autenticación de nuestra API principal.
-// Esta es la exportación que faltaba y que causaba el error.
-
 export const placesAPI = axios.create({
   baseURL: 'https://maps.googleapis.com/maps/api/place',
   timeout: 15000,
 });
 
-// ====================================================================
-// ======================> FIN DE LA ADICIÓN <======================
-// ====================================================================
 
-
-// --- TUS EXPORTACIONES ORIGINALES (SIN CAMBIOS) ---
+// --- ENDPOINTS Y HELPERS ---
 
 // API endpoints
 export const endpoints = {
@@ -234,177 +224,82 @@ export const endpoints = {
 
 // Helper functions for common API patterns
 export const apiHelpers = {
-  // GET request with error handling
-  get: async (url, config = {}) => {
-    try {
-      const response = await api.get(url, config)
-      return response.data
-    } catch (error) {
-      throw error
-    }
-  },
-  
-  // POST request with error handling
-  post: async (url, data = {}, config = {}) => {
-    try {
-      const response = await api.post(url, data, config)
-      return response.data
-    } catch (error) {
-      throw error
-    }
-  },
-  
-  // PUT request with error handling
-  put: async (url, data = {}, config = {}) => {
-    try {
-      const response = await api.put(url, data, config)
-      return response.data
-    } catch (error) {
-      throw error
-    }
-  },
-  
-  // DELETE request with error handling
-  delete: async (url, config = {}) => {
-    try {
-      const response = await api.delete(url, config)
-      return response.data
-    } catch (error) {
-      throw error
-    }
-  },
-  
-  // Upload file with progress
-  upload: async (url, formData, onProgress = null) => {
-    try {
-      const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-      
-      if (onProgress) {
-        config.onUploadProgress = (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          )
-          onProgress(percentCompleted)
-        }
-      }
-      
-      const response = await api.post(url, formData, config)
-      return response.data
-    } catch (error) {
-      throw error
-    }
-  },
-  
-  // Download file
-  download: async (url, filename) => {
-    try {
-      const response = await api.get(url, {
-        responseType: 'blob',
-      })
-      
-      // Create download link
-      const downloadUrl = window.URL.createObjectURL(new Blob([response.data]))
-      const link = document.createElement('a')
-      link.href = downloadUrl
-      link.setAttribute('download', filename)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      window.URL.revokeObjectURL(downloadUrl)
-      
-      return response.data
-    } catch (error) {
-      throw error
-    }
-  }
+  get: async (url, config = {}) => { try { const response = await api.get(url, config); return response.data; } catch (error) { throw error; } },
+  post: async (url, data = {}, config = {}) => { try { const response = await api.post(url, data, config); return response.data; } catch (error) { throw error; } },
+  put: async (url, data = {}, config = {}) => { try { const response = await api.put(url, data, config); return response.data; } catch (error) { throw error; } },
+  delete: async (url, config = {}) => { try { const response = await api.delete(url, config); return response.data; } catch (error) { throw error; } },
+  upload: async (url, formData, onProgress = null) => { try { const config = { headers: { 'Content-Type': 'multipart/form-data' } }; if (onProgress) { config.onUploadProgress = (e) => onProgress(Math.round((e.loaded * 100) / e.total)); } const response = await api.post(url, formData, config); return response.data; } catch (error) { throw error; } },
+  download: async (url, filename) => { try { const response = await api.get(url, { responseType: 'blob' }); const downloadUrl = window.URL.createObjectURL(new Blob([response.data])); const link = document.createElement('a'); link.href = downloadUrl; link.setAttribute('download', filename); document.body.appendChild(link); link.click(); link.remove(); window.URL.revokeObjectURL(downloadUrl); return response.data; } catch (error) { throw error; } }
 }
+
+// ====================================================================
+// ======================> NUEVA SECCIÓN <======================
+// ====================================================================
+
+// Barber API methods - Agrupamos todas las funciones relacionadas a barberos
+export const barberAPI = {
+  // Obtener todos los barberos o buscar con query params
+  getAll: async (params = {}) => {
+    return await apiHelpers.get(endpoints.barbers.base, { params });
+  },
+  // Obtener un barbero por su ID
+  getById: async (id) => {
+    return await apiHelpers.get(`${endpoints.barbers.base}/${id}`);
+  },
+  // Obtener barberos cercanos
+  getNearby: async (params) => { // { latitude, longitude, radius }
+    return await apiHelpers.get(endpoints.barbers.nearby, { params });
+  },
+  // Buscar barberos por un término
+  search: async (query) => {
+    return await apiHelpers.get(endpoints.barbers.search, { params: { q: query } });
+  },
+  // Obtener el top de barberos
+  getTop: async () => {
+    return await apiHelpers.get(endpoints.barbers.top);
+  },
+  // Obtener el perfil del barbero logueado
+  getMyProfile: async () => {
+    return await apiHelpers.get(endpoints.barbers.me);
+  },
+  // Actualizar el perfil del barbero logueado
+  updateMyProfile: async (data) => {
+    return await apiHelpers.put(endpoints.barbers.me, data);
+  },
+  // Obtener el dashboard del barbero
+  getDashboard: async () => {
+    return await apiHelpers.get(endpoints.barbers.dashboard);
+  },
+  // (Y así sucesivamente para los demás endpoints como stats, bookings, earnings, photos...)
+};
+
+
+// ====================================================================
+// ======================> FIN DE LA SECCIÓN <======================
+// ====================================================================
 
 // Booking API methods
 export const bookingAPI = {
-  // Crear reserva
-  create: async (bookingData) => {
-    return await apiHelpers.post(endpoints.bookings.base, bookingData);
-  },
-
-  // Obtener reservas del usuario
-  getByUser: async () => {
-    return await apiHelpers.get(endpoints.bookings.me);
-  },
-
-  // Obtener reservas del barbero
-  getByBarber: async () => {
-    return await apiHelpers.get(endpoints.bookings.barber);
-  },
-
-  // Obtener reserva por ID
-  getById: async (id) => {
-    return await apiHelpers.get(`${endpoints.bookings.base}/${id}`);
-  },
-
-  // Confirmar reserva
-  confirm: async (bookingId) => {
-    return await apiHelpers.put(`${endpoints.bookings.base}/${bookingId}/confirm`);
-  },
-
-  // Cancelar reserva
-  cancel: async (bookingId, reason = '') => {
-    return await apiHelpers.put(`${endpoints.bookings.base}/${bookingId}/cancel`, { reason });
-  },
-
-  // Completar reserva
-  complete: async (bookingId, completionData = {}) => {
-    return await apiHelpers.put(`${endpoints.bookings.base}/${bookingId}/complete`, completionData);
-  },
-
-  // Verificar disponibilidad
-  checkAvailability: async (barberId, date, time) => {
-    const params = new URLSearchParams({ date, time });
-    return await apiHelpers.get(`${endpoints.bookings.availability(barberId)}?${params}`);
-  },
-
-  // Obtener slots disponibles
-  getAvailableSlots: async (barberId, date) => {
-    const params = new URLSearchParams({ date });
-    return await apiHelpers.get(`${endpoints.bookings.slots(barberId)}?${params}`);
-  },
-
-  // Crear reserva inmediata
-  createImmediate: async (bookingData) => {
-    return await apiHelpers.post(endpoints.bookings.immediate, bookingData);
-  }
+  create: async (bookingData) => await apiHelpers.post(endpoints.bookings.base, bookingData),
+  getByUser: async () => await apiHelpers.get(endpoints.bookings.me),
+  getByBarber: async () => await apiHelpers.get(endpoints.bookings.barber),
+  getById: async (id) => await apiHelpers.get(`${endpoints.bookings.base}/${id}`),
+  confirm: async (bookingId) => await apiHelpers.put(`${endpoints.bookings.base}/${bookingId}/confirm`),
+  cancel: async (bookingId, reason = '') => await apiHelpers.put(`${endpoints.bookings.base}/${bookingId}/cancel`, { reason }),
+  complete: async (bookingId, completionData = {}) => await apiHelpers.put(`${endpoints.bookings.base}/${bookingId}/complete`, completionData),
+  checkAvailability: async (barberId, date, time) => await apiHelpers.get(`${endpoints.bookings.availability(barberId)}?${new URLSearchParams({ date, time })}`),
+  getAvailableSlots: async (barberId, date) => await apiHelpers.get(`${endpoints.bookings.slots(barberId)}?${new URLSearchParams({ date })}`),
+  createImmediate: async (bookingData) => await apiHelpers.post(endpoints.bookings.immediate, bookingData),
 };
 
 // Request/Response interceptor helpers
-export const addRequestInterceptor = (onFulfilled, onRejected) => {
-  return api.interceptors.request.use(onFulfilled, onRejected)
-}
+export const addRequestInterceptor = (onFulfilled, onRejected) => api.interceptors.request.use(onFulfilled, onRejected);
+export const addResponseInterceptor = (onFulfilled, onRejected) => api.interceptors.response.use(onFulfilled, onRejected);
+export const removeInterceptor = (interceptor, type = 'request') => { if (type === 'request') { api.interceptors.request.eject(interceptor) } else { api.interceptors.response.eject(interceptor) } };
 
-export const addResponseInterceptor = (onFulfilled, onRejected) => {
-  return api.interceptors.response.use(onFulfilled, onRejected)
-}
-
-// Remove interceptor
-export const removeInterceptor = (interceptor, type = 'request') => {
-  if (type === 'request') {
-    api.interceptors.request.eject(interceptor)
-  } else {
-    api.interceptors.response.eject(interceptor)
-  }
-}
-
-// Check if online
-export const isOnline = () => {
-  return navigator.onLine
-}
-
-// Get API base URL
-export const getBaseURL = () => {
-  return API_BASE_URL
-}
+// Utils
+export const isOnline = () => navigator.onLine;
+export const getBaseURL = () => API_BASE_URL;
 
 // Exportación por defecto de tu instancia principal de API
 export default api
