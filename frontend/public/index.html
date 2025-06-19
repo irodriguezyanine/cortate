@@ -1,55 +1,67 @@
-<!-- cortate/frontend/public/index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CÓRTATE.CL - Reserva tu corte</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Córtate.cl - Tu corte donde quieras</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="navbar">
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-      <div class="logo">CÓRTATE<span class="gold">.CL</span></div>
-      <nav>
-        <a href="login.html">Iniciar Sesión</a>
-        <a href="registro-barbero.html" class="btn btn-primary" style="margin-left: 10px;">Únete como barbero</a>
-      </nav>
-    </div>
+
+  <!-- Navbar -->
+  <header class="navbar container">
+    <div class="logo">Córtate<span class="gold">.cl</span></div>
   </header>
 
+  <!-- Hero -->
   <section class="hero">
-    <h1>Encuentra y reserva<br>las mejores barberías</h1>
-    <p class="subtitle">Explora barberos cerca de ti, calificados por la comunidad</p>
-    <a href="#barberos" class="btn btn-primary">Ver barberos cerca</a>
+    <h1>Tu corte donde quieras, cuando quieras</h1>
+    <p class="subtitle">Agenda online, encuentra barberos cerca de ti, y paga en un clic.</p>
+    <a href="/register" class="btn">Registrarse</a>
+    <a href="/login" class="btn btn-primary">Iniciar sesión</a>
   </section>
 
-  <section class="section container" id="barberos">
-    <h2>Barberías destacadas</h2>
-
-    <div class="card list-view">
-      <div class="barberia-item">
-        <h3>Barbería Moderno</h3>
-        <p>$8.000 — ⭐ 4.8 (120 reseñas)</p>
-      </div>
-      <div class="barberia-item">
-        <h3>Barbería Elegante</h3>
-        <p>$8.000 — ⭐ 4.9 (150 reseñas)</p>
-      </div>
+  <!-- Cómo funciona -->
+  <section class="container">
+    <h2>¿Cómo funciona?</h2>
+    <div class="card">
+      <p>🔎 Busca barberos en tu zona o barberos a domicilio.</p>
+    </div>
+    <div class="card">
+      <p>📅 Agenda un corte inmediato o reserva para más tarde.</p>
+    </div>
+    <div class="card">
+      <p>⭐ Revisa comentarios, fotos reales y reputación del barbero.</p>
+    </div>
+    <div class="card">
+      <p>💈 Disfruta de tu corte y deja tu reseña.</p>
     </div>
   </section>
 
-  <section class="section container" style="text-align: center;">
+  <!-- Unirse como barbero -->
+  <section class="container">
     <h2>¿Eres barbero?</h2>
-    <p>Únete gratis a nuestra plataforma, crea tu perfil profesional y comienza a recibir clientes.</p>
-    <a href="registro-barbero.html" class="btn">Quiero unirme</a>
+    <div class="card">
+      <p>Únete gratis y empieza a recibir clientes desde hoy. Solo necesitas crear tu perfil, subir fotos y establecer tu disponibilidad.</p>
+      <a href="/registro-barbero" class="btn">Unirse como barbero</a>
+    </div>
   </section>
 
-  <footer>
-    <div class="container footer-content">
-      <p style="color: #FFD700;">CÓRTATE.CL</p>
-      <p>© 2025 Todos los derechos reservados</p>
+  <!-- Opiniones -->
+  <section class="container">
+    <h2>Opiniones de nuestros usuarios</h2>
+    <div class="card">
+      <p>💬 “Me encantó la rapidez y la facilidad. Nunca había reservado un corte tan fácil.” - Carlos</p>
     </div>
+    <div class="card">
+      <p>💬 “El barbero llegó puntual, y el corte quedó perfecto. Repetiré.” - Matías</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 Córtate.cl — Todos los derechos reservados</p>
   </footer>
+
 </body>
 </html>
