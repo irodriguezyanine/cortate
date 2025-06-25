@@ -1,5 +1,5 @@
 # cortate/backend/models/Barber.py
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
 from datetime import datetime
 
@@ -8,13 +8,12 @@ class Barber(BaseModel):
     nombre: str
     email: EmailStr
     telefono: str
-    servicios: List[str] = []
+    servicios: List[str]
     precio_corte: float
     precio_barba: float
-    tipo_atencion: str  # "local", "domicilio", o "mixto"
-    descripcion: Optional[str] = ""
+    tipo_atencion: str  # 'local', 'domicilio' o 'mixto'
+    descripcion: Optional[str] = None
     imagenes: List[str] = []
-    tipo: str = "barbero"
     creado_en: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
     class Config:
