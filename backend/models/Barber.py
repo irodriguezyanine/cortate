@@ -1,20 +1,25 @@
 # cortate/backend/models/Barber.py
+from pydantic import BaseModel, EmailStr, Field
+from typing import List, Optional
+from datetime import datetime
 
-class Barber:
-    def __init__(self, nombre, email, telefono, servicios, precio_corte, precio_barba, tipo_atencion, descripcion):
-        self.id = None
-        self.nombre = nombre
-        self.email = email
-        self.telefono = telefono
-        self.servicios = servicios
-        self.precio_corte = precio_corte
-        self.precio_barba = precio_barba
-        self.tipo_atencion = tipo_atencion
-        self.descripcion = descripcion
-        self.imagenes = []
-        self.tipo = "peluquero"
-        self.reseñas = []
-        self.estadisticas = {
-            "total_cortes": 0,
-            "total_ingresos": 0
+class Barber(BaseModel):
+    id: Optional[str] = Field(None, alias="_id")
+    nombre: str
+    email: EmailStr
+    telefono: str
+    servicios: List[str] = []
+    precio_corte: float
+    precio_barba: float
+    tipo_atencion: str  # "local", "domicilio", o "mixto"
+    descripcion: Optional[str] = ""
+    imagenes: List[str] = []
+    tipo: str = "barbero"
+    creado_en: Optional[datetime] = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat(),
         }
