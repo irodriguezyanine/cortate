@@ -1,15 +1,23 @@
+# cortate/backend/config/database.py
+
 from pymongo import MongoClient
 import os
 
-# Conexión a MongoDB Atlas usando la variable de entorno
+# Carga la URL de conexión desde variables de entorno o usa un valor por defecto
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+
+# Nombre de la base de datos
+DB_NAME = "cortate_db"
+
+# Inicializa el cliente de Mongo
 client = MongoClient(MONGO_URI)
 
-# Selección de base de datos y colecciones
-db = client["cortate"]
+# Base de datos principal
+db = client[DB_NAME]
+
+# Colecciones
 usuarios_collection = db["usuarios"]
-peluqueros_collection = db["peluqueros"]
+barberos_collection = db["barberos"]
 reservas_collection = db["reservas"]
-resenas_collection = db["resenas"]
+reseñas_collection = db["reseñas"]
 penalizaciones_collection = db["penalizaciones"]
-ingresos_collection = db["ingresos"]
