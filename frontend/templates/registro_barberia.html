@@ -1,0 +1,78 @@
+<!-- frontend/templates/registro_barberia.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Barbería</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body class="registro-barberia">
+  <header class="header">
+    <div class="container">
+      <div class="logo">
+        <a href="/"><h1>CÓRTATE,<span>CL</span></h1></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>Registrar tu Barbería</h2>
+    <form id="registro-form">
+      <label>Nombre de la barbería:
+        <input type="text" name="nombre" required>
+      </label>
+
+      <label>Dirección:
+        <input type="text" name="direccion" required>
+      </label>
+
+      <label>Latitud:
+        <input type="number" step="any" name="latitud" required>
+      </label>
+
+      <label>Longitud:
+        <input type="number" step="any" name="longitud" required>
+      </label>
+
+      <label>Teléfono:
+        <input type="text" name="telefono">
+      </label>
+
+      <label>Precio promedio:
+        <input type="number" name="precio">
+      </label>
+
+      <label>¿Ofrece servicio a domicilio?
+        <select name="domicilio">
+          <option value="false">No</option>
+          <option value="true">Sí</option>
+        </select>
+      </label>
+
+      <button type="submit">Registrar</button>
+    </form>
+  </main>
+
+  <script>
+    document.getElementById("registro-form").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = Object.fromEntries(new FormData(form));
+      data.domicilio = data.domicilio === 'true';
+      const res = await fetch("/api/barbers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        alert("Barbería registrada correctamente");
+        window.location.href = "/";
+      } else {
+        alert("Error al registrar la barbería");
+      }
+    });
+  </script>
+</body>
+</html>
