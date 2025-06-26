@@ -1,0 +1,21 @@
+{
+  "name": "Córtate.cl - Reserva tu barbería",
+  "short_name": "Córtate",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#FFD700",
+  "description": "Reserva cortes con barberos cerca de ti, con confianza y estilo.",
+  "icons": [
+    {
+      "src": "/static/img/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
