@@ -1,42 +1,43 @@
 # cortate/backend/controllers/penaltyController.py
-from fastapi import APIRouter, HTTPException, status
-from models.Penalty import Penalty
-from config.database import penalties_collection
-from bson import ObjectId
-from datetime import datetime
 
-router = APIRouter()
+from flask import Blueprint, request, jsonify
+from bson import ObjectId
+from config.database import penalties_collection
+
+penalty_controller = Blueprint('penalty_controller', __name__)
 
 # Crear penalización
-@router.post("/penalizaciones")
-async def crear_penalizacion(penalty: Penalty):
-    nueva_penalizacion = penalty.dict(by_alias=True)
-    resultado = await penalties_collection.insert_one(nueva_penalizacion)
-    nueva_penalizacion["_id"] = str(resultado.inserted_id)
-    return nueva_penalizacion
+@penalty_controller.route('/create', methods=['POST'])
+def crear_penalizacion():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos faltantes"}), 400
+    resultado = penalties_collection.insert_one(data)
+    data["_id"] = str(resultado.inserted_id)
+    return jsonify(data), 201
 
 # Obtener todas las penalizaciones
-@router.get("/penalizaciones")
-async def listar_penalizaciones():
+@penalty_controller.route('/all', methods=['GET'])
+def listar_penalizaciones():
     penalizaciones = []
-    async for p in penalties_collection.find():
+    for p in penalties_collection.find():
         p["_id"] = str(p["_id"])
         penalizaciones.append(p)
-    return penalizaciones
+    return jsonify(penalizaciones), 200
 
-# Obtener penalizaciones por usuario
-@router.get("/penalizaciones/{usuario_id}")
-async def obtener_penalizaciones_usuario(usuario_id: str):
+# Obtener penalizaciones por ID de usuario
+@penalty_controller.route('/user/<usuario_id>', methods=['GET'])
+def obtener_penalizaciones_usuario(usuario_id):
     penalizaciones = []
-    async for p in penalties_collection.find({"usuario_id": usuario_id}):
+    for p in penalties_collection.find({"usuario_id": usuario_id}):
         p["_id"] = str(p["_id"])
         penalizaciones.append(p)
-    return penalizaciones
+    return jsonify(penalizaciones), 200
 
 # Eliminar penalización
-@router.delete("/penalizaciones/{penalty_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def eliminar_penalizacion(penalty_id: str):
-    resultado = await penalties_collection.delete_one({"_id": ObjectId(penalty_id)})
+@penalty_controller.route('/delete/<penalty_id>', methods=['DELETE'])
+def eliminar_penalizacion(penalty_id):
+    resultado = penalties_collection.delete_one({"_id": ObjectId(penalty_id)})
     if resultado.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Penalización no encontrada")
-    return
+        return jsonify({"error": "Penalización no encontrada"}), 404
+    return '', 204
