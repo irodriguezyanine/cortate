@@ -1,22 +1,33 @@
-from flask import Blueprint, request, jsonify
+# cortate/backend/controllers/googlePlacesController.py
+
+import os
 import requests
+from flask import Blueprint, request, jsonify
 
-google_bp = Blueprint('google_places', __name__)
-API_KEY = "AIzaSyDj7gIzf_lDToiZQbMN5_XSfZCxDp_rGjg"
+google_places_controller = Blueprint('google_places_controller', __name__)
 
-@google_bp.route('/buscar-peluquerias', methods=['GET'])
-def buscar_peluquerias():
-    lat = request.args.get('lat')
-    lng = request.args.get('lng')
-    radius = request.args.get('radius', 2000)
+GOOGLE_API_KEY = os.getenv("GOOGLE_PLACES_API_KEY")
 
-    url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+@google_places_controller.route('/barberias', methods=['GET'])
+def buscar_barberias():
+    location = request.args.get('location')  # Ej: "-33.4372,-70.6506"
+    radius = request.args.get('radius', default=1500)
+    keyword = request.args.get('keyword', default='barbería')
+
+    if not location:
+        return jsonify({"error": "Parámetro 'location' requerido"}), 400
+
+    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
     params = {
-        "location": f"{lat},{lng}",
+        "location": location,
         "radius": radius,
-        "type": "hair_care",
-        "key": API_KEY
+        "keyword": keyword,
+        "key": GOOGLE_API_KEY
     }
 
     response = requests.get(url, params=params)
-    return jsonify(response.json())
+
+    if response.status_code != 200:
+        return jsonify({"error": "Error consultando Google Places"}), 500
+
+    return jsonify(response.json()), 200
