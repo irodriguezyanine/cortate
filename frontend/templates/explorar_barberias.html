@@ -1,0 +1,107 @@
+<!-- frontend/templates/explorar_barberias.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorar Barberías</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&callback=initMap" async defer></script>
+</head>
+<body class="explorar-barberias">
+  <header class="header">
+    <div class="container header-flex">
+      <div class="logo">
+        <a href="/"><h1>CÓRTATE,<span>CL</span></h1></a>
+      </div>
+      <nav class="nav-toggle">
+        <button id="toggleView">Ver Mapa</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="filters">
+      <h2>Filtrar resultados</h2>
+      <form id="filtrosForm">
+        <select name="servicio">
+          <option value="">Todos los servicios</option>
+          <option value="corte">Corte</option>
+          <option value="barba">Barba</option>
+          <option value="domicilio">A domicilio</option>
+        </select>
+        <select name="precio">
+          <option value="">Todos los precios</option>
+          <option value="<10000">Menos de $10.000</option>
+          <option value=">10000">Más de $10.000</option>
+        </select>
+      </form>
+    </section>
+
+    <section id="vistaLista" class="barberias-lista">
+      <!-- Barberías cargadas dinámicamente -->
+    </section>
+
+    <section id="vistaMapa" class="barberias-mapa" style="display:none; height: 500px;">
+      <div id="map" style="width:100%; height:100%;"></div>
+    </section>
+  </main>
+
+  <script>
+    const toggleButton = document.getElementById('toggleView');
+    const vistaLista = document.getElementById('vistaLista');
+    const vistaMapa = document.getElementById('vistaMapa');
+
+    toggleButton.addEventListener('click', () => {
+      if (vistaLista.style.display !== 'none') {
+        vistaLista.style.display = 'none';
+        vistaMapa.style.display = 'block';
+        toggleButton.textContent = 'Ver Lista';
+        initMap();
+      } else {
+        vistaLista.style.display = 'block';
+        vistaMapa.style.display = 'none';
+        toggleButton.textContent = 'Ver Mapa';
+      }
+    });
+
+    function initMap() {
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 13,
+        center: { lat: -33.4489, lng: -70.6693 }, // Santiago por defecto
+      });
+
+      fetch('/api/barbers')
+        .then(res => res.json())
+        .then(data => {
+          data.forEach(barber => {
+            const marker = new google.maps.Marker({
+              position: { lat: barber.lat, lng: barber.lng },
+              map: map,
+              title: barber.nombre,
+            });
+          });
+        });
+    }
+
+    window.onload = () => {
+      fetch('/api/barbers')
+        .then(res => res.json())
+        .then(data => {
+          vistaLista.innerHTML = data.map(barber => `
+            <div class="card-barberia">
+              <img src="${barber.imagen}" alt="${barber.nombre}" />
+              <div class="info">
+                <h3>${barber.nombre}</h3>
+                <p>${barber.direccion}</p>
+                <p>Precio: $${barber.precio}</p>
+                <a href="/perfil_barbero/${barber._id}">Ver perfil</a>
+              </div>
+            </div>
+          `).join('');
+        });
+    }
+  </script>
+</body>
+</html>
