@@ -1,87 +1,62 @@
+<!-- frontend/templates/index.html -->
 <!DOCTYPE html>
-<html lang="es-CL">
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <link rel="icon" href="/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  
-  <!-- Meta tags para SEO -->
-  <meta name="description" content="Córtate.cl - La plataforma líder en Chile para encontrar y reservar barberos profesionales. Cortes de calidad cerca de ti." />
-  <meta name="keywords" content="barbería, cortes, reservas, barberos, Chile, Santiago, peluquería, corte de pelo" />
-  <meta name="author" content="Córtate.cl" />
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://cortate.cl" />
-  <meta property="og:title" content="Córtate.cl - Encuentra y reserva barberos profesionales" />
-  <meta property="og:description" content="La plataforma líder en Chile para conectar hombres con barberos profesionales. Reserva tu corte perfecto." />
-  <meta property="og:image" content="/og-image.jpg" />
-  <meta property="og:site_name" content="Córtate.cl" />
-  <meta property="og:locale" content="es_CL" />
-  
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:url" content="https://cortate.cl" />
-  <meta property="twitter:title" content="Córtate.cl - Encuentra y reserva barberos profesionales" />
-  <meta property="twitter:description" content="La plataforma líder en Chile para conectar hombres con barberos profesionales." />
-  <meta property="twitter:image" content="/og-image.jpg" />
-  
-  <!-- Apple Touch Icon -->
-  <link rel="apple-touch-icon" href="/logo192.png" />
-  
-  <!-- Manifest -->
-  <link rel="manifest" href="/manifest.json" />
-  
-  <!-- Preconnect para optimización -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://maps.googleapis.com">
-  
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Importar CSS principal -->
-  <link rel="stylesheet" href="/src/styles/index.css">
-  
-  <!-- Schema.org structured data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Córtate.cl",
-    "description": "Plataforma para encontrar y reservar barberos profesionales en Chile",
-    "url": "https://cortate.cl",
-    "applicationCategory": "LifestyleApplication",
-    "operatingSystem": "Web",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "CLP"
-    },
-    "author": {
-      "@type": "Organization",
-      "name": "Córtate.cl"
-    }
-  }
-  </script>
-  
-  <title>Córtate.cl - Encuentra y reserva barberos profesionales</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Córtate.cl - Reserva Barberías</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/your-kit.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <noscript>
-    <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #000; color: #fff; font-family: system-ui, sans-serif; text-align: center; padding: 20px;">
-      <div>
-        <h1>¡JavaScript es necesario!</h1>
-        <p>Para usar Córtate.cl necesitas tener JavaScript habilitado en tu navegador.</p>
-        <p>Por favor habilita JavaScript y recarga la página.</p>
+  <header class="header">
+    <div class="container">
+      <div class="logo">
+        <h1>CÓRTATE,<span>CL</span></h1>
+      </div>
+      <nav class="nav">
+        <ul>
+          <li><a href="/login">Iniciar sesión</a></li>
+          <li><a href="/registro">Registrarse</a></li>
+          <li><a href="#barberos">¿Eres barbero?</a></li>
+        </ul>
+      </nav>
+      <div class="menu-toggle">
+        <i class="fas fa-bars"></i>
       </div>
     </div>
-  </noscript>
-  
-  <div id="root"></div>
-  
-  <!-- Entry point para Vite -->
-  <script type="module" src="/src/main.jsx"></script>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h2>Encuentra y reserva<br>las mejores barberías</h2>
+        <a href="/login" class="btn-primary">Reservar ahora</a>
+      </div>
+      <div class="hero-image">
+        <img src="/static/img/corte-barbero.jpg" alt="Barbería profesional">
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-barbero" id="barberos">
+    <div class="container">
+      <p>¿Eres barbero? <a href="/registro?tipo=barbero">Únete a Córtate.cl</a></p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 Córtate.cl - Todos los derechos reservados</p>
+    </div>
+  </footer>
+
+  <script>
+    // Toggle responsive menu
+    document.querySelector('.menu-toggle').addEventListener('click', () => {
+      document.querySelector('.nav').classList.toggle('active');
+    });
+  </script>
 </body>
 </html>
