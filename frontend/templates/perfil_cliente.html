@@ -1,0 +1,73 @@
+<!-- frontend/templates/perfil_cliente.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body class="perfil-cliente">
+  <header class="header">
+    <div class="container header-flex">
+      <div class="logo">
+        <a href="/"><h1>CÓRTATE,<span>CL</span></h1></a>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="/explorar">Explorar</a></li>
+          <li><a href="/logout">Cerrar sesión</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="perfil-box">
+      <h2>Mi Perfil</h2>
+      <div class="info-usuario" id="infoUsuario">
+        <!-- Datos cargados dinámicamente -->
+      </div>
+
+      <h3>Mis Reservas</h3>
+      <div class="lista-reservas" id="misReservas">
+        <!-- Reservas cargadas dinámicamente -->
+      </div>
+    </section>
+  </main>
+
+  <script>
+    async function cargarPerfil() {
+      const res = await fetch('/api/users/me', { credentials: 'include' });
+      const usuario = await res.json();
+
+      document.getElementById('infoUsuario').innerHTML = `
+        <p><strong>Nombre:</strong> ${usuario.nombre}</p>
+        <p><strong>Email:</strong> ${usuario.email}</p>
+        <p><strong>Teléfono:</strong> ${usuario.telefono || 'No ingresado'}</p>
+      `;
+    }
+
+    async function cargarReservas() {
+      const res = await fetch('/api/bookings/mis-reservas', { credentials: 'include' });
+      const reservas = await res.json();
+
+      document.getElementById('misReservas').innerHTML = reservas.map(r => `
+        <div class="card-reserva">
+          <h4>${r.barberoNombre}</h4>
+          <p><strong>Fecha:</strong> ${new Date(r.fecha).toLocaleDateString()}</p>
+          <p><strong>Hora:</strong> ${r.hora}</p>
+          <p><strong>Servicio:</strong> ${r.servicio}</p>
+          <a href="/perfil_barbero/${r.barberoId}">Ver barbero</a>
+        </div>
+      `).join('');
+    }
+
+    window.onload = () => {
+      cargarPerfil();
+      cargarReservas();
+    }
+  </script>
+</body>
+</html>
