@@ -10,36 +10,56 @@
 </head>
 <body class="perfil-barbero">
   <header class="header">
-    <div class="container">
+    <div class="container header-flex">
       <div class="logo">
         <a href="/"><h1>CÓRTATE,<span>CL</span></h1></a>
       </div>
     </div>
   </header>
 
-  <main class="container">
-    <h2>Perfil de la Barbería</h2>
-    <div class="barber-info">
-      <p><strong>Nombre:</strong> Barber King</p>
-      <p><strong>Dirección:</strong> Av. Providencia 1234</p>
-      <p><strong>Teléfono:</strong> +56 9 1234 5678</p>
-      <p><strong>Precio Promedio:</strong> $10.000</p>
-      <p><strong>Servicios:</strong> Corte, Barba, Domicilio</p>
-    </div>
+  <main class="container perfil-barbero-main">
+    <section id="infoBarbero">
+      <!-- Cargado dinámicamente -->
+    </section>
 
-    <section class="reseñas">
-      <h3>Reseñas de Clientes</h3>
-      <article>
-        <p><strong>Cliente:</strong> Pedro</p>
-        <p><strong>Comentario:</strong> Muy buen corte y atención</p>
-        <p><strong>Nota:</strong> 5 estrellas</p>
-      </article>
-      <article>
-        <p><strong>Cliente:</strong> Luis</p>
-        <p><strong>Comentario:</strong> Rápido y preciso</p>
-        <p><strong>Nota:</strong> 4 estrellas</p>
-      </article>
+    <section id="resenas">
+      <h2>Reseñas</h2>
+      <div id="listaResenas"></div>
     </section>
   </main>
+
+  <script>
+    const barberoId = window.location.pathname.split("/").pop();
+
+    fetch(`/api/barbers/${barberoId}`)
+      .then(res => res.json())
+      .then(barber => {
+        document.getElementById("infoBarbero").innerHTML = `
+          <div class="perfil-header">
+            <img src="${barber.imagen}" alt="${barber.nombre}" class="perfil-img" />
+            <div class="perfil-datos">
+              <h2>${barber.nombre}</h2>
+              <p><strong>Dirección:</strong> ${barber.direccion}</p>
+              <p><strong>Teléfono:</strong> ${barber.telefono}</p>
+              <p><strong>Precio promedio:</strong> $${barber.precio}</p>
+              <p><strong>Servicios:</strong> ${barber.servicios}</p>
+              <p><strong>Horario:</strong> ${barber.disponibilidad}</p>
+              <p><strong>Tipo:</strong> ${barber.tipo}</p>
+            </div>
+          </div>
+        `;
+      });
+
+    fetch(`/api/reviews/barber/${barberoId}`)
+      .then(res => res.json())
+      .then(reviews => {
+        document.getElementById("listaResenas").innerHTML = reviews.map(r => `
+          <div class="resena">
+            <p><strong>${r.usuario}:</strong> ${r.comentario}</p>
+            <p class="estrellas">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</p>
+          </div>
+        `).join('');
+      });
+  </script>
 </body>
 </html>
