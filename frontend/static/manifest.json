@@ -8,12 +8,12 @@
   "description": "Reserva cortes con barberos cerca de ti, con confianza y estilo.",
   "icons": [
     {
-      "src": "/static/img/favicon-192.png",
+      "src": "/static/img/logo-cortate.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/static/img/favicon-512.png",
+      "src": "/static/img/icono-tijera.png",
       "sizes": "512x512",
       "type": "image/png"
     }
