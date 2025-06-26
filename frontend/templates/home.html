@@ -1,0 +1,102 @@
+<!-- frontend/templates/home.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio - Barberías Cercanas</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/your-kit.js" crossorigin="anonymous"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDj7gIzf_lDToiZQbMN5_XSfZCxDp_rGjg&libraries=places"></script>
+</head>
+<body class="home-view">
+  <header class="header">
+    <div class="container">
+      <div class="logo">
+        <h1>CÓRTATE,<span>CL</span></h1>
+      </div>
+      <nav class="nav">
+        <ul>
+          <li><a href="/perfil">Mi Perfil</a></li>
+          <li><a href="/logout">Cerrar sesión</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-home">
+    <div class="filtros">
+      <h2>Barberías cerca de ti</h2>
+      <label>
+        <input type="checkbox" id="filtro-domicilio"> A domicilio
+      </label>
+      <label>
+        <input type="checkbox" id="filtro-barba"> Barba
+      </label>
+      <label>
+        <input type="checkbox" id="filtro-diseno"> Diseño de corte
+      </label>
+      <select id="filtro-precio">
+        <option value="">Precio</option>
+        <option value="asc">Menor a mayor</option>
+        <option value="desc">Mayor a menor</option>
+      </select>
+      <button onclick="alternarVista()">Cambiar vista</button>
+    </div>
+
+    <div id="vista-lista" class="vista active">
+      <!-- Contenido de lista -->
+      <div class="barberia">
+        <img src="/static/img/barbero1.jpg" alt="">
+        <div>
+          <h3>Barbería Moderna</h3>
+          <p>$8.000 - 4.9 ⭐ (120)</p>
+          <button>Reservar</button>
+        </div>
+      </div>
+      <!-- Más barberías por cargar dinámicamente -->
+    </div>
+
+    <div id="vista-mapa" class="vista">
+      <div id="map" style="width:100%; height: 400px;"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 Córtate.cl - Todos los derechos reservados</p>
+    </div>
+  </footer>
+
+  <script>
+    function alternarVista() {
+      document.getElementById("vista-lista").classList.toggle("active");
+      document.getElementById("vista-mapa").classList.toggle("active");
+    }
+
+    function initMap() {
+      const center = { lat: -33.4489, lng: -70.6693 }; // Santiago de Chile
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 14,
+        center,
+      });
+
+      const barberias = [
+        { nombre: "Barbería Moderna", lat: -33.4485, lng: -70.6690 },
+        { nombre: "Barbería Elegante", lat: -33.4492, lng: -70.6701 }
+      ];
+
+      barberias.forEach(barb => {
+        new google.maps.Marker({
+          position: { lat: barb.lat, lng: barb.lng },
+          map,
+          title: barb.nombre
+        });
+      });
+    }
+
+    window.onload = initMap;
+  </script>
+</body>
+</html>
