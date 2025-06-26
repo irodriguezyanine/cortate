@@ -2,21 +2,17 @@
   "name": "Córtate.cl",
   "short_name": "Córtate",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#FFD700",
-  "description": "Reserva cortes con barberos cerca de ti, con confianza y estilo.",
-  "lang": "es-CL",
   "icons": [
     {
-      "src": "/static/img/icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/static/img/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
