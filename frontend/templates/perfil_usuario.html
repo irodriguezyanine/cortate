@@ -1,0 +1,84 @@
+<!-- frontend/templates/perfil_usuario.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body class="perfil-usuario">
+  <header class="header">
+    <div class="container">
+      <div class="logo">
+        <a href="/"><h1>CÓRTATE,<span>CL</span></h1></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>Mi Perfil</h2>
+    <div class="perfil-info">
+      <p><strong>Nombre:</strong> Juan Cliente</p>
+      <p><strong>Email:</strong> juan@ejemplo.com</p>
+      <p><strong>Reservas realizadas:</strong> 3</p>
+      <p><strong>Reseñas escritas:</strong> 2</p>
+    </div>
+    <nav class="perfil-nav">
+      <ul>
+        <li><a href="/mis-reservas">Mis Reservas</a></li>
+        <li><a href="/mis-reseñas">Mis Reseñas</a></li>
+        <li><a href="/editar-perfil">Editar Perfil</a></li>
+        <li><a href="/logout">Cerrar Sesión</a></li>
+      </ul>
+    </nav>
+  </main>
+</body>
+</html>
+
+<!-- frontend/templates/perfil_barbero.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil del Barbero</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body class="perfil-barbero">
+  <header class="header">
+    <div class="container">
+      <div class="logo">
+        <a href="/"><h1>CÓRTATE,<span>CL</span></h1></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>Perfil de la Barbería</h2>
+    <div class="barber-info">
+      <p><strong>Nombre:</strong> Barber King</p>
+      <p><strong>Dirección:</strong> Av. Providencia 1234</p>
+      <p><strong>Teléfono:</strong> +56 9 1234 5678</p>
+      <p><strong>Precio Promedio:</strong> $10.000</p>
+      <p><strong>Servicios:</strong> Corte, Barba, Domicilio</p>
+    </div>
+
+    <section class="reseñas">
+      <h3>Reseñas de Clientes</h3>
+      <article>
+        <p><strong>Cliente:</strong> Pedro</p>
+        <p><strong>Comentario:</strong> Muy buen corte y atención</p>
+        <p><strong>Nota:</strong> 5 estrellas</p>
+      </article>
+      <article>
+        <p><strong>Cliente:</strong> Luis</p>
+        <p><strong>Comentario:</strong> Rápido y preciso</p>
+        <p><strong>Nota:</strong> 4 estrellas</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
