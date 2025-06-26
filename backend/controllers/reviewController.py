@@ -3,44 +3,41 @@
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from config.database import reviews_collection
-from datetime import datetime
 
 review_controller = Blueprint('review_controller', __name__)
 
-# Crear nueva reseña
+# Crear reseña
 @review_controller.route('/create', methods=['POST'])
-def crear_review():
+def crear_resena():
     data = request.get_json()
     if not data:
-        return jsonify({"error": "Datos faltantes"}), 400
-    
-    data["fecha"] = datetime.utcnow().isoformat()
+        return jsonify({"error": "Faltan datos"}), 400
     resultado = reviews_collection.insert_one(data)
     data["_id"] = str(resultado.inserted_id)
     return jsonify(data), 201
 
 # Obtener todas las reseñas
 @review_controller.route('/all', methods=['GET'])
-def listar_reviews():
-    reviews = []
+def listar_resenas():
+    resenas = []
     for r in reviews_collection.find():
         r["_id"] = str(r["_id"])
-        reviews.append(r)
-    return jsonify(reviews), 200
+        resenas.append(r)
+    return jsonify(resenas), 200
 
 # Obtener reseñas por barbero
-@review_controller.route('/barber/<barber_id>', methods=['GET'])
-def reviews_por_barbero(barber_id):
-    reviews = []
-    for r in reviews_collection.find({"barber_id": barber_id}):
+@review_controller.route('/barbero/<barbero_id>', methods=['GET'])
+def resenas_barbero(barbero_id):
+    resenas = []
+    for r in reviews_collection.find({"barbero_id": barbero_id}):
         r["_id"] = str(r["_id"])
-        reviews.append(r)
-    return jsonify(reviews), 200
+        resenas.append(r)
+    return jsonify(resenas), 200
 
 # Eliminar reseña
-@review_controller.route('/delete/<review_id>', methods=['DELETE'])
-def eliminar_review(review_id):
-    resultado = reviews_collection.delete_one({"_id": ObjectId(review_id)})
+@review_controller.route('/delete/<resena_id>', methods=['DELETE'])
+def eliminar_resena(resena_id):
+    resultado = reviews_collection.delete_one({"_id": ObjectId(resena_id)})
     if resultado.deleted_count == 0:
         return jsonify({"error": "Reseña no encontrada"}), 404
     return '', 204
