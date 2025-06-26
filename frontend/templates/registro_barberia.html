@@ -1,14 +1,14 @@
-<!-- frontend/templates/registro_barberia.html -->
+<!-- frontend/templates/registro_barbero.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registrar Barbería</title>
+  <title>Registro de Barbería</title>
   <link rel="stylesheet" href="/static/css/styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
-<body class="registro-barberia">
+<body class="registro-barbero">
   <header class="header">
     <div class="container">
       <div class="logo">
@@ -17,62 +17,39 @@
     </div>
   </header>
 
-  <main class="container">
-    <h2>Registrar tu Barbería</h2>
-    <form id="registro-form">
-      <label>Nombre de la barbería:
-        <input type="text" name="nombre" required>
-      </label>
+  <main class="container form-barber">
+    <h2>Registra tu Barbería</h2>
+    <form action="/api/barbers/register" method="POST">
+      <label for="nombre">Nombre de la Barbería:</label>
+      <input type="text" name="nombre" id="nombre" required>
 
-      <label>Dirección:
-        <input type="text" name="direccion" required>
-      </label>
+      <label for="direccion">Dirección:</label>
+      <input type="text" name="direccion" id="direccion" required>
 
-      <label>Latitud:
-        <input type="number" step="any" name="latitud" required>
-      </label>
+      <label for="telefono">Teléfono:</label>
+      <input type="tel" name="telefono" id="telefono" required>
 
-      <label>Longitud:
-        <input type="number" step="any" name="longitud" required>
-      </label>
+      <label for="precio">Precio promedio corte:</label>
+      <input type="number" name="precio" id="precio" required>
 
-      <label>Teléfono:
-        <input type="text" name="telefono">
-      </label>
+      <label for="servicios">Servicios ofrecidos (coma separados):</label>
+      <input type="text" name="servicios" id="servicios">
 
-      <label>Precio promedio:
-        <input type="number" name="precio">
-      </label>
+      <label for="disponibilidad">Días y horarios de atención:</label>
+      <input type="text" name="disponibilidad" id="disponibilidad">
 
-      <label>¿Ofrece servicio a domicilio?
-        <select name="domicilio">
-          <option value="false">No</option>
-          <option value="true">Sí</option>
-        </select>
-      </label>
+      <label for="tipo">Tipo de atención:</label>
+      <select name="tipo" id="tipo">
+        <option value="local">En local</option>
+        <option value="domicilio">A domicilio</option>
+        <option value="mixto">Ambos</option>
+      </select>
 
-      <button type="submit">Registrar</button>
+      <label for="imagen">Imagen representativa (URL):</label>
+      <input type="url" name="imagen" id="imagen">
+
+      <button type="submit">Registrar Barbería</button>
     </form>
   </main>
-
-  <script>
-    document.getElementById("registro-form").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const form = e.target;
-      const data = Object.fromEntries(new FormData(form));
-      data.domicilio = data.domicilio === 'true';
-      const res = await fetch("/api/barbers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      if (res.ok) {
-        alert("Barbería registrada correctamente");
-        window.location.href = "/";
-      } else {
-        alert("Error al registrar la barbería");
-      }
-    });
-  </script>
 </body>
 </html>
