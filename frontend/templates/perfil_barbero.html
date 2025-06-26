@@ -16,67 +16,70 @@
       </div>
       <nav>
         <ul>
-          <li><a href="/explorar">Explorar</a></li>
+          <li><a href="/mapa">Mapa</a></li>
           <li><a href="/perfil">Mi Perfil</a></li>
-          <li><a href="/logout">Salir</a></li>
+          <li><a href="/logout">Cerrar sesión</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main class="container">
-    <section class="perfil-barbero-box" id="perfilBarbero">
-      <!-- Cargado dinámicamente -->
+  <main class="container perfil-barbero">
+    <section class="perfil-box" id="perfilBarbero">
+      <!-- Info barbero dinámica -->
     </section>
 
-    <section class="resenas-barbero" id="resenas">
-      <h3>Reseñas de clientes</h3>
-      <!-- Cargado dinámicamente -->
+    <section class="galeria-fotos" id="galeriaFotos">
+      <h3>Galería de Cortes</h3>
+      <div class="grid-fotos">
+        <!-- Imágenes dinámicas -->
+      </div>
+    </section>
+
+    <section class="seccion-reseñas">
+      <h3>Reseñas</h3>
+      <div id="listaReseñas" class="lista-reseñas">
+        <!-- Reseñas dinámicas -->
+      </div>
     </section>
   </main>
 
   <script>
-    const barberoId = window.location.pathname.split("/").pop();
-
     async function cargarPerfilBarbero() {
+      const urlParts = window.location.pathname.split('/');
+      const barberoId = urlParts[urlParts.length - 1];
       const res = await fetch(`/api/barbers/${barberoId}`);
       const barbero = await res.json();
 
       document.getElementById('perfilBarbero').innerHTML = `
-        <div class="perfil-info">
-          <img src="${barbero.imagen}" alt="${barbero.nombre}" class="perfil-img" />
-          <div class="perfil-datos">
-            <h2>${barbero.nombre}</h2>
-            <p><strong>Ubicación:</strong> ${barbero.direccion}</p>
-            <p><strong>Servicios:</strong> ${barbero.servicios.join(', ')}</p>
-            <p><strong>Precio desde:</strong> $${barbero.precio}</p>
-            <p><strong>Rating:</strong> ${barbero.promedioRating || 'Sin reseñas'}</p>
-            <a class="btn" href="/reservar/${barbero._id}">Agendar una hora</a>
-          </div>
-        </div>
+        <h2>${barbero.nombre}</h2>
+        <p><strong>Ubicación:</strong> ${barbero.ubicacion}</p>
+        <p><strong>Teléfono:</strong> ${barbero.telefono}</p>
+        <p><strong>Servicios:</strong> ${barbero.servicios.join(', ')}</p>
+        <p><strong>Precios:</strong> Corte Hombre: $${barbero.precioCorte} - Corte + Barba: $${barbero.precioBarba}</p>
       `;
+
+      document.querySelector('#galeriaFotos .grid-fotos').innerHTML =
+        barbero.imagenes.map(img => `<img src="/static/img/${img}" alt="Corte">`).join('');
     }
 
-    async function cargarResenas() {
-      const res = await fetch(`/api/reviews/barber/${barberoId}`);
-      const reviews = await res.json();
+    async function cargarReseñas() {
+      const urlParts = window.location.pathname.split('/');
+      const barberoId = urlParts[urlParts.length - 1];
+      const res = await fetch(`/api/reviews/barbero/${barberoId}`);
+      const reseñas = await res.json();
 
-      if (reviews.length === 0) {
-        document.getElementById('resenas').innerHTML += `<p>Aún no hay reseñas.</p>`;
-        return;
-      }
-
-      document.getElementById('resenas').innerHTML += reviews.map(r => `
-        <div class="card-resena">
-          <p><strong>${r.usuarioNombre}:</strong> ${r.comentario}</p>
-          <p>Rating: ${r.rating}/5</p>
+      document.getElementById('listaReseñas').innerHTML = reseñas.map(r => `
+        <div class="card-reseña">
+          <p><strong>${r.usuario}:</strong> ${r.comentario}</p>
+          <p>⭐ ${r.rating}</p>
         </div>
       `).join('');
     }
 
     window.onload = () => {
       cargarPerfilBarbero();
-      cargarResenas();
+      cargarReseñas();
     }
   </script>
 </body>
