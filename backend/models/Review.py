@@ -8,7 +8,7 @@ class Review(BaseModel):
     barbero_id: str
     cliente_id: str
     comentario: Optional[str] = None
-    puntuacion: int = Field(..., ge=1, le=5)
+    puntuacion: int  # 1 a 5 estrellas
     creado_en: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
     class Config:
@@ -17,4 +17,3 @@ class Review(BaseModel):
         json_encoders = {
             datetime: lambda v: v.isoformat(),
         }
-
