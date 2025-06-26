@@ -17,49 +17,59 @@
     </div>
   </header>
 
-  <main class="container perfil-barbero-main">
-    <section id="infoBarbero">
-      <!-- Cargado dinámicamente -->
+  <main class="container">
+    <section id="perfilBarbero" class="perfil-info">
+      <!-- Información del barbero se carga dinámicamente -->
     </section>
 
-    <section id="resenas">
+    <section id="reseñasBarbero" class="perfil-reseñas">
       <h2>Reseñas</h2>
-      <div id="listaResenas"></div>
+      <!-- Reseñas cargadas dinámicamente -->
     </section>
   </main>
 
   <script>
-    const barberoId = window.location.pathname.split("/").pop();
+    const barberoId = window.location.pathname.split('/').pop();
 
-    fetch(`/api/barbers/${barberoId}`)
-      .then(res => res.json())
-      .then(barber => {
-        document.getElementById("infoBarbero").innerHTML = `
-          <div class="perfil-header">
-            <img src="${barber.imagen}" alt="${barber.nombre}" class="perfil-img" />
-            <div class="perfil-datos">
-              <h2>${barber.nombre}</h2>
-              <p><strong>Dirección:</strong> ${barber.direccion}</p>
-              <p><strong>Teléfono:</strong> ${barber.telefono}</p>
-              <p><strong>Precio promedio:</strong> $${barber.precio}</p>
-              <p><strong>Servicios:</strong> ${barber.servicios}</p>
-              <p><strong>Horario:</strong> ${barber.disponibilidad}</p>
-              <p><strong>Tipo:</strong> ${barber.tipo}</p>
+    function cargarPerfil() {
+      fetch(`/api/barbers/${barberoId}`)
+        .then(res => res.json())
+        .then(barber => {
+          document.getElementById("perfilBarbero").innerHTML = `
+            <div class="perfil-detalles">
+              <img src="${barber.imagen}" alt="${barber.nombre}" />
+              <div class="info">
+                <h2>${barber.nombre}</h2>
+                <p>Dirección: ${barber.direccion}</p>
+                <p>Teléfono: ${barber.telefono || 'No disponible'}</p>
+                <p>Precio: $${barber.precio}</p>
+                <p>Servicios: ${barber.servicios.join(', ')}</p>
+                <p>Tipo: ${barber.tipo}</p>
+                <p>Horario: ${barber.horario}</p>
+              </div>
             </div>
-          </div>
-        `;
-      });
+          `;
+        });
+    }
 
-    fetch(`/api/reviews/barber/${barberoId}`)
-      .then(res => res.json())
-      .then(reviews => {
-        document.getElementById("listaResenas").innerHTML = reviews.map(r => `
-          <div class="resena">
-            <p><strong>${r.usuario}:</strong> ${r.comentario}</p>
-            <p class="estrellas">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</p>
-          </div>
-        `).join('');
-      });
+    function cargarReseñas() {
+      fetch(`/api/reviews/barber/${barberoId}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("reseñasBarbero").innerHTML += data.map(r => `
+            <div class="reseña">
+              <strong>${r.usuario}</strong>
+              <p>${r.comentario}</p>
+              <div class="estrellas">${'⭐'.repeat(r.estrellas)}</div>
+            </div>
+          `).join('');
+        });
+    }
+
+    window.onload = () => {
+      cargarPerfil();
+      cargarReseñas();
+    }
   </script>
 </body>
 </html>
