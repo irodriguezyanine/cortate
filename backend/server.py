@@ -372,6 +372,10 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
 async def get_barbershops():
     try:
         barbershops = await database.barbershops.find().to_list(length=50)
+        # Clean MongoDB ObjectIds
+        for barbershop in barbershops:
+            if "_id" in barbershop:
+                barbershop.pop("_id")
         return {"barbershops": barbershops}
     except Exception as e:
         logger.error(f"Error fetching barbershops: {e}")
