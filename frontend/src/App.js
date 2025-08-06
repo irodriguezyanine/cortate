@@ -12,7 +12,15 @@ import {
   Menu,
   LogIn,
   UserPlus,
-  Filter
+  Filter,
+  Calendar,
+  Bell,
+  CheckCircle,
+  XCircle,
+  MapIcon,
+  Settings,
+  LogOut,
+  Plus
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
@@ -23,6 +31,9 @@ import { Badge } from './components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from './components/ui/avatar';
 import { Slider } from './components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
+import { Calendar as CalendarComponent } from './components/ui/calendar';
+import { Alert, AlertDescription } from './components/ui/alert';
+import { Textarea } from './components/ui/textarea';
 import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -36,74 +47,49 @@ function App() {
   const [selectedBarbershop, setSelectedBarbershop] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
-  const [userLocation, setUserLocation] = useState({ lat: -33.4489, lng: -70.6693 }); // Santiago, Chile
+  const [userLocation, setUserLocation] = useState({ lat: -33.4489, lng: -70.6693 });
   const [priceLimit, setPriceLimit] = useState([50000]);
   const [selectedService, setSelectedService] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [availableBarbers, setAvailableBarbers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  // Sample data for barbershops
-  const sampleBarbershops = [
-    {
-      id: 1,
-      name: "Barbería Moderna",
-      barber_name: "Carlos Pérez",
-      address: "Las Condes, Santiago",
-      lat: -33.4260,
-      lng: -70.5682,
-      rating: 4.8,
-      reviews_count: 120,
-      price_range: "$8,000 - $15,000",
-      services: ["Corte de pelo", "Corte + barba"],
-      available: true,
-      image: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400&h=300&fit=crop&crop=face",
-      gallery: [
-        "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1622287162716-f311baa1a2b8?w=300&h=300&fit=crop"
-      ]
-    },
-    {
-      id: 2,
-      name: "Barbería Elegante",
-      barber_name: "Juan Martínez",
-      address: "Providencia, Santiago",
-      lat: -33.4378,
-      lng: -70.6304,
-      rating: 4.9,
-      reviews_count: 250,
-      price_range: "$10,000 - $18,000",
-      services: ["Corte de pelo", "Corte + barba"],
-      available: true,
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&crop=face",
-      gallery: [
-        "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1621607512214-68297480165e?w=300&h=300&fit=crop"
-      ]
-    },
-    {
-      id: 3,
-      name: "Barbershop Classic",
-      barber_name: "Miguel Rodriguez",
-      address: "Ñuñoa, Santiago",
-      lat: -33.4569,
-      lng: -70.5975,
-      rating: 4.7,
-      reviews_count: 85,
-      price_range: "$6,000 - $12,000",
-      services: ["Corte de pelo", "Corte + barba"],
-      available: false,
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=300&fit=crop&crop=face",
-      gallery: [
-        "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=300&h=300&fit=crop"
-      ]
-    }
-  ];
+  // Barber specific states
+  const [appointments, setAppointments] = useState([]);
+  const [quickCutRequests, setQuickCutRequests] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showCreateBarbershop, setShowCreateBarbershop] = useState(false);
 
   useEffect(() => {
-    setBarbershops(sampleBarbershops);
-    initializeMap();
+    checkAuthStatus();
     getUserLocation();
   }, []);
+
+  useEffect(() => {
+    if (user && user.user_type === 'client') {
+      loadBarbershops();
+      initializeMap();
+    } else if (user && user.user_type === 'barber') {
+      loadBarberData();
+    }
+  }, [user]);
+
+  // Check if user is already logged in
+  const checkAuthStatus = async () => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUser(response.data);
+      } catch (error) {
+        localStorage.removeItem('auth_token');
+      }
+    }
+  };
 
   const getUserLocation = () => {
     if (navigator.geolocation) {
@@ -114,13 +100,42 @@ function App() {
         },
         (error) => {
           console.log('Error getting location:', error);
-          // Keep Santiago as default
         }
       );
     }
   };
 
+  const loadBarbershops = async () => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/barbershops`);
+      setBarbershops(response.data.barbershops || []);
+    } catch (error) {
+      console.error('Error loading barbershops:', error);
+    }
+  };
+
+  const loadBarberData = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const [appointmentsRes, requestsRes] = await Promise.all([
+        axios.get(`${BACKEND_URL}/api/bookings/barber`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${BACKEND_URL}/api/quick-cuts/requests`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+      
+      setAppointments(appointmentsRes.data.bookings || []);
+      setQuickCutRequests(requestsRes.data.requests || []);
+    } catch (error) {
+      console.error('Error loading barber data:', error);
+    }
+  };
+
   const initializeMap = async () => {
+    if (!barbershops.length) return;
+
     const loader = new Loader({
       apiKey: GOOGLE_MAPS_API_KEY,
       version: "weekly",
@@ -152,8 +167,7 @@ function App() {
 
       setMap(mapInstance);
 
-      // Add markers for barbershops
-      sampleBarbershops.forEach(barbershop => {
+      barbershops.forEach(barbershop => {
         const marker = new AdvancedMarkerElement({
           map: mapInstance,
           position: { lat: barbershop.lat, lng: barbershop.lng },
@@ -170,64 +184,118 @@ function App() {
     }
   };
 
-  const handleQuickSearch = () => {
+  const handleQuickSearch = async () => {
+    if (!selectedService) {
+      setError('Por favor selecciona un servicio');
+      return;
+    }
+
     setIsSearching(true);
-    // Simulate search
-    setTimeout(() => {
-      const availableOptions = sampleBarbershops.filter(shop => 
-        shop.available && 
-        parseInt(shop.price_range.split(' - ')[0].replace('$', '').replace(',', '')) <= priceLimit[0]
-      );
-      setAvailableBarbers(availableOptions);
+    setError('');
+
+    try {
+      const response = await axios.post(`${BACKEND_URL}/api/quick-cuts/request`, {
+        service: selectedService,
+        max_price: priceLimit[0],
+        lat: userLocation.lat,
+        lng: userLocation.lng
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+      });
+
+      setSuccess('Solicitud enviada a barberos cercanos. Espera confirmación...');
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (error) {
+      setError('Error al enviar solicitud');
+    } finally {
       setIsSearching(false);
-    }, 2000);
+    }
   };
 
   const handleLogin = async (email, password) => {
+    setLoading(true);
+    setError('');
+    
     try {
       const response = await axios.post(`${BACKEND_URL}/api/auth/login`, {
         email, password
       });
+      
+      localStorage.setItem('auth_token', response.data.access_token);
       setUser(response.data.user);
       setShowLogin(false);
+      setSuccess('Inicio de sesión exitoso');
+      setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
-      console.error('Login error:', error);
+      setError(error.response?.data?.detail || 'Error en el inicio de sesión');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRegister = async (userData) => {
+    setLoading(true);
+    setError('');
+    
     try {
       const response = await axios.post(`${BACKEND_URL}/api/auth/register`, userData);
+      localStorage.setItem('auth_token', response.data.access_token);
       setUser(response.data.user);
       setShowRegister(false);
+      setSuccess('Registro exitoso');
+      setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
-      console.error('Register error:', error);
+      setError(error.response?.data?.detail || 'Error en el registro');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    setUser(null);
+    setActiveTab('map');
+  };
+
+  const handleQuickCutResponse = async (requestId, accept) => {
+    try {
+      await axios.post(`${BACKEND_URL}/api/quick-cuts/${requestId}/respond`, {
+        accept
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+      });
+      
+      loadBarberData(); // Refresh data
+      setSuccess(accept ? 'Solicitud aceptada' : 'Solicitud rechazada');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error) {
+      setError('Error al responder la solicitud');
     }
   };
 
   const LoginForm = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [formData, setFormData] = useState({ email: '', password: '' });
 
     return (
       <div className="space-y-4">
         <Input
           type="email"
           placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={formData.email}
+          onChange={(e) => setFormData({...formData, email: e.target.value})}
         />
         <Input
           type="password"
           placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={formData.password}
+          onChange={(e) => setFormData({...formData, password: e.target.value})}
         />
         <Button 
-          onClick={() => handleLogin(email, password)}
+          onClick={() => handleLogin(formData.email, formData.password)}
+          disabled={loading}
           className="w-full bg-amber-600 hover:bg-amber-700"
         >
-          Iniciar Sesión
+          {loading ? 'Iniciando...' : 'Iniciar Sesión'}
         </Button>
       </div>
     );
@@ -281,13 +349,93 @@ function App() {
         </Select>
         <Button 
           onClick={() => handleRegister(formData)}
+          disabled={loading}
           className="w-full bg-amber-600 hover:bg-amber-700"
         >
-          Registrarse
+          {loading ? 'Registrando...' : 'Registrarse'}
         </Button>
       </div>
     );
   };
+
+  // Client Interface Components
+  const ClientInterface = () => (
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-900">
+        <TabsTrigger value="map" className="text-white data-[state=active]:bg-amber-600">
+          <MapPin className="w-4 h-4 mr-1" />
+          Mapa
+        </TabsTrigger>
+        <TabsTrigger value="quick" className="text-white data-[state=active]:bg-amber-600">
+          <Search className="w-4 h-4 mr-1" />
+          Corte Rápido
+        </TabsTrigger>
+        <TabsTrigger value="profile" className="text-white data-[state=active]:bg-amber-600">
+          <User className="w-4 h-4 mr-1" />
+          Perfil
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="map">
+        <div className="space-y-4">
+          <Card className="bg-gray-900 border-gray-700">
+            <CardContent className="p-0">
+              <div id="map" className="w-full h-96 rounded-lg"></div>
+            </CardContent>
+          </Card>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-3 text-white">Barberías Disponibles</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              {barbershops.map(barbershop => (
+                <BarbershopCard key={barbershop.id} barbershop={barbershop} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="quick">
+        <QuickCutSection />
+      </TabsContent>
+
+      <TabsContent value="profile">
+        <ClientProfile />
+      </TabsContent>
+    </Tabs>
+  );
+
+  // Barber Interface Components
+  const BarberInterface = () => (
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-900">
+        <TabsTrigger value="calendar" className="text-white data-[state=active]:bg-amber-600">
+          <Calendar className="w-4 h-4 mr-1" />
+          Calendario
+        </TabsTrigger>
+        <TabsTrigger value="requests" className="text-white data-[state=active]:bg-amber-600">
+          <Bell className="w-4 h-4 mr-1" />
+          Solicitudes ({quickCutRequests.length})
+        </TabsTrigger>
+        <TabsTrigger value="profile" className="text-white data-[state=active]:bg-amber-600">
+          <Settings className="w-4 h-4 mr-1" />
+          Mi Negocio
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="calendar">
+        <BarberCalendar />
+      </TabsContent>
+
+      <TabsContent value="requests">
+        <QuickCutRequests />
+      </TabsContent>
+
+      <TabsContent value="profile">
+        <BarberProfile />
+      </TabsContent>
+    </Tabs>
+  );
 
   const BarbershopCard = ({ barbershop }) => (
     <Card className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800 transition-colors cursor-pointer">
@@ -295,23 +443,20 @@ function App() {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarImage src={barbershop.image} alt={barbershop.barber_name} />
-              <AvatarFallback>{barbershop.barber_name[0]}</AvatarFallback>
+              <AvatarImage src={barbershop.image} alt={barbershop.name} />
+              <AvatarFallback>{barbershop.name[0]}</AvatarFallback>
             </Avatar>
             <div>
               <CardTitle className="text-lg">{barbershop.name}</CardTitle>
-              <p className="text-amber-400 text-sm">{barbershop.barber_name}</p>
               <div className="flex items-center gap-1 mt-1">
                 <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                <span className="text-sm">{barbershop.rating} ({barbershop.reviews_count})</span>
+                <span className="text-sm">{barbershop.rating || 0} ({barbershop.reviews_count || 0})</span>
               </div>
             </div>
           </div>
-          {barbershop.available ? (
-            <Badge className="bg-green-600">Disponible</Badge>
-          ) : (
-            <Badge variant="secondary">Ocupado</Badge>
-          )}
+          <Badge className={barbershop.available ? "bg-green-600" : "bg-gray-600"}>
+            {barbershop.available ? "Disponible" : "Ocupado"}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent>
@@ -321,19 +466,9 @@ function App() {
             {barbershop.address}
           </p>
           <p className="text-amber-400 font-medium">{barbershop.price_range}</p>
-          <div className="flex gap-2">
-            {barbershop.services.map((service, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {service}
-              </Badge>
-            ))}
-          </div>
           <div className="flex gap-2 mt-3">
             <Button size="sm" className="flex-1 bg-amber-600 hover:bg-amber-700">
               Reservar
-            </Button>
-            <Button size="sm" variant="outline" className="flex-1">
-              Ver Perfil
             </Button>
           </div>
         </div>
@@ -359,8 +494,8 @@ function App() {
                 <SelectValue placeholder="Selecciona un servicio" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="corte">Corte de pelo</SelectItem>
-                <SelectItem value="corte_barba">Corte + barba</SelectItem>
+                <SelectItem value="Corte de pelo">Corte de pelo</SelectItem>
+                <SelectItem value="Corte + barba">Corte + barba</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -391,7 +526,7 @@ function App() {
             {isSearching ? (
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Buscando barberos...
+                Enviando solicitud...
               </div>
             ) : (
               <div className="flex items-center gap-2">
@@ -402,17 +537,181 @@ function App() {
           </Button>
         </CardContent>
       </Card>
+    </div>
+  );
 
-      {availableBarbers.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-3">Barberos Disponibles</h3>
-          <div className="space-y-3">
-            {availableBarbers.map(barber => (
-              <BarbershopCard key={barber.id} barbershop={barber} />
-            ))}
-          </div>
-        </div>
-      )}
+  const ClientProfile = () => (
+    <div className="text-center py-12">
+      <Avatar className="w-24 h-24 mx-auto mb-4">
+        <AvatarFallback className="text-2xl">{user?.name?.[0] || 'U'}</AvatarFallback>
+      </Avatar>
+      <h2 className="text-2xl font-bold mb-2 text-white">{user?.name}</h2>
+      <p className="text-gray-400 mb-6">{user?.email}</p>
+      <div className="space-y-4 max-w-sm mx-auto">
+        <Button variant="outline" className="w-full">
+          Historial de Cortes
+        </Button>
+        <Button variant="outline" className="w-full">
+          Configuración
+        </Button>
+        <Button 
+          variant="outline" 
+          className="w-full text-red-400 border-red-400 hover:bg-red-400 hover:text-white"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Cerrar Sesión
+        </Button>
+      </div>
+    </div>
+  );
+
+  const BarberCalendar = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-white mb-2">Mis Citas Agendadas</h2>
+        <p className="text-gray-400">Gestiona tus reservas y horarios</p>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card className="bg-gray-900 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white">Calendario</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CalendarComponent
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              className="rounded-md border border-gray-700"
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gray-900 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white">
+              Citas para {selectedDate?.toLocaleDateString('es-CL')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {appointments.length === 0 ? (
+                <p className="text-gray-400 text-center py-8">
+                  No hay citas para este día
+                </p>
+              ) : (
+                appointments.map((appointment, index) => (
+                  <div key={index} className="p-3 bg-gray-800 rounded-lg">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-white font-medium">{appointment.service}</p>
+                        <p className="text-gray-400 text-sm">{appointment.client_name}</p>
+                        <p className="text-amber-400 text-sm">${appointment.price?.toLocaleString()}</p>
+                      </div>
+                      <Badge variant="outline">{appointment.time}</Badge>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  const QuickCutRequests = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-white mb-2">Solicitudes de Corte Rápido</h2>
+        <p className="text-gray-400">Responde a las solicitudes de clientes cercanos</p>
+      </div>
+
+      <div className="space-y-4">
+        {quickCutRequests.length === 0 ? (
+          <Card className="bg-gray-900 border-gray-700">
+            <CardContent className="p-8 text-center">
+              <Bell className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-gray-400">No hay solicitudes pendientes</p>
+            </CardContent>
+          </Card>
+        ) : (
+          quickCutRequests.map((request) => (
+            <Card key={request.id} className="bg-gray-900 border-gray-700">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-white font-semibold">{request.service}</h3>
+                      <p className="text-gray-400">Cliente: {request.client_name}</p>
+                      <p className="text-amber-400">Presupuesto: ${request.max_price?.toLocaleString()}</p>
+                    </div>
+                    <Badge variant="outline">
+                      <MapPin className="w-3 h-3 mr-1" />
+                      {request.distance} km
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => handleQuickCutResponse(request.id, true)}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-1" />
+                      Aceptar
+                    </Button>
+                    <Button 
+                      onClick={() => handleQuickCutResponse(request.id, false)}
+                      variant="outline"
+                      className="flex-1 border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
+                    >
+                      <XCircle className="w-4 h-4 mr-1" />
+                      Rechazar
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  const BarberProfile = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <Avatar className="w-24 h-24 mx-auto mb-4">
+          <AvatarFallback className="text-2xl">{user?.name?.[0] || 'B'}</AvatarFallback>
+        </Avatar>
+        <h2 className="text-2xl font-bold mb-2 text-white">{user?.name}</h2>
+        <p className="text-gray-400 mb-6">{user?.email}</p>
+      </div>
+
+      <div className="max-w-2xl mx-auto space-y-4">
+        <Button 
+          onClick={() => setShowCreateBarbershop(true)}
+          className="w-full bg-amber-600 hover:bg-amber-700"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Crear/Editar Mi Barbería
+        </Button>
+        <Button variant="outline" className="w-full">
+          Ver Estadísticas
+        </Button>
+        <Button variant="outline" className="w-full">
+          Configuración
+        </Button>
+        <Button 
+          variant="outline" 
+          className="w-full text-red-400 border-red-400 hover:bg-red-400 hover:text-white"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Cerrar Sesión
+        </Button>
+      </div>
     </div>
   );
 
@@ -431,7 +730,12 @@ function App() {
                 <Avatar>
                   <AvatarFallback>{user.name?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm">{user.name}</span>
+                <div className="text-right">
+                  <p className="text-sm font-medium">{user.name}</p>
+                  <p className="text-xs text-gray-400">
+                    {user.user_type === 'client' ? 'Cliente' : 'Barbero'}
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="flex gap-2">
@@ -470,97 +774,41 @@ function App() {
         </div>
       </header>
 
+      {/* Alerts */}
+      {error && (
+        <Alert className="mx-4 mt-4 border-red-400 bg-red-900/20">
+          <AlertDescription className="text-red-400">{error}</AlertDescription>
+        </Alert>
+      )}
+      {success && (
+        <Alert className="mx-4 mt-4 border-green-400 bg-green-900/20">
+          <AlertDescription className="text-green-400">{success}</AlertDescription>
+        </Alert>
+      )}
+
       {/* Main Content */}
       <main className="p-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-900">
-            <TabsTrigger value="map" className="text-white data-[state=active]:bg-amber-600">
-              <MapPin className="w-4 h-4 mr-1" />
-              Mapa
-            </TabsTrigger>
-            <TabsTrigger value="quick" className="text-white data-[state=active]:bg-amber-600">
-              <Search className="w-4 h-4 mr-1" />
-              Corte Rápido
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="text-white data-[state=active]:bg-amber-600">
-              <User className="w-4 h-4 mr-1" />
-              Perfil
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="map">
-            <div className="space-y-4">
-              <Card className="bg-gray-900 border-gray-700">
-                <CardContent className="p-0">
-                  <div id="map" className="w-full h-96 rounded-lg"></div>
-                </CardContent>
-              </Card>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Barberías Cercanas</h3>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {barbershops.map(barbershop => (
-                    <BarbershopCard key={barbershop.id} barbershop={barbershop} />
-                  ))}
-                </div>
-              </div>
+        {!user ? (
+          <div className="text-center py-20">
+            <Scissors className="w-24 h-24 mx-auto mb-8 text-amber-400" />
+            <h1 className="text-4xl font-bold mb-4 text-white">Bienvenido a CÓRTATE.CL</h1>
+            <p className="text-xl text-gray-400 mb-8">
+              Encuentra y reserva las mejores barberías de Chile
+            </p>
+            <div className="space-x-4">
+              <Button onClick={() => setShowLogin(true)} size="lg" variant="outline">
+                Iniciar Sesión
+              </Button>
+              <Button onClick={() => setShowRegister(true)} size="lg" className="bg-amber-600 hover:bg-amber-700">
+                Registrarse
+              </Button>
             </div>
-          </TabsContent>
-
-          <TabsContent value="quick">
-            <QuickCutSection />
-          </TabsContent>
-
-          <TabsContent value="profile">
-            <div className="text-center py-12">
-              {user ? (
-                <div>
-                  <Avatar className="w-24 h-24 mx-auto mb-4">
-                    <AvatarFallback className="text-2xl">{user.name?.[0] || 'U'}</AvatarFallback>
-                  </Avatar>
-                  <h2 className="text-2xl font-bold mb-2">{user.name}</h2>
-                  <p className="text-gray-400 mb-6">{user.email}</p>
-                  <div className="space-y-4">
-                    <Button variant="outline" className="w-full">
-                      Historial de Cortes
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      Configuración
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full text-red-400 border-red-400 hover:bg-red-400 hover:text-white"
-                      onClick={() => setUser(null)}
-                    >
-                      Cerrar Sesión
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <User className="w-24 h-24 mx-auto mb-4 text-gray-400" />
-                  <h2 className="text-2xl font-bold mb-2">Inicia Sesión</h2>
-                  <p className="text-gray-400 mb-6">Para acceder a tu perfil y historial</p>
-                  <div className="space-y-2">
-                    <Button 
-                      onClick={() => setShowLogin(true)}
-                      className="w-full bg-amber-600 hover:bg-amber-700"
-                    >
-                      Iniciar Sesión
-                    </Button>
-                    <Button 
-                      onClick={() => setShowRegister(true)}
-                      variant="outline" 
-                      className="w-full"
-                    >
-                      Crear Cuenta
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        ) : user.user_type === 'client' ? (
+          <ClientInterface />
+        ) : (
+          <BarberInterface />
+        )}
       </main>
 
       {/* Selected Barbershop Modal */}
@@ -573,30 +821,19 @@ function App() {
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16">
-                  <AvatarImage src={selectedBarbershop.image} alt={selectedBarbershop.barber_name} />
-                  <AvatarFallback>{selectedBarbershop.barber_name[0]}</AvatarFallback>
+                  <AvatarImage src={selectedBarbershop.image} alt={selectedBarbershop.name} />
+                  <AvatarFallback>{selectedBarbershop.name[0]}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">{selectedBarbershop.barber_name}</h3>
+                  <h3 className="text-lg font-semibold text-white">{selectedBarbershop.name}</h3>
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    <span className="text-white">{selectedBarbershop.rating} ({selectedBarbershop.reviews_count} reseñas)</span>
+                    <span className="text-white">{selectedBarbershop.rating || 0} ({selectedBarbershop.reviews_count || 0} reseñas)</span>
                   </div>
                   <p className="text-amber-400 font-medium">{selectedBarbershop.price_range}</p>
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {selectedBarbershop.gallery.map((image, index) => (
-                  <img 
-                    key={index}
-                    src={image}
-                    alt={`Trabajo ${index + 1}`}
-                    className="w-full h-24 object-cover rounded-lg"
-                  />
-                ))}
-              </div>
-
               <div className="flex gap-2">
                 <Button className="flex-1 bg-amber-600 hover:bg-amber-700">
                   Reservar Cita
