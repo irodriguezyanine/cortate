@@ -149,7 +149,9 @@ async def startup_db_client():
         
         # Create indexes
         await database.users.create_index("email", unique=True)
-        await database.barbershops.create_index([("lat", "2dsphere"), ("lng", "2dsphere")])
+        # Create simple indexes for lat/lng instead of geospatial for now
+        await database.barbershops.create_index("lat")
+        await database.barbershops.create_index("lng")
         logger.info("Database indexes created")
         
         # Create sample barbershops if none exist
