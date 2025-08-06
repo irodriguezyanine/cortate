@@ -312,7 +312,10 @@ async def register_user(user_data: UserRegistration):
             data={"sub": user_id}, expires_delta=access_token_expires
         )
         
+        # Remove MongoDB ObjectId and password from response
         new_user.pop("password")
+        if "_id" in new_user:
+            new_user.pop("_id")
         
         return {
             "access_token": access_token,
