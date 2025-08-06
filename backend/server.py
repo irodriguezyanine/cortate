@@ -360,6 +360,11 @@ async def login_user(user_data: UserLogin):
 
 @app.get("/api/auth/me")
 async def get_current_user_info(current_user: dict = Depends(get_current_user)):
+    # Remove MongoDB ObjectId
+    if "_id" in current_user:
+        current_user.pop("_id")
+    if "password" in current_user:
+        current_user.pop("password")
     return current_user
 
 # Barbershop Routes
