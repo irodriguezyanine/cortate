@@ -341,7 +341,10 @@ async def login_user(user_data: UserLogin):
             data={"sub": user["id"]}, expires_delta=access_token_expires
         )
         
+        # Remove MongoDB ObjectId and password from response
         user.pop("password")
+        if "_id" in user:
+            user.pop("_id")
         
         return {
             "access_token": access_token,
