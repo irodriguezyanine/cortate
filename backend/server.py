@@ -964,6 +964,11 @@ async def create_booking(booking_data: BookingCreate, current_user: dict = Depen
     except Exception as e:
         logger.error(f"Error creating booking: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
+@app.get("/api/test/barber")
+async def test_barber(current_user: dict = Depends(get_current_user)):
+    return {"message": "test working", "user_id": current_user["id"], "user_type": current_user["user_type"]}
+
+@app.get("/api/bookings/barber")
 async def get_barber_bookings(current_user: dict = Depends(get_current_user)):
     try:
         if current_user["user_type"] != "barber":
