@@ -1044,7 +1044,7 @@ function App() {
                   </div>
                 </div>
               </CardContent>
-            </div>
+            </Card>
           ))
         )}
       </div>
