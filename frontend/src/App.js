@@ -296,7 +296,7 @@ function App() {
 
     // Send initial request
     try {
-      await axios.post(`${BACKEND_URL}/api/quick-cuts/request`, {
+      const response = await axios.post(`${BACKEND_URL}/api/quick-cuts/request`, {
         service: selectedService,
         max_price: priceLimit[0],
         max_distance: maxDistance[0],
@@ -304,15 +304,21 @@ function App() {
         lat: userLocation.lat,
         lng: userLocation.lng
       }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json'
+        }
       });
 
-      setSuccess('Buscando barberos disponibles... Esto puede tomar hasta 15 minutos.');
+      const suitableCount = response.data.suitable_barbers_count || 0;
+      setSuccess(`Buscando barberos disponibles... (${suitableCount} barberos notificados)`);
     } catch (error) {
       clearInterval(timer);
       clearInterval(matchInterval);
       setQuickCutStatus('idle');
-      setError('Error al enviar solicitud');
+      console.error('Quick search error:', error);
+      const errorMsg = error.response?.data?.detail || 'Error al enviar solicitud';
+      setError(errorMsg);
     }
   };
 
