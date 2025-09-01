@@ -810,24 +810,51 @@ async def check_quick_cut_match(current_user: dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Error checking match: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
+@app.get("/api/quick-cuts/requests")
+async def get_quick_cut_requests(current_user: dict = Depends(get_current_user)):
     try:
         if current_user["user_type"] != "barber":
             raise HTTPException(status_code=403, detail="Solo barberos pueden ver solicitudes")
         
-        # Get real requests from database
-        requests = await database.quick_cut_requests.find({"status": "pending"}).to_list(length=50)
+        # Get barber's barbershop
+        barbershop = await database.barbershops.find_one({"barber_id": current_user["id"]})
+        if not barbershop:
+            return {"requests": []}
         
+        # Find requests that are still pending and not expired
+        current_time = datetime.utcnow()
+        requests = await database.quick_cut_requests.find({
+            "status": "pending",
+            "expires_at": {"$gt": current_time}
+        }).to_list(length=50)
+        
+        suitable_requests = []
         for request in requests:
-            if "_id" in request:
-                request.pop("_id")
-            # Calculate distance if barber has location
-            if current_user.get("lat") and current_user.get("lng"):
-                request["distance"] = calculate_distance(
-                    current_user["lat"], current_user["lng"],
-                    request["lat"], request["lng"]
+            # Calculate distance
+            distance = calculate_distance(
+                barbershop["lat"], barbershop["lng"],
+                request["lat"], request["lng"]
+            )
+            
+            # Only show requests within 10km
+            if distance <= 10.0:
+                # Check if service matches and price is acceptable
+                service_match = any(
+                    service.get("name", "").lower() == request["service"].lower() 
+                    and service.get("price", 0) <= request["max_price"]
+                    for service in barbershop.get("services", [])
                 )
+                
+                if service_match:
+                    if "_id" in request:
+                        request.pop("_id")
+                    request["distance"] = distance
+                    suitable_requests.append(request)
         
-        return {"requests": requests}
+        return {"requests": suitable_requests}
+        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching quick cut requests: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
