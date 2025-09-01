@@ -146,6 +146,14 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class UserProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    age: Optional[str] = None
+    address: Optional[str] = None
+    hairPreference: Optional[str] = None
+    notifications: Optional[dict] = None
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str
