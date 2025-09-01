@@ -94,6 +94,8 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
+  const [bookingBarbershop, setBookingBarbershop] = useState(null);
 
   useEffect(() => {
     checkAuthStatus();
