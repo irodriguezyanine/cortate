@@ -542,8 +542,15 @@ async def get_my_barbershop(current_user: dict = Depends(get_current_user)):
         if current_user["user_type"] != "barber":
             raise HTTPException(status_code=403, detail="Solo barberos pueden acceder")
         
+        logger.info(f"Looking for barbershop with barber_id: {current_user['id']}")
+        
+        # Debug: List all barbershops to see what's in database
+        all_barbershops = await database.barbershops.find().to_list(length=10)
+        logger.info(f"All barbershops in database: {[b.get('barber_id') for b in all_barbershops]}")
+        
         barbershop = await database.barbershops.find_one({"barber_id": current_user["id"]})
         if not barbershop:
+            logger.warning(f"No barbershop found for barber_id: {current_user['id']}")
             return {"barbershop": None}
         
         # Clean MongoDB ObjectId
@@ -558,6 +565,7 @@ async def get_my_barbershop(current_user: dict = Depends(get_current_user)):
         if barbershop.get("cover_image"):
             barbershop["cover_image"] = f"/uploads/{barbershop['cover_image']}"
         
+        logger.info(f"Found barbershop: {barbershop.get('name')}")
         return {"barbershop": barbershop}
         
     except HTTPException:
