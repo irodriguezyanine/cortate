@@ -192,14 +192,13 @@ async def startup_db_client():
         
         # Test the connection
         await database.command("ping")
-        logger.info("Successfully connected to MongoDB")
+        logger.info(f"Successfully connected to MongoDB: {DB_NAME}")
         
         # Create indexes
         await database.users.create_index("email", unique=True)
-        await database.barbershops.create_index("lat")
-        await database.barbershops.create_index("lng")
         await database.barbershops.create_index("barber_id")
-        await database.reviews.create_index("barbershop_id")
+        await database.bookings.create_index("barber_id")
+        await database.quick_cut_requests.create_index("status")
         logger.info("Database indexes created")
         
     except Exception as e:
