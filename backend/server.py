@@ -725,8 +725,51 @@ async def create_quick_cut_request(request_data: QuickCutRequestCreate, current_
         logger.error(f"Error creating quick cut request: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
-@app.get("/api/quick-cuts/requests")
-async def get_quick_cut_requests(current_user: dict = Depends(get_current_user)):
+@app.get("/api/quick-cuts/check-match")
+async def check_quick_cut_match(current_user: dict = Depends(get_current_user)):
+    try:
+        if current_user["user_type"] != "client":
+            raise HTTPException(status_code=403, detail="Solo clientes pueden verificar matches")
+        
+        # Find any accepted request for this client
+        matched_request = await database.quick_cut_requests.find_one({
+            "client_id": current_user["id"],
+            "status": "accepted"
+        })
+        
+        if matched_request:
+            # Get barber and barbershop info
+            barber = await database.users.find_one({"id": matched_request["barber_id"]})
+            barbershop = await database.barbershops.find_one({"barber_id": matched_request["barber_id"]})
+            
+            if "_id" in barber:
+                barber.pop("_id")
+            if "password" in barber:
+                barber.pop("password")
+            
+            if barbershop and "_id" in barbershop:
+                barbershop.pop("_id")
+            
+            return {
+                "matched": True,
+                "barber": {
+                    "name": barbershop["name"] if barbershop else barber["name"],
+                    "rating": barbershop["rating"] if barbershop else 5.0,
+                    "address": barbershop["address"] if barbershop else barber["address"],
+                    "phone": barbershop["phone"] if barbershop else barber["phone"],
+                    "price": matched_request["max_price"],
+                    "distance": matched_request.get("distance", 0),
+                    "image": barbershop.get("profile_image") if barbershop else None
+                }
+            }
+        
+        return {"matched": False}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error checking match: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
     try:
         if current_user["user_type"] != "barber":
             raise HTTPException(status_code=403, detail="Solo barberos pueden ver solicitudes")
