@@ -162,8 +162,18 @@ class TokenResponse(BaseModel):
 class QuickCutRequestCreate(BaseModel):
     service: str
     max_price: int
+    max_distance: Optional[int] = 5
+    service_location: Optional[str] = "local"
     lat: float
     lng: float
+
+class BookingCreate(BaseModel):
+    barbershop_id: str
+    barber_id: str
+    service: str
+    date: datetime
+    price: float
+    notes: Optional[str] = None
 
 class QuickCutResponse(BaseModel):
     accept: bool
