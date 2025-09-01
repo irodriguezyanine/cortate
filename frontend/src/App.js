@@ -61,8 +61,11 @@ function App() {
   const [userLocation, setUserLocation] = useState({ lat: -33.4489, lng: -70.6693 });
   const [priceLimit, setPriceLimit] = useState([50000]);
   const [selectedService, setSelectedService] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [availableBarbers, setAvailableBarbers] = useState([]);
+  // Quick cut states for real-time Uber-style matching
+  const [quickCutStatus, setQuickCutStatus] = useState('idle'); // 'idle', 'searching', 'matched', 'pending', 'completed'
+  const [matchedBarber, setMatchedBarber] = useState(null);
+  const [quickCutTimer, setQuickCutTimer] = useState(0);
+  const [searchTimeLeft, setSearchTimeLeft] = useState(900); // 15 minutes = 900 seconds
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
