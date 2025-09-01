@@ -736,9 +736,10 @@ async def create_quick_cut_request(request_data: QuickCutRequestCreate, current_
             if distance <= 10.0:
                 # Check if any service matches and price is acceptable
                 service_match = any(
-                    service.get("name", "").lower() == request_data.service.lower() 
-                    and service.get("price", 0) <= request_data.max_price
+                    str(service.get("name", "")).lower() == request_data.service.lower() 
+                    and int(service.get("price", 0)) <= request_data.max_price
                     for service in barbershop.get("services", [])
+                    if isinstance(service, dict)
                 )
                 
                 if service_match:
