@@ -253,11 +253,45 @@ function App() {
       return;
     }
 
-    setIsSearching(true);
+    setQuickCutStatus('searching');
+    setSearchTimeLeft(900); // 15 minutes
     setError('');
 
+    // Start countdown timer
+    const timer = setInterval(() => {
+      setSearchTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setQuickCutStatus('idle');
+          setError('Búsqueda expirada. No se encontraron barberos disponibles.');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Start polling for matches every 3 seconds
+    const matchInterval = setInterval(async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/api/quick-cuts/check-match`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        if (response.data.matched) {
+          clearInterval(timer);
+          clearInterval(matchInterval);
+          setMatchedBarber(response.data.barber);
+          setQuickCutStatus('matched');
+          setSuccess('¡Barbero encontrado! Revisa los detalles.');
+        }
+      } catch (error) {
+        console.log('Checking for matches...');
+      }
+    }, 3000);
+
+    // Send initial request
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/quick-cuts/request`, {
+      await axios.post(`${BACKEND_URL}/api/quick-cuts/request`, {
         service: selectedService,
         max_price: priceLimit[0],
         lat: userLocation.lat,
@@ -266,12 +300,12 @@ function App() {
         headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
       });
 
-      setSuccess('Solicitud enviada a barberos cercanos. Espera confirmación...');
-      setTimeout(() => setSuccess(''), 5000);
+      setSuccess('Buscando barberos disponibles... Esto puede tomar hasta 15 minutos.');
     } catch (error) {
+      clearInterval(timer);
+      clearInterval(matchInterval);
+      setQuickCutStatus('idle');
       setError('Error al enviar solicitud');
-    } finally {
-      setIsSearching(false);
     }
   };
 
