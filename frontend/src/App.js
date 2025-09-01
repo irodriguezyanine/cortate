@@ -28,7 +28,10 @@ import {
   Phone,
   Mail,
   Users,
-  TrendingUp
+  TrendingUp,
+  History,
+  Edit3,
+  Save
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
@@ -68,7 +71,14 @@ function App() {
   const [appointments, setAppointments] = useState([]);
   const [quickCutRequests, setQuickCutRequests] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [myBarbershop, setMyBarbershop] = useState(null);
   const [showCreateBarbershop, setShowCreateBarbershop] = useState(false);
+
+  // Client specific states
+  const [bookingHistory, setBookingHistory] = useState([]);
+  const [userSettings, setUserSettings] = useState({});
+  const [showHistory, setShowHistory] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     checkAuthStatus();
@@ -78,11 +88,17 @@ function App() {
   useEffect(() => {
     if (user && user.user_type === 'client') {
       loadBarbershops();
-      initializeMap();
+      loadClientHistory();
     } else if (user && user.user_type === 'barber') {
       loadBarberData();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (barbershops.length > 0 && user && user.user_type === 'client') {
+      initializeMap();
+    }
+  }, [barbershops, user]);
 
   // Check if user is already logged in
   const checkAuthStatus = async () => {
@@ -125,35 +141,56 @@ function App() {
   const loadBarberData = async () => {
     try {
       const token = localStorage.getItem('auth_token');
-      const [appointmentsRes, requestsRes] = await Promise.all([
+      const [appointmentsRes, requestsRes, barbershopRes] = await Promise.all([
         axios.get(`${BACKEND_URL}/api/bookings/barber`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
         axios.get(`${BACKEND_URL}/api/quick-cuts/requests`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${BACKEND_URL}/api/barbershops/my`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
       
       setAppointments(appointmentsRes.data.bookings || []);
       setQuickCutRequests(requestsRes.data.requests || []);
+      setMyBarbershop(barbershopRes.data.barbershop);
     } catch (error) {
       console.error('Error loading barber data:', error);
     }
   };
 
+  const loadClientHistory = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await axios.get(`${BACKEND_URL}/api/bookings/user`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setBookingHistory(response.data.bookings || []);
+    } catch (error) {
+      console.error('Error loading client history:', error);
+    }
+  };
+
   const initializeMap = async () => {
-    if (!barbershops.length) return;
+    if (!barbershops.length || !GOOGLE_MAPS_API_KEY) {
+      console.error('No barbershops or no API key');
+      return;
+    }
 
     const loader = new Loader({
       apiKey: GOOGLE_MAPS_API_KEY,
       version: "weekly",
-      libraries: ["places", "geometry"]
+      libraries: ["places", "geometry", "marker"]
     });
 
     try {
       await loader.load();
-      const { Map } = await google.maps.importLibrary("maps");
-      const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+      
+      // Use the new method for importing libraries
+      const { Map } = await window.google.maps.importLibrary("maps");
+      const { AdvancedMarkerElement } = await window.google.maps.importLibrary("marker");
 
       const mapInstance = new Map(document.getElementById("map"), {
         zoom: 12,
@@ -175,16 +212,19 @@ function App() {
 
       setMap(mapInstance);
 
+      // Add markers for barbershops
       barbershops.forEach(barbershop => {
-        const marker = new AdvancedMarkerElement({
-          map: mapInstance,
-          position: { lat: barbershop.lat, lng: barbershop.lng },
-          title: barbershop.name,
-        });
+        if (barbershop.lat && barbershop.lng) {
+          const marker = new AdvancedMarkerElement({
+            map: mapInstance,
+            position: { lat: barbershop.lat, lng: barbershop.lng },
+            title: barbershop.name,
+          });
 
-        marker.addListener("click", () => {
-          setSelectedBarbershop(barbershop);
-        });
+          marker.addListener("click", () => {
+            setSelectedBarbershop(barbershop);
+          });
+        }
       });
 
     } catch (error) {
@@ -251,6 +291,14 @@ function App() {
       setUser(response.data.user);
       setShowRegister(false);
       setSuccess('Registro exitoso');
+      
+      // Si es barbero, mostrar modal para crear barbería
+      if (userData.userType === 'barber') {
+        setTimeout(() => {
+          setShowCreateBarbershop(true);
+        }, 1000);
+      }
+      
       setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
       setError(error.response?.data?.detail || 'Error en el registro');
@@ -262,6 +310,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
     setUser(null);
+    setMyBarbershop(null);
     setActiveTab('map');
   };
 
@@ -281,6 +330,25 @@ function App() {
     }
   };
 
+  const handleCreateBarbershop = async (barbershopData) => {
+    try {
+      const response = await axios.post(`${BACKEND_URL}/api/barbershops`, barbershopData, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+      });
+      
+      setMyBarbershop(response.data);
+      setShowCreateBarbershop(false);
+      setSuccess('¡Barbería creada exitosamente! Ya apareces en el mapa.');
+      setTimeout(() => setSuccess(''), 5000);
+      
+      // Reload barbershops para mostrar la nueva en el mapa
+      loadBarbershops();
+    } catch (error) {
+      setError(error.response?.data?.detail || 'Error al crear barbería');
+    }
+  };
+
+  // Form Components
   const LoginForm = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
 
@@ -315,11 +383,41 @@ function App() {
       email: '',
       password: '',
       confirmPassword: '',
-      userType: 'client'
+      userType: 'client',
+      address: '',
+      phone: ''
     });
 
     return (
       <div className="space-y-4">
+        <div>
+          <label className="text-white text-sm font-medium mb-2 block">
+            ¿Qué tipo de usuario eres? *
+          </label>
+          <Select
+            value={formData.userType}
+            onValueChange={(value) => setFormData({...formData, userType: value})}
+          >
+            <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="client">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Cliente - Busco cortarme el pelo
+                </div>
+              </SelectItem>
+              <SelectItem value="barber">
+                <div className="flex items-center gap-2">
+                  <Scissors className="w-4 h-4" />
+                  Barbero - Quiero ofrecer mis servicios
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <Input
           placeholder="Nombre completo"
           value={formData.name}
@@ -343,18 +441,25 @@ function App() {
           value={formData.confirmPassword}
           onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
         />
-        <Select
-          value={formData.userType}
-          onValueChange={(value) => setFormData({...formData, userType: value})}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="client">Cliente</SelectItem>
-            <SelectItem value="barber">Barbero</SelectItem>
-          </SelectContent>
-        </Select>
+
+        {formData.userType === 'barber' && (
+          <>
+            <Input
+              placeholder="Teléfono (requerido para barberos)"
+              value={formData.phone}
+              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            />
+            <Input
+              placeholder="Dirección de tu barbería (Ej: Av. Providencia 1234, Santiago)"
+              value={formData.address}
+              onChange={(e) => setFormData({...formData, address: e.target.value})}
+            />
+            <p className="text-gray-400 text-xs">
+              Tu barbería aparecerá automáticamente en el mapa con esta dirección
+            </p>
+          </>
+        )}
+
         <Button 
           onClick={() => handleRegister(formData)}
           disabled={loading}
@@ -363,6 +468,137 @@ function App() {
           {loading ? 'Registrando...' : 'Registrarse'}
         </Button>
       </div>
+    );
+  };
+
+  // Create Barbershop Form
+  const CreateBarbershopForm = () => {
+    const [formData, setFormData] = useState({
+      name: '',
+      description: '',
+      address: user?.address || '',
+      phone: user?.phone || '',
+      services: [
+        { name: 'Corte de pelo', price: 12000, duration: 30 },
+        { name: 'Corte + barba', price: 18000, duration: 45 }
+      ],
+      working_hours: {
+        monday: { open: '09:00', close: '18:00', isOpen: true },
+        tuesday: { open: '09:00', close: '18:00', isOpen: true },
+        wednesday: { open: '09:00', close: '18:00', isOpen: true },
+        thursday: { open: '09:00', close: '18:00', isOpen: true },
+        friday: { open: '09:00', close: '18:00', isOpen: true },
+        saturday: { open: '09:00', close: '16:00', isOpen: true },
+        sunday: { open: '10:00', close: '15:00', isOpen: false }
+      }
+    });
+
+    const addService = () => {
+      setFormData({
+        ...formData,
+        services: [...formData.services, { name: '', price: 0, duration: 30 }]
+      });
+    };
+
+    const removeService = (index) => {
+      const newServices = formData.services.filter((_, i) => i !== index);
+      setFormData({ ...formData, services: newServices });
+    };
+
+    const updateService = (index, field, value) => {
+      const newServices = [...formData.services];
+      newServices[index] = { ...newServices[index], [field]: value };
+      setFormData({ ...formData, services: newServices });
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      handleCreateBarbershop(formData);
+    };
+
+    return (
+      <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="grid md:grid-cols-2 gap-4">
+          <Input
+            placeholder="Nombre de tu barbería"
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            required
+          />
+          <Input
+            placeholder="Teléfono"
+            value={formData.phone}
+            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            required
+          />
+        </div>
+
+        <Input
+          placeholder="Dirección completa"
+          value={formData.address}
+          onChange={(e) => setFormData({...formData, address: e.target.value})}
+          required
+        />
+
+        <Textarea
+          placeholder="Describe tu barbería y tus especialidades..."
+          value={formData.description}
+          onChange={(e) => setFormData({...formData, description: e.target.value})}
+          className="min-h-[80px]"
+        />
+
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-white font-medium">Servicios</h4>
+            <Button type="button" onClick={addService} size="sm" className="bg-amber-600 hover:bg-amber-700">
+              <Plus className="w-4 h-4 mr-1" />
+              Agregar
+            </Button>
+          </div>
+          
+          <div className="space-y-2">
+            {formData.services.map((service, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <Input
+                  placeholder="Servicio"
+                  value={service.name}
+                  onChange={(e) => updateService(index, 'name', e.target.value)}
+                  className="flex-1"
+                />
+                <Input
+                  type="number"
+                  placeholder="Precio"
+                  value={service.price}
+                  onChange={(e) => updateService(index, 'price', parseInt(e.target.value) || 0)}
+                  className="w-24"
+                />
+                <Input
+                  type="number"
+                  placeholder="Min"
+                  value={service.duration}
+                  onChange={(e) => updateService(index, 'duration', parseInt(e.target.value) || 0)}
+                  className="w-16"
+                />
+                {formData.services.length > 1 && (
+                  <Button
+                    type="button"
+                    onClick={() => removeService(index)}
+                    size="sm"
+                    variant="outline"
+                    className="border-red-400 text-red-400"
+                  >
+                    ×
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700">
+          Crear Mi Barbería
+        </Button>
+      </form>
     );
   };
 
@@ -388,17 +624,33 @@ function App() {
         <div className="space-y-4">
           <Card className="bg-gray-900 border-gray-700">
             <CardContent className="p-0">
-              <div id="map" className="w-full h-96 rounded-lg"></div>
+              <div id="map" className="w-full h-96 rounded-lg bg-gray-800 flex items-center justify-center">
+                {!map ? (
+                  <div className="text-gray-400 text-center">
+                    <MapPin className="w-12 h-12 mx-auto mb-2" />
+                    <p>Cargando mapa...</p>
+                  </div>
+                ) : null}
+              </div>
             </CardContent>
           </Card>
 
           <div>
             <h3 className="text-lg font-semibold mb-3 text-white">Barberías Disponibles</h3>
-            <div className="grid gap-4 md:grid-cols-2">
-              {barbershops.map(barbershop => (
-                <BarbershopCard key={barbershop.id} barbershop={barbershop} />
-              ))}
-            </div>
+            {barbershops.length === 0 ? (
+              <Card className="bg-gray-900 border-gray-700">
+                <CardContent className="p-8 text-center">
+                  <Scissors className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-400">No hay barberías registradas aún</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {barbershops.map(barbershop => (
+                  <BarbershopCard key={barbershop.id} barbershop={barbershop} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </TabsContent>
@@ -425,7 +677,7 @@ function App() {
           <Bell className="w-4 h-4 mr-1" />
           Solicitudes ({quickCutRequests.length})
         </TabsTrigger>
-        <TabsTrigger value="profile" className="text-white data-[state=active]:bg-amber-600">
+        <TabsTrigger value="business" className="text-white data-[state=active]:bg-amber-600">
           <Settings className="w-4 h-4 mr-1" />
           Mi Negocio
         </TabsTrigger>
@@ -439,8 +691,8 @@ function App() {
         <QuickCutRequests />
       </TabsContent>
 
-      <TabsContent value="profile">
-        <BarberProfile />
+      <TabsContent value="business">
+        <BarberBusiness />
       </TabsContent>
     </Tabs>
   );
@@ -451,7 +703,7 @@ function App() {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarImage src={barbershop.image} alt={barbershop.name} />
+              <AvatarImage src={barbershop.profile_image} alt={barbershop.name} />
               <AvatarFallback>{barbershop.name[0]}</AvatarFallback>
             </Avatar>
             <div>
@@ -473,10 +725,31 @@ function App() {
             <MapPin className="w-4 h-4" />
             {barbershop.address}
           </p>
-          <p className="text-amber-400 font-medium">{barbershop.price_range}</p>
+          {barbershop.services && barbershop.services.length > 0 && (
+            <div>
+              <p className="text-amber-400 font-medium">
+                ${barbershop.services[0].price?.toLocaleString()} - ${barbershop.services[barbershop.services.length-1].price?.toLocaleString()}
+              </p>
+              <div className="flex gap-2 mt-2">
+                {barbershop.services.slice(0, 2).map((service, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {service.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="flex gap-2 mt-3">
             <Button size="sm" className="flex-1 bg-amber-600 hover:bg-amber-700">
               Reservar
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="flex-1"
+              onClick={() => setSelectedBarbershop(barbershop)}
+            >
+              Ver Perfil
             </Button>
           </div>
         </div>
@@ -549,17 +822,30 @@ function App() {
   );
 
   const ClientProfile = () => (
-    <div className="text-center py-12">
-      <Avatar className="w-24 h-24 mx-auto mb-4">
-        <AvatarFallback className="text-2xl">{user?.name?.[0] || 'U'}</AvatarFallback>
-      </Avatar>
-      <h2 className="text-2xl font-bold mb-2 text-white">{user?.name}</h2>
-      <p className="text-gray-400 mb-6">{user?.email}</p>
-      <div className="space-y-4 max-w-sm mx-auto">
-        <Button variant="outline" className="w-full">
+    <div className="space-y-6">
+      <div className="text-center">
+        <Avatar className="w-24 h-24 mx-auto mb-4">
+          <AvatarFallback className="text-2xl">{user?.name?.[0] || 'U'}</AvatarFallback>
+        </Avatar>
+        <h2 className="text-2xl font-bold mb-2 text-white">{user?.name}</h2>
+        <p className="text-gray-400 mb-6">{user?.email}</p>
+      </div>
+
+      <div className="max-w-sm mx-auto space-y-4">
+        <Button 
+          onClick={() => setShowHistory(true)}
+          variant="outline" 
+          className="w-full"
+        >
+          <History className="w-4 h-4 mr-2" />
           Historial de Cortes
         </Button>
-        <Button variant="outline" className="w-full">
+        <Button 
+          onClick={() => setShowSettings(true)}
+          variant="outline" 
+          className="w-full"
+        >
+          <Settings className="w-4 h-4 mr-2" />
           Configuración
         </Button>
         <Button 
@@ -571,6 +857,84 @@ function App() {
           Cerrar Sesión
         </Button>
       </div>
+
+      {/* Historial Modal */}
+      <Dialog open={showHistory} onOpenChange={setShowHistory}>
+        <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-white">Historial de Cortes</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {bookingHistory.length === 0 ? (
+              <div className="text-center py-8">
+                <Scissors className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-400">No tienes cortes registrados aún</p>
+              </div>
+            ) : (
+              bookingHistory.map((booking, index) => (
+                <Card key={index} className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="text-white font-medium">{booking.service}</h4>
+                        <p className="text-gray-400 text-sm">{booking.barbershop_name}</p>
+                        <p className="text-amber-400 text-sm">${booking.price?.toLocaleString()}</p>
+                      </div>
+                      <Badge variant={booking.status === 'completed' ? 'default' : 'secondary'}>
+                        {booking.status}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Settings Modal */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="bg-gray-900 border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Configuración</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Nombre</label>
+              <Input
+                value={user?.name || ''}
+                className="bg-gray-800 border-gray-700 text-white"
+                readOnly
+              />
+            </div>
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Email</label>
+              <Input
+                value={user?.email || ''}
+                className="bg-gray-800 border-gray-700 text-white"
+                readOnly
+              />
+            </div>
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Notificaciones</label>
+              <div className="space-y-2">
+                <label className="flex items-center text-white text-sm">
+                  <input type="checkbox" className="mr-2" defaultChecked />
+                  Recibir ofertas especiales
+                </label>
+                <label className="flex items-center text-white text-sm">
+                  <input type="checkbox" className="mr-2" defaultChecked />
+                  Recordatorios de citas
+                </label>
+              </div>
+            </div>
+            <Button className="w-full bg-amber-600 hover:bg-amber-700">
+              <Save className="w-4 h-4 mr-2" />
+              Guardar Cambios
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 
@@ -680,37 +1044,97 @@ function App() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
           ))
         )}
       </div>
     </div>
   );
 
-  const BarberProfile = () => (
+  const BarberBusiness = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <Avatar className="w-24 h-24 mx-auto mb-4">
-          <AvatarFallback className="text-2xl">{user?.name?.[0] || 'B'}</AvatarFallback>
-        </Avatar>
-        <h2 className="text-2xl font-bold mb-2 text-white">{user?.name}</h2>
-        <p className="text-gray-400 mb-6">{user?.email}</p>
+        <h2 className="text-2xl font-bold text-white mb-2">Mi Negocio</h2>
+        <p className="text-gray-400">Gestiona tu barbería y servicios</p>
       </div>
 
-      <div className="max-w-2xl mx-auto space-y-4">
-        <Button 
-          onClick={() => setShowCreateBarbershop(true)}
-          className="w-full bg-amber-600 hover:bg-amber-700"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Crear/Editar Mi Barbería
-        </Button>
-        <Button variant="outline" className="w-full">
-          Ver Estadísticas
-        </Button>
-        <Button variant="outline" className="w-full">
-          Configuración
-        </Button>
+      {!myBarbershop ? (
+        <Card className="bg-gray-900 border-gray-700">
+          <CardContent className="p-8 text-center">
+            <Scissors className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-white text-xl mb-2">¡Crea tu barbería!</h3>
+            <p className="text-gray-400 mb-4">
+              Registra tu barbería para aparecer en el mapa y recibir clientes
+            </p>
+            <Button 
+              onClick={() => setShowCreateBarbershop(true)}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Crear Mi Barbería
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center justify-between">
+                {myBarbershop.name}
+                <Badge className="bg-green-600">Activa</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <p className="text-gray-300">{myBarbershop.description}</p>
+                <p className="text-gray-400 flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  {myBarbershop.address}
+                </p>
+                <p className="text-gray-400 flex items-center gap-1">
+                  <Phone className="w-4 h-4" />
+                  {myBarbershop.phone}
+                </p>
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  <span className="text-white">{myBarbershop.rating || 0} ({myBarbershop.reviews_count || 0} reseñas)</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white">Servicios</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {myBarbershop.services?.map((service, index) => (
+                  <div key={index} className="flex justify-between items-center p-2 bg-gray-800 rounded">
+                    <span className="text-white">{service.name}</span>
+                    <div className="text-amber-400">
+                      ${service.price?.toLocaleString()} - {service.duration}min
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <Button variant="outline" className="w-full">
+              <Edit3 className="w-4 h-4 mr-2" />
+              Editar Información
+            </Button>
+            <Button variant="outline" className="w-full">
+              <Camera className="w-4 h-4 mr-2" />
+              Subir Fotos
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-sm mx-auto space-y-4">
         <Button 
           variant="outline" 
           className="w-full text-red-400 border-red-400 hover:bg-red-400 hover:text-white"
@@ -720,6 +1144,16 @@ function App() {
           Cerrar Sesión
         </Button>
       </div>
+
+      {/* Create Barbershop Modal */}
+      <Dialog open={showCreateBarbershop} onOpenChange={setShowCreateBarbershop}>
+        <DialogContent className="bg-gray-900 border-gray-700 max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-white">Crear Mi Barbería</DialogTitle>
+          </DialogHeader>
+          <CreateBarbershopForm />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 
@@ -769,7 +1203,7 @@ function App() {
                       Registrarse
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-gray-900 border-gray-700">
+                  <DialogContent className="bg-gray-900 border-gray-700 max-w-lg">
                     <DialogHeader>
                       <DialogTitle className="text-white">Crear Cuenta</DialogTitle>
                     </DialogHeader>
@@ -829,7 +1263,7 @@ function App() {
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16">
-                  <AvatarImage src={selectedBarbershop.image} alt={selectedBarbershop.name} />
+                  <AvatarImage src={selectedBarbershop.profile_image} alt={selectedBarbershop.name} />
                   <AvatarFallback>{selectedBarbershop.name[0]}</AvatarFallback>
                 </Avatar>
                 <div>
@@ -838,9 +1272,35 @@ function App() {
                     <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                     <span className="text-white">{selectedBarbershop.rating || 0} ({selectedBarbershop.reviews_count || 0} reseñas)</span>
                   </div>
-                  <p className="text-amber-400 font-medium">{selectedBarbershop.price_range}</p>
+                  <p className="text-gray-400">{selectedBarbershop.address}</p>
+                  {selectedBarbershop.phone && (
+                    <p className="text-gray-400 flex items-center gap-1">
+                      <Phone className="w-4 h-4" />
+                      {selectedBarbershop.phone}
+                    </p>
+                  )}
                 </div>
               </div>
+              
+              {selectedBarbershop.description && (
+                <p className="text-gray-300">{selectedBarbershop.description}</p>
+              )}
+
+              {selectedBarbershop.services && selectedBarbershop.services.length > 0 && (
+                <div>
+                  <h4 className="text-white font-medium mb-2">Servicios</h4>
+                  <div className="space-y-2">
+                    {selectedBarbershop.services.map((service, index) => (
+                      <div key={index} className="flex justify-between items-center p-2 bg-gray-800 rounded">
+                        <span className="text-white">{service.name}</span>
+                        <div className="text-amber-400">
+                          ${service.price?.toLocaleString()} - {service.duration}min
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               <div className="flex gap-2">
                 <Button className="flex-1 bg-amber-600 hover:bg-amber-700">
