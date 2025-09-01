@@ -981,6 +981,26 @@ async def get_barber_bookings(current_user: dict = Depends(get_current_user)):
         logger.error(f"Error fetching barber bookings: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
+@app.get("/api/bookings/barber")
+async def get_barber_bookings(current_user: dict = Depends(get_current_user)):
+    try:
+        if current_user["user_type"] != "barber":
+            raise HTTPException(status_code=403, detail="Solo barberos pueden ver sus citas")
+        
+        # Get bookings for this barber
+        bookings = await database.bookings.find({"barber_id": current_user["id"]}).to_list(length=50)
+        
+        for booking in bookings:
+            if "_id" in booking:
+                booking.pop("_id")
+        
+        return {"bookings": bookings}
+    except HTTPException:
+        raise  
+    except Exception as e:
+        logger.error(f"Error fetching barber bookings: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
 async def update_barbershop_rating(barbershop_id: str):
     try:
         reviews = await database.reviews.find({"barbershop_id": barbershop_id}).to_list(length=1000)
