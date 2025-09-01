@@ -683,9 +683,14 @@ function App() {
           <Card className="bg-gray-900 border-gray-700">
             <CardContent className="p-0">
               <div id="map" className="w-full h-96 rounded-lg bg-gray-800 flex items-center justify-center">
-                {!map ? (
+                {!map && barbershops.length === 0 ? (
                   <div className="text-gray-400 text-center">
-                    <MapPin className="w-12 h-12 mx-auto mb-2" />
+                    <Scissors className="w-12 h-12 mx-auto mb-2" />
+                    <p>No hay barberías registradas para mostrar</p>
+                  </div>
+                ) : !map ? (
+                  <div className="text-gray-400 text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400 mx-auto mb-2"></div>
                     <p>Cargando mapa...</p>
                   </div>
                 ) : null}
