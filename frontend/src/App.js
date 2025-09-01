@@ -1087,44 +1087,182 @@ function App() {
 
       {/* Settings Modal */}
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
-        <DialogContent className="bg-gray-900 border-gray-700">
+        <DialogContent className="bg-gray-900 border-gray-700 max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-white">Configuración</DialogTitle>
+            <DialogTitle className="text-white">Configuración del Perfil</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <label className="text-white text-sm font-medium mb-2 block">Nombre</label>
               <Input
-                value={user?.name || ''}
-                className="bg-gray-800 border-gray-700 text-white"
-                readOnly
+                value={editingProfile ? userSettings.name : user?.name || ''}
+                onChange={(e) => setUserSettings({...userSettings, name: e.target.value})}
+                className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                readOnly={!editingProfile}
               />
             </div>
+            
             <div>
               <label className="text-white text-sm font-medium mb-2 block">Email</label>
               <Input
                 value={user?.email || ''}
-                className="bg-gray-800 border-gray-700 text-white"
+                className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 readOnly
               />
             </div>
+            
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Teléfono</label>
+              <Input
+                value={editingProfile ? userSettings.phone : user?.phone || ''}
+                onChange={(e) => setUserSettings({...userSettings, phone: e.target.value})}
+                placeholder="Ej: +56 9 1234 5678"
+                className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                readOnly={!editingProfile}
+              />
+            </div>
+            
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Edad (opcional)</label>
+              <Input
+                type="number"
+                value={editingProfile ? userSettings.age : user?.age || ''}
+                onChange={(e) => setUserSettings({...userSettings, age: e.target.value})}
+                placeholder="Ej: 25"
+                className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                readOnly={!editingProfile}
+              />
+            </div>
+            
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Dirección/Comuna (opcional)</label>
+              <Input
+                value={editingProfile ? userSettings.address : user?.address || ''}
+                onChange={(e) => setUserSettings({...userSettings, address: e.target.value})}
+                placeholder="Ej: Las Condes, Santiago"
+                className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                readOnly={!editingProfile}
+              />
+            </div>
+            
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Preferencia de Corte</label>
+              {editingProfile ? (
+                <Select
+                  value={userSettings.hairPreference}
+                  onValueChange={(value) => setUserSettings({...userSettings, hairPreference: value})}
+                >
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectValue placeholder="Selecciona tu estilo preferido" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="corto">Corto</SelectItem>
+                    <SelectItem value="degrade">Degradé</SelectItem>
+                    <SelectItem value="largo">Largo</SelectItem>
+                    <SelectItem value="teñido">Con teñido</SelectItem>
+                    <SelectItem value="clasico">Clásico</SelectItem>
+                    <SelectItem value="moderno">Moderno</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  value={user?.hairPreference || 'No especificado'}
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                  readOnly
+                />
+              )}
+            </div>
+            
             <div>
               <label className="text-white text-sm font-medium mb-2 block">Notificaciones</label>
               <div className="space-y-2">
                 <label className="flex items-center text-white text-sm">
-                  <input type="checkbox" className="mr-2" defaultChecked />
+                  <input 
+                    type="checkbox" 
+                    className="mr-2" 
+                    checked={userSettings.notifications?.offers || true}
+                    onChange={(e) => setUserSettings({
+                      ...userSettings, 
+                      notifications: {
+                        ...userSettings.notifications,
+                        offers: e.target.checked
+                      }
+                    })}
+                    disabled={!editingProfile}
+                  />
                   Recibir ofertas especiales
                 </label>
                 <label className="flex items-center text-white text-sm">
-                  <input type="checkbox" className="mr-2" defaultChecked />
+                  <input 
+                    type="checkbox" 
+                    className="mr-2" 
+                    checked={userSettings.notifications?.reminders || true}
+                    onChange={(e) => setUserSettings({
+                      ...userSettings, 
+                      notifications: {
+                        ...userSettings.notifications,
+                        reminders: e.target.checked
+                      }
+                    })}
+                    disabled={!editingProfile}
+                  />
                   Recordatorios de citas
                 </label>
               </div>
             </div>
-            <Button className="w-full bg-amber-600 hover:bg-amber-700">
-              <Save className="w-4 h-4 mr-2" />
-              Guardar Cambios
-            </Button>
+            
+            <div className="flex gap-2">
+              {!editingProfile ? (
+                <Button 
+                  onClick={() => {
+                    setEditingProfile(true);
+                    setUserSettings({
+                      name: user?.name || '',
+                      email: user?.email || '',
+                      phone: user?.phone || '',
+                      age: user?.age || '',
+                      address: user?.address || '',
+                      hairPreference: user?.hairPreference || '',
+                      notifications: user?.notifications || { offers: true, reminders: true }
+                    });
+                  }}
+                  className="flex-1 bg-amber-600 hover:bg-amber-700"
+                >
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  Editar Perfil
+                </Button>
+              ) : (
+                <>
+                  <Button 
+                    onClick={async () => {
+                      try {
+                        // Save changes to backend
+                        await axios.put(`${BACKEND_URL}/api/auth/profile`, userSettings, {
+                          headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+                        });
+                        setEditingProfile(false);
+                        setSuccess('Perfil actualizado correctamente');
+                        // Update local user state
+                        setUser({...user, ...userSettings});
+                      } catch (error) {
+                        setError('Error al actualizar perfil');
+                      }
+                    }}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Guardar
+                  </Button>
+                  <Button 
+                    onClick={() => setEditingProfile(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
