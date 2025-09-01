@@ -76,9 +76,21 @@ function App() {
 
   // Client specific states
   const [bookingHistory, setBookingHistory] = useState([]);
-  const [userSettings, setUserSettings] = useState({});
+  const [userSettings, setUserSettings] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    age: '',
+    address: '',
+    hairPreference: '',
+    notifications: {
+      offers: true,
+      reminders: true
+    }
+  });
   const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
 
   useEffect(() => {
     checkAuthStatus();
