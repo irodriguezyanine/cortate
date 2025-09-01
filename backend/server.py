@@ -754,8 +754,9 @@ async def create_quick_cut_request(request_data: QuickCutRequestCreate, current_
                 barbershop["lat"], barbershop["lng"]
             )
             
-            # Only notify barbers within 10km
-            if distance <= 10.0:
+            # Only notify barbers within the requested distance
+            max_dist = getattr(request_data, 'max_distance', 5)
+            if distance <= max_dist:
                 # Check if any service matches and price is acceptable
                 service_match = any(
                     str(service.get("name", "")).lower() == request_data.service.lower() 
