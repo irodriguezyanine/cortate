@@ -1800,6 +1800,9 @@ function App() {
         )}
       </main>
 
+      {/* Booking Modal */}
+      {bookingBarbershop && <BookingModal />}
+
       {/* Selected Barbershop Modal */}
       {selectedBarbershop && (
         <Dialog open={!!selectedBarbershop} onOpenChange={() => setSelectedBarbershop(null)}>
