@@ -814,69 +814,205 @@ function App() {
     </Card>
   );
 
-  const QuickCutSection = () => (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">Corte Rápido</h2>
-        <p className="text-gray-400">Encuentra un barbero disponible ahora mismo</p>
+  const QuickCutSection = () => {
+    const formatTime = (seconds) => {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-white mb-2">Corte Rápido</h2>
+          <p className="text-gray-400">Encuentra un barbero disponible ahora mismo</p>
+        </div>
+
+        {quickCutStatus === 'idle' && (
+          <Card className="bg-gray-900 border-gray-700">
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  Servicio requerido
+                </label>
+                <Select value={selectedService} onValueChange={setSelectedService}>
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectValue placeholder="Selecciona un servicio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Corte de pelo">Corte de pelo</SelectItem>
+                    <SelectItem value="Corte + barba">Corte + barba</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  Presupuesto máximo: ${priceLimit[0].toLocaleString()}
+                </label>
+                <Slider
+                  value={priceLimit}
+                  onValueChange={setPriceLimit}
+                  max={25000}
+                  min={5000}
+                  step={1000}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>$5.000</span>
+                  <span>$25.000</span>
+                </div>
+              </div>
+
+              <Button 
+                onClick={handleQuickSearch}
+                disabled={!selectedService}
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4" />
+                  Buscar Corte Rápido
+                </div>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {quickCutStatus === 'searching' && (
+          <Card className="bg-gray-900 border-gray-700">
+            <CardContent className="p-6 space-y-4">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mx-auto mb-4"></div>
+                <h3 className="text-white text-xl font-semibold mb-2">Buscando barbero...</h3>
+                <p className="text-gray-400 mb-4">
+                  Estamos notificando a barberos cercanos disponibles
+                </p>
+                <div className="text-amber-400 text-lg font-mono">
+                  Tiempo restante: {formatTime(searchTimeLeft)}
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-gray-300">
+                  <span>Servicio:</span>
+                  <span>{selectedService}</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-300">
+                  <span>Presupuesto:</span>
+                  <span>${priceLimit[0].toLocaleString()}</span>
+                </div>
+              </div>
+
+              <Button 
+                onClick={() => setQuickCutStatus('idle')}
+                variant="outline"
+                className="w-full border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
+              >
+                Cancelar Búsqueda
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {quickCutStatus === 'matched' && matchedBarber && (
+          <Card className="bg-gray-900 border-gray-700">
+            <CardContent className="p-6 space-y-4">
+              <div className="text-center">
+                <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-400" />
+                <h3 className="text-white text-xl font-semibold mb-2">¡Barbero Encontrado!</h3>
+                <p className="text-gray-400">Tu barbero ha aceptado el corte</p>
+              </div>
+
+              <div className="bg-gray-800 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-3">
+                  <Avatar>
+                    <AvatarImage src={matchedBarber.image} />
+                    <AvatarFallback>{matchedBarber.name?.[0]}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h4 className="text-white font-medium">{matchedBarber.name}</h4>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      <span className="text-sm text-gray-400">{matchedBarber.rating}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Servicio:</span>
+                    <span className="text-white">{selectedService}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Precio:</span>
+                    <span className="text-amber-400">${matchedBarber.price?.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Distancia:</span>
+                    <span className="text-white">{matchedBarber.distance} km</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-amber-900/20 border border-amber-400/30 p-4 rounded-lg">
+                <h5 className="text-amber-400 font-medium mb-2">📍 Dirección de la Barbería:</h5>
+                <p className="text-white">{matchedBarber.address}</p>
+                <p className="text-gray-400 text-sm mt-2">
+                  Dirígete a esta dirección para tu corte
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setQuickCutStatus('pending')}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                >
+                  Ir al Local
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="flex-1 border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {quickCutStatus === 'pending' && (
+          <Card className="bg-gray-900 border-gray-700">
+            <CardContent className="p-6 space-y-4">
+              <div className="text-center">
+                <Clock className="w-12 h-12 mx-auto mb-4 text-amber-400" />
+                <h3 className="text-white text-xl font-semibold mb-2">Corte Pendiente</h3>
+                <p className="text-gray-400">Tu barbero te está esperando</p>
+              </div>
+
+              <div className="bg-gray-800 p-4 rounded-lg">
+                <h5 className="text-white font-medium mb-2">Estado del corte:</h5>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-amber-400 rounded-full animate-pulse"></div>
+                  <span className="text-amber-400">En progreso</span>
+                </div>
+              </div>
+
+              <Button 
+                onClick={() => {
+                  setQuickCutStatus('idle');
+                  setMatchedBarber(null);
+                  setSuccess('¡Gracias por usar CÓRTATE.CL!');
+                }}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                Marcar como Completado
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
-
-      <Card className="bg-gray-900 border-gray-700">
-        <CardContent className="p-6 space-y-4">
-          <div>
-            <label className="text-white text-sm font-medium mb-2 block">
-              Servicio requerido
-            </label>
-            <Select value={selectedService} onValueChange={setSelectedService}>
-              <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                <SelectValue placeholder="Selecciona un servicio" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Corte de pelo">Corte de pelo</SelectItem>
-                <SelectItem value="Corte + barba">Corte + barba</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="text-white text-sm font-medium mb-2 block">
-              Presupuesto máximo: ${priceLimit[0].toLocaleString()}
-            </label>
-            <Slider
-              value={priceLimit}
-              onValueChange={setPriceLimit}
-              max={25000}
-              min={5000}
-              step={1000}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
-              <span>$5.000</span>
-              <span>$25.000</span>
-            </div>
-          </div>
-
-          <Button 
-            onClick={handleQuickSearch}
-            disabled={isSearching || !selectedService}
-            className="w-full bg-amber-600 hover:bg-amber-700 text-white"
-          >
-            {isSearching ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Enviando solicitud...
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Search className="w-4 h-4" />
-                Buscar Corte Rápido
-              </div>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
+    );
+  };
 
   const ClientProfile = () => (
     <div className="space-y-6">
