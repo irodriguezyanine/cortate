@@ -160,21 +160,29 @@ function App() {
   const loadBarberData = async () => {
     try {
       const token = localStorage.getItem('auth_token');
+      if (!token) {
+        console.error('No auth token found');
+        return;
+      }
+
+      const headers = { Authorization: `Bearer ${token}` };
+      
       const [appointmentsRes, requestsRes, barbershopRes] = await Promise.all([
-        axios.get(`${BACKEND_URL}/api/bookings/barber`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${BACKEND_URL}/api/quick-cuts/requests`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${BACKEND_URL}/api/barbershops/my`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        axios.get(`${BACKEND_URL}/api/bookings/barber`, { headers }).catch(e => ({ data: { bookings: [] } })),
+        axios.get(`${BACKEND_URL}/api/quick-cuts/requests`, { headers }).catch(e => ({ data: { requests: [] } })),
+        axios.get(`${BACKEND_URL}/api/barbershops/my`, { headers }).catch(e => ({ data: { barbershop: null } }))
       ]);
+      
+      console.log('Barber data loaded:', {
+        appointments: appointmentsRes.data.bookings?.length || 0,
+        requests: requestsRes.data.requests?.length || 0,
+        barbershop: barbershopRes.data.barbershop?.name || 'None'
+      });
       
       setAppointments(appointmentsRes.data.bookings || []);
       setQuickCutRequests(requestsRes.data.requests || []);
       setMyBarbershop(barbershopRes.data.barbershop);
+      
     } catch (error) {
       console.error('Error loading barber data:', error);
     }
