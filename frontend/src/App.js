@@ -1540,63 +1540,92 @@ function App() {
     </div>
   );
 
-  const QuickCutRequests = () => (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">Solicitudes de Corte Rápido</h2>
-        <p className="text-gray-400">Responde a las solicitudes de clientes cercanos</p>
-      </div>
+  const QuickCutRequests = () => {
+    const getTimeLeft = (createdAt, expiresAt) => {
+      const now = new Date();
+      const expires = new Date(expiresAt);
+      const timeLeft = Math.max(0, Math.floor((expires - now) / 1000));
+      
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
 
-      <div className="space-y-4">
-        {quickCutRequests.length === 0 ? (
-          <Card className="bg-gray-900 border-gray-700">
-            <CardContent className="p-8 text-center">
-              <Bell className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-400">No hay solicitudes pendientes</p>
-            </CardContent>
-          </Card>
-        ) : (
-          quickCutRequests.map((request) => (
-            <Card key={request.id} className="bg-gray-900 border-gray-700">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-white font-semibold">{request.service}</h3>
-                      <p className="text-gray-400">Cliente: {request.client_name}</p>
-                      <p className="text-amber-400">Presupuesto: ${request.max_price?.toLocaleString()}</p>
-                    </div>
-                    <Badge variant="outline">
-                      <MapPin className="w-3 h-3 mr-1" />
-                      {request.distance} km
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={() => handleQuickCutResponse(request.id, true)}
-                      className="flex-1 bg-green-600 hover:bg-green-700"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-1" />
-                      Aceptar
-                    </Button>
-                    <Button 
-                      onClick={() => handleQuickCutResponse(request.id, false)}
-                      variant="outline"
-                      className="flex-1 border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
-                    >
-                      <XCircle className="w-4 h-4 mr-1" />
-                      Rechazar
-                    </Button>
-                  </div>
-                </div>
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-white mb-2">Solicitudes de Corte Rápido</h2>
+          <p className="text-gray-400">Responde a las solicitudes de clientes cercanos</p>
+        </div>
+
+        <div className="space-y-4">
+          {quickCutRequests.length === 0 ? (
+            <Card className="bg-gray-900 border-gray-700">
+              <CardContent className="p-8 text-center">
+                <Bell className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-400">No hay solicitudes pendientes</p>
               </CardContent>
             </Card>
-          ))
-        )}
+          ) : (
+            quickCutRequests.map((request, index) => (
+              <Card key={request.id} className={`bg-gray-900 border-gray-700 ${index === 0 ? 'ring-2 ring-amber-400' : ''}`}>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-white font-semibold">{request.service}</h3>
+                          {index === 0 && (
+                            <Badge className="bg-amber-600 text-white animate-pulse">
+                              ¡NUEVO!
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-gray-400">Cliente: {request.client_name}</p>
+                        <p className="text-amber-400">Presupuesto: ${request.max_price?.toLocaleString()}</p>
+                        {request.service_location === 'home' && (
+                          <Badge variant="outline" className="text-blue-400 border-blue-400">
+                            A domicilio
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <Badge variant="outline" className="mb-2">
+                          <MapPin className="w-3 h-3 mr-1" />
+                          {request.distance} km
+                        </Badge>
+                        <div className="text-red-400 font-mono text-lg">
+                          ⏰ {getTimeLeft(request.created_at, request.expires_at)}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => handleQuickCutResponse(request.id, true)}
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Aceptar
+                      </Button>
+                      <Button 
+                        onClick={() => handleQuickCutResponse(request.id, false)}
+                        variant="outline"
+                        className="flex-1 border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
+                      >
+                        <XCircle className="w-4 h-4 mr-1" />
+                        Rechazar
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const BarberBusiness = () => (
     <div className="space-y-6">
