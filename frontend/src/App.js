@@ -422,24 +422,28 @@ function App() {
           placeholder="Nombre completo"
           value={formData.name}
           onChange={(e) => setFormData({...formData, name: e.target.value})}
+          className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
         />
         <Input
           type="email"
           placeholder="Email"
           value={formData.email}
           onChange={(e) => setFormData({...formData, email: e.target.value})}
+          className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
         />
         <Input
           type="password"
           placeholder="Contraseña"
           value={formData.password}
           onChange={(e) => setFormData({...formData, password: e.target.value})}
+          className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
         />
         <Input
           type="password"
           placeholder="Confirmar contraseña"
           value={formData.confirmPassword}
           onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+          className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
         />
 
         {formData.userType === 'barber' && (
@@ -448,11 +452,13 @@ function App() {
               placeholder="Teléfono (requerido para barberos)"
               value={formData.phone}
               onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
             />
             <Input
               placeholder="Dirección de tu barbería (Ej: Av. Providencia 1234, Santiago)"
               value={formData.address}
               onChange={(e) => setFormData({...formData, address: e.target.value})}
+              className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
             />
             <p className="text-gray-400 text-xs">
               Tu barbería aparecerá automáticamente en el mapa con esta dirección
