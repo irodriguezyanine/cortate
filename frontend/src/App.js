@@ -66,6 +66,8 @@ function App() {
   const [matchedBarber, setMatchedBarber] = useState(null);
   const [quickCutTimer, setQuickCutTimer] = useState(0);
   const [searchTimeLeft, setSearchTimeLeft] = useState(900); // 15 minutes = 900 seconds
+  const [maxDistance, setMaxDistance] = useState([5]); // km
+  const [serviceLocation, setServiceLocation] = useState('local'); // 'local' or 'home'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
