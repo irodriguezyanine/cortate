@@ -698,7 +698,16 @@ async def create_quick_cut_request(request_data: QuickCutRequestCreate, current_
         if current_user["user_type"] != "client":
             raise HTTPException(status_code=403, detail="Solo los clientes pueden solicitar cortes rápidos")
         
+        # First, cancel any pending requests from this client
+        await database.quick_cut_requests.update_many(
+            {"client_id": current_user["id"], "status": "pending"},
+            {"$set": {"status": "cancelled"}}
+        )
+        
         request_id = generate_uuid()
+        
+        # Find nearby available barbershops
+        barbershops = await database.barbershops.find({"available": True}).to_list(length=50)
         
         new_request = {
             "id": request_id,
@@ -709,15 +718,46 @@ async def create_quick_cut_request(request_data: QuickCutRequestCreate, current_
             "lat": request_data.lat,
             "lng": request_data.lng,
             "status": "pending",
-            "created_at": datetime.utcnow()
+            "created_at": datetime.utcnow(),
+            "expires_at": datetime.utcnow() + timedelta(minutes=15)  # 15 minutes expiry
         }
         
         await database.quick_cut_requests.insert_one(new_request)
         
+        # Calculate distances and notify nearby barbers
+        suitable_barbers = []
+        for barbershop in barbershops:
+            distance = calculate_distance(
+                request_data.lat, request_data.lng,
+                barbershop["lat"], barbershop["lng"]
+            )
+            
+            # Only notify barbers within 10km
+            if distance <= 10.0:
+                # Check if any service matches and price is acceptable
+                service_match = any(
+                    service.get("name", "").lower() == request_data.service.lower() 
+                    and service.get("price", 0) <= request_data.max_price
+                    for service in barbershop.get("services", [])
+                )
+                
+                if service_match:
+                    suitable_barbers.append({
+                        "barber_id": barbershop["barber_id"],
+                        "barbershop_name": barbershop["name"],
+                        "distance": distance
+                    })
+        
+        logger.info(f"Found {len(suitable_barbers)} suitable barbers for request {request_id}")
+        
+        # Remove MongoDB ObjectId
         if "_id" in new_request:
             new_request.pop("_id")
         
-        return new_request
+        return {
+            **new_request,
+            "suitable_barbers_count": len(suitable_barbers)
+        }
         
     except HTTPException:
         raise
