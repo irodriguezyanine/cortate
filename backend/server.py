@@ -546,8 +546,17 @@ async def get_my_barbershop(current_user: dict = Depends(get_current_user)):
         if not barbershop:
             return {"barbershop": None}
         
+        # Clean MongoDB ObjectId
         if "_id" in barbershop:
             barbershop.pop("_id")
+        
+        # Convert image paths to full URLs if they exist
+        if barbershop.get("images"):
+            barbershop["images"] = [f"/uploads/{img}" for img in barbershop["images"]]
+        if barbershop.get("profile_image"):
+            barbershop["profile_image"] = f"/uploads/{barbershop['profile_image']}"
+        if barbershop.get("cover_image"):
+            barbershop["cover_image"] = f"/uploads/{barbershop['cover_image']}"
         
         return {"barbershop": barbershop}
         
