@@ -728,12 +728,15 @@ async def create_quick_cut_request(request_data: QuickCutRequestCreate, current_
         # Find nearby available barbershops
         barbershops = await database.barbershops.find({"available": True}).to_list(length=50)
         
+        # Update quick_cut_requests to include new fields
         new_request = {
             "id": request_id,
             "client_id": current_user["id"],
             "client_name": current_user["name"],
             "service": request_data.service,
             "max_price": request_data.max_price,
+            "max_distance": getattr(request_data, 'max_distance', 5),
+            "service_location": getattr(request_data, 'service_location', 'local'),
             "lat": request_data.lat,
             "lng": request_data.lng,
             "status": "pending",
