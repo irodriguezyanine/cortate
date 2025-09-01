@@ -898,7 +898,39 @@ async def respond_to_quick_cut(request_id: str, response: QuickCutResponse, curr
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 # Booking Routes
-@app.get("/api/bookings/barber")
+@app.post("/api/bookings")
+async def create_booking(booking_data: BookingCreate, current_user: dict = Depends(get_current_user)):
+    try:
+        if current_user["user_type"] != "client":
+            raise HTTPException(status_code=403, detail="Solo los clientes pueden hacer reservas")
+        
+        booking_id = generate_uuid()
+        new_booking = {
+            "id": booking_id,
+            "client_id": current_user["id"],
+            "client_name": current_user["name"],
+            "barbershop_id": booking_data.barbershop_id,
+            "barber_id": booking_data.barber_id,
+            "service": booking_data.service,
+            "date": booking_data.date,
+            "price": booking_data.price,
+            "notes": booking_data.notes,
+            "status": "pending",
+            "created_at": datetime.utcnow()
+        }
+        
+        await database.bookings.insert_one(new_booking)
+        
+        if "_id" in new_booking:
+            new_booking.pop("_id")
+        
+        return new_booking
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating booking: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 async def get_barber_bookings(current_user: dict = Depends(get_current_user)):
     try:
         if current_user["user_type"] != "barber":
