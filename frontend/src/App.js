@@ -402,7 +402,111 @@ function App() {
     }
   };
 
-  // Form Components
+  // Booking Modal Component
+  const BookingModal = () => {
+    const [bookingData, setBookingData] = useState({
+      service: '',
+      date: '',
+      time: '',
+      notes: ''
+    });
+
+    const handleBooking = async () => {
+      try {
+        await axios.post(`${BACKEND_URL}/api/bookings`, {
+          barbershop_id: bookingBarbershop.id,
+          barber_id: bookingBarbershop.barber_id,
+          service: bookingData.service,
+          date: new Date(`${bookingData.date}T${bookingData.time}`),
+          price: bookingBarbershop.services.find(s => s.name === bookingData.service)?.price || 0,
+          notes: bookingData.notes
+        }, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+        });
+        
+        setShowBooking(false);
+        setBookingBarbershop(null);
+        setSuccess('Reserva enviada correctamente al barbero');
+      } catch (error) {
+        setError('Error al enviar la reserva');
+      }
+    };
+
+    return (
+      <Dialog open={showBooking} onOpenChange={setShowBooking}>
+        <DialogContent className="bg-gray-900 border-gray-700 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">Reservar en {bookingBarbershop?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Servicio *</label>
+              <Select value={bookingData.service} onValueChange={(value) => setBookingData({...bookingData, service: value})}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                  <SelectValue placeholder="Selecciona un servicio" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bookingBarbershop?.services?.map((service, index) => (
+                    <SelectItem key={index} value={service.name}>
+                      {service.name} - ${service.price?.toLocaleString()} ({service.duration}min)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Fecha *</label>
+              <Input
+                type="date"
+                value={bookingData.date}
+                onChange={(e) => setBookingData({...bookingData, date: e.target.value})}
+                className="bg-gray-800 border-gray-700 text-white"
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Hora preferida *</label>
+              <Input
+                type="time"
+                value={bookingData.time}
+                onChange={(e) => setBookingData({...bookingData, time: e.target.value})}
+                className="bg-gray-800 border-gray-700 text-white"
+              />
+            </div>
+
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Notas (opcional)</label>
+              <Textarea
+                value={bookingData.notes}
+                onChange={(e) => setBookingData({...bookingData, notes: e.target.value})}
+                className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                placeholder="Alguna preferencia especial..."
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleBooking}
+                disabled={!bookingData.service || !bookingData.date || !bookingData.time}
+                className="flex-1 bg-amber-600 hover:bg-amber-700"
+              >
+                Enviar Reserva
+              </Button>
+              <Button 
+                onClick={() => setShowBooking(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
   const LoginForm = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
 
