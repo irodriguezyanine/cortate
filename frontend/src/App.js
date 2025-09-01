@@ -325,12 +325,25 @@ function App() {
         email, password
       });
       
+      // Store token and user data
       localStorage.setItem('auth_token', response.data.access_token);
       setUser(response.data.user);
       setShowLogin(false);
       setSuccess('Inicio de sesión exitoso');
+      
+      // Load specific data based on user type
+      if (response.data.user.user_type === 'barber') {
+        setTimeout(() => loadBarberData(), 1000);
+      } else {
+        setTimeout(() => {
+          loadBarbershops();
+          loadClientHistory();
+        }, 1000);
+      }
+      
       setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
+      console.error('Login error:', error);
       setError(error.response?.data?.detail || 'Error en el inicio de sesión');
     } finally {
       setLoading(false);
