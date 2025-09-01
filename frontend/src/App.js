@@ -20,7 +20,15 @@ import {
   MapIcon,
   Settings,
   LogOut,
-  Plus
+  Plus,
+  Upload,
+  Camera,
+  Heart,
+  MessageCircle,
+  Phone,
+  Mail,
+  Users,
+  TrendingUp
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
