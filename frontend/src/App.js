@@ -969,19 +969,112 @@ function App() {
 
               <div>
                 <label className="text-white text-sm font-medium mb-2 block">
-                  Presupuesto máximo: ${priceLimit[0].toLocaleString()}
+                  Presupuesto máximo
                 </label>
+                <div className="flex gap-3 items-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPriceLimit([8000])}
+                    className={priceLimit[0] === 8000 ? "bg-amber-600 text-white" : ""}
+                  >
+                    $8.000
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPriceLimit([12000])}
+                    className={priceLimit[0] === 12000 ? "bg-amber-600 text-white" : ""}
+                  >
+                    $12.000
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPriceLimit([18000])}
+                    className={priceLimit[0] === 18000 ? "bg-amber-600 text-white" : ""}
+                  >
+                    $18.000
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPriceLimit([25000])}
+                    className={priceLimit[0] === 25000 ? "bg-amber-600 text-white" : ""}
+                  >
+                    $25.000+
+                  </Button>
+                </div>
+                <div className="mt-2">
+                  <Slider
+                    value={priceLimit}
+                    onValueChange={setPriceLimit}
+                    max={25000}
+                    min={5000}
+                    step={1000}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-400 mt-1">
+                    <span>$5.000</span>
+                    <span className="text-amber-400">${priceLimit[0].toLocaleString()}</span>
+                    <span>$25.000</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  Distancia máxima: {maxDistance[0]} km
+                </label>
+                <div className="flex gap-2 mb-2">
+                  {[1, 3, 5, 10].map(km => (
+                    <Button
+                      key={km}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setMaxDistance([km])}
+                      className={maxDistance[0] === km ? "bg-amber-600 text-white" : ""}
+                    >
+                      {km}km
+                    </Button>
+                  ))}
+                </div>
                 <Slider
-                  value={priceLimit}
-                  onValueChange={setPriceLimit}
-                  max={25000}
-                  min={5000}
-                  step={1000}
+                  value={maxDistance}
+                  onValueChange={setMaxDistance}
+                  max={15}
+                  min={1}
+                  step={1}
                   className="w-full"
                 />
-                <div className="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>$5.000</span>
-                  <span>$25.000</span>
+              </div>
+
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  Ubicación del servicio
+                </label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={serviceLocation === 'local' ? 'default' : 'outline'}
+                    onClick={() => setServiceLocation('local')}
+                    className={serviceLocation === 'local' ? "bg-amber-600 hover:bg-amber-700" : ""}
+                  >
+                    En el local
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={serviceLocation === 'home' ? 'default' : 'outline'}
+                    onClick={() => setServiceLocation('home')}
+                    className={serviceLocation === 'home' ? "bg-amber-600 hover:bg-amber-700" : ""}
+                  >
+                    A domicilio
+                  </Button>
                 </div>
               </div>
 
