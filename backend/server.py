@@ -394,6 +394,35 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
         current_user.pop("password")
     return current_user
 
+@app.put("/api/auth/profile")
+async def update_user_profile(profile_data: UserProfileUpdate, current_user: dict = Depends(get_current_user)):
+    try:
+        update_fields = {}
+        if profile_data.name:
+            update_fields["name"] = profile_data.name
+        if profile_data.phone:
+            update_fields["phone"] = profile_data.phone
+        if profile_data.age:
+            update_fields["age"] = profile_data.age
+        if profile_data.address:
+            update_fields["address"] = profile_data.address
+        if profile_data.hairPreference:
+            update_fields["hairPreference"] = profile_data.hairPreference
+        if profile_data.notifications:
+            update_fields["notifications"] = profile_data.notifications
+
+        # Update user in database
+        await database.users.update_one(
+            {"id": current_user["id"]},
+            {"$set": update_fields}
+        )
+
+        return {"message": "Perfil actualizado correctamente"}
+        
+    except Exception as e:
+        logger.error(f"Error updating profile: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
 # Barbershop Routes
 @app.get("/api/barbershops")
 async def get_barbershops():
