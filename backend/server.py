@@ -570,37 +570,21 @@ async def get_my_barbershop(current_user: dict = Depends(get_current_user)):
         if current_user["user_type"] != "barber":
             raise HTTPException(status_code=403, detail="Solo barberos pueden acceder")
         
-        logger.info(f"Looking for barbershop with barber_id: {current_user['id']}")
-        
-        # Debug: List all barbershops to see what's in database
-        all_barbershops = await database.barbershops.find().to_list(length=10)
-        logger.info(f"All barbershops in database: {[b.get('barber_id') for b in all_barbershops]}")
-        
+        # Direct query with explicit barber_id
         barbershop = await database.barbershops.find_one({"barber_id": current_user["id"]})
+        
         if not barbershop:
-            logger.warning(f"No barbershop found for barber_id: {current_user['id']}")
-            return {"barbershop": None}
+            return {"barbershop": None, "message": f"No barbershop found for barber_id: {current_user['id']}"}
         
         # Clean MongoDB ObjectId
         if "_id" in barbershop:
             barbershop.pop("_id")
         
-        # Convert image paths to full URLs if they exist
-        if barbershop.get("images"):
-            barbershop["images"] = [f"/uploads/{img}" for img in barbershop["images"]]
-        if barbershop.get("profile_image"):
-            barbershop["profile_image"] = f"/uploads/{barbershop['profile_image']}"
-        if barbershop.get("cover_image"):
-            barbershop["cover_image"] = f"/uploads/{barbershop['cover_image']}"
-        
-        logger.info(f"Found barbershop: {barbershop.get('name')}")
         return {"barbershop": barbershop}
         
-    except HTTPException:
-        raise
     except Exception as e:
-        logger.error(f"Error fetching barbershop: {e}")
-        raise HTTPException(status_code=500, detail="Error interno del servidor")
+        logger.error(f"Error in /barbershops/my: {e}")
+        return {"barbershop": None, "error": str(e)}
 
 # File Upload Routes
 @app.post("/api/barbershops/{barbershop_id}/upload-image")
