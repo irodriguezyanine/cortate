@@ -427,23 +427,43 @@ function App() {
     });
 
     const handleBooking = async () => {
+      if (!bookingData.service || !bookingData.date || !bookingData.time) {
+        setError('Por favor completa todos los campos obligatorios');
+        return;
+      }
+
       try {
-        await axios.post(`${BACKEND_URL}/api/bookings`, {
+        setLoading(true);
+        const selectedService = bookingBarbershop.services.find(s => s.name === bookingData.service);
+        
+        const response = await axios.post(`${BACKEND_URL}/api/bookings`, {
           barbershop_id: bookingBarbershop.id,
           barber_id: bookingBarbershop.barber_id,
           service: bookingData.service,
-          date: new Date(`${bookingData.date}T${bookingData.time}`),
-          price: bookingBarbershop.services.find(s => s.name === bookingData.service)?.price || 0,
+          date: new Date(`${bookingData.date}T${bookingData.time}`).toISOString(),
+          price: selectedService?.price || 0,
           notes: bookingData.notes
         }, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+          headers: { 
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            'Content-Type': 'application/json'
+          }
         });
         
         setShowBooking(false);
         setBookingBarbershop(null);
+        setBookingData({ service: '', date: '', time: '', notes: '' });
         setSuccess('Reserva enviada correctamente al barbero');
+        
+        // Refresh booking history
+        loadClientHistory();
+        
       } catch (error) {
-        setError('Error al enviar la reserva');
+        console.error('Booking error:', error);
+        const errorMsg = error.response?.data?.detail || 'Error al enviar la reserva';
+        setError(errorMsg);
+      } finally {
+        setLoading(false);
       }
     };
 
