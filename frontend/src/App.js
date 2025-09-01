@@ -359,12 +359,14 @@ function App() {
           placeholder="Email"
           value={formData.email}
           onChange={(e) => setFormData({...formData, email: e.target.value})}
+          className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
         />
         <Input
           type="password"
           placeholder="Contraseña"
           value={formData.password}
           onChange={(e) => setFormData({...formData, password: e.target.value})}
+          className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
         />
         <Button 
           onClick={() => handleLogin(formData.email, formData.password)}
