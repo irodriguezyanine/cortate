@@ -299,6 +299,8 @@ function App() {
       await axios.post(`${BACKEND_URL}/api/quick-cuts/request`, {
         service: selectedService,
         max_price: priceLimit[0],
+        max_distance: maxDistance[0],
+        service_location: serviceLocation,
         lat: userLocation.lat,
         lng: userLocation.lng
       }, {
