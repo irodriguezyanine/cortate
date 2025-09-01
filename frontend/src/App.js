@@ -807,7 +807,14 @@ function App() {
             </div>
           )}
           <div className="flex gap-2 mt-3">
-            <Button size="sm" className="flex-1 bg-amber-600 hover:bg-amber-700">
+            <Button 
+              size="sm" 
+              className="flex-1 bg-amber-600 hover:bg-amber-700"
+              onClick={() => {
+                setBookingBarbershop(barbershop);
+                setShowBooking(true);
+              }}
+            >
               Reservar
             </Button>
             <Button 
