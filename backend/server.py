@@ -395,6 +395,27 @@ async def login_user(user_data: UserLogin):
         logger.error(f"Login error: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
+@app.get("/api/debug/user")
+async def debug_current_user(current_user: dict = Depends(get_current_user)):
+    try:
+        logger.info(f"Current user debug: {current_user}")
+        return {"user": current_user, "user_id": current_user.get("id"), "user_type": current_user.get("user_type")}
+    except Exception as e:
+        logger.error(f"Debug error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/debug/barbershops")
+async def debug_barbershops():
+    try:
+        barbershops = await database.barbershops.find().to_list(length=20)
+        for b in barbershops:
+            if "_id" in b:
+                b.pop("_id")
+        return {"barbershops": barbershops}
+    except Exception as e:
+        logger.error(f"Debug barbershops error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/auth/me")
 async def get_current_user_info(current_user: dict = Depends(get_current_user)):
     # Remove MongoDB ObjectId
