@@ -189,28 +189,29 @@ function App() {
   };
 
   const initializeMap = async () => {
-    if (!barbershops.length || !GOOGLE_MAPS_API_KEY) {
-      console.error('No barbershops or no API key');
+    if (!barbershops.length) {
+      console.log('No barbershops to show');
+      return;
+    }
+
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.error('No Google Maps API key');
       return;
     }
 
     const loader = new Loader({
       apiKey: GOOGLE_MAPS_API_KEY,
       version: "weekly",
-      libraries: ["places", "geometry", "marker"]
+      libraries: ["places", "geometry"]
     });
 
     try {
-      await loader.load();
+      // Load Google Maps
+      const google = await loader.load();
       
-      // Use the new method for importing libraries
-      const { Map } = await window.google.maps.importLibrary("maps");
-      const { AdvancedMarkerElement } = await window.google.maps.importLibrary("marker");
-
-      const mapInstance = new Map(document.getElementById("map"), {
+      const mapInstance = new google.maps.Map(document.getElementById("map"), {
         zoom: 12,
         center: userLocation,
-        mapId: "DEMO_MAP_ID",
         styles: [
           {
             featureType: "all",
@@ -230,9 +231,9 @@ function App() {
       // Add markers for barbershops
       barbershops.forEach(barbershop => {
         if (barbershop.lat && barbershop.lng) {
-          const marker = new AdvancedMarkerElement({
-            map: mapInstance,
+          const marker = new google.maps.Marker({
             position: { lat: barbershop.lat, lng: barbershop.lng },
+            map: mapInstance,
             title: barbershop.name,
           });
 
