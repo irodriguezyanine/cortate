@@ -2157,6 +2157,9 @@ function App() {
       {/* Booking Modal */}
       {bookingBarbershop && <BookingModal />}
 
+      {/* Review Modal */}
+      {showReviewModal && <ReviewModal />}
+
       {/* Selected Barbershop Modal */}
       {selectedBarbershop && (
         <Dialog open={!!selectedBarbershop} onOpenChange={() => setSelectedBarbershop(null)}>
