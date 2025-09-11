@@ -1126,11 +1126,13 @@ async def cleanup_database(current_user: dict = Depends(get_current_user)):
         barbershops = await database.barbershops.find().to_list(length=100)
         
         # Identify test/fake barbershops
+        # NOTE: BARBERIA CANTAGALLO is LEGITIMATE - removed from test keywords
         test_keywords = [
             'test', 'prueba', 'fake', 'demo', 'ejemplo', 'sample',
-            'barbería moderna', 'barbería elegante', 'barberia cantagallo',
+            'barbería moderna', 'barbería elegante',
             'barber shop central', 'corte fino', 'estilo urbano', 
-            'pelo y barba', 'tijeras de oro', 'traditional barber'
+            'pelo y barba', 'tijeras de oro', 'traditional barber',
+            'barbershop classic', 'barbería el maestro', 'barbería santiago maps test'
         ]
         
         deleted_barbershops = []
