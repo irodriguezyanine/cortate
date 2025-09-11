@@ -137,7 +137,15 @@ export const BarbershopManagement = ({ barbershop, onUpdate, BACKEND_URL }) => {
   const respondToReview = async (reviewId, response) => {
     try {
       const token = localStorage.getItem('auth_token');
-      await axios.post(`${BACKEND_URL}/api/reviews/${reviewId}/respond`, {
+      if (!token) {
+        console.error('No authentication token found');
+        alert('Error: No estás autenticado. Por favor, inicia sesión nuevamente.');
+        return;
+      }
+
+      console.log('Responding to review:', reviewId, 'with response:', response);
+      
+      const result = await axios.post(`${BACKEND_URL}/api/reviews/${reviewId}/respond`, {
         response
       }, {
         headers: { 
@@ -146,10 +154,22 @@ export const BarbershopManagement = ({ barbershop, onUpdate, BACKEND_URL }) => {
         }
       });
       
+      console.log('Response sent successfully:', result.data);
+      alert('Respuesta enviada exitosamente');
       loadReviews(); // Refresh reviews
       
     } catch (error) {
       console.error('Error responding to review:', error);
+      
+      if (error.response?.status === 401) {
+        alert('Error de autenticación. Por favor, inicia sesión nuevamente.');
+      } else if (error.response?.status === 403) {
+        alert('No tienes permisos para responder esta reseña.');
+      } else if (error.response?.status === 404) {
+        alert('Reseña no encontrada.');
+      } else {
+        alert('Error al enviar respuesta. Inténtalo nuevamente.');
+      }
     }
   };
 
