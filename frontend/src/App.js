@@ -524,6 +524,7 @@ function App() {
   const [editingProfile, setEditingProfile] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
   const [bookingBarbershop, setBookingBarbershop] = useState(null);
+  const [showChat, setShowChat] = useState(false);
   
   // Review states
   const [showReviewModal, setShowReviewModal] = useState(false);
