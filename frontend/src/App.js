@@ -660,39 +660,53 @@ function App() {
   };
 
   const initializeMap = async () => {
-    console.log('Initializing map...');
-    console.log('Barbershops:', barbershops.length);
-    console.log('User:', user?.user_type);
-    console.log('API Key exists:', !!GOOGLE_MAPS_API_KEY);
+    console.log('🗺️ Initializing map...');
+    console.log('📊 Barbershops available:', barbershops.length);
+    console.log('👤 User type:', user?.user_type);
+    console.log('🔑 API Key exists:', !!GOOGLE_MAPS_API_KEY);
+    console.log('📍 User location:', userLocation);
     
     if (!GOOGLE_MAPS_API_KEY) {
-      console.error('No Google Maps API key');
+      console.error('❌ No Google Maps API key found');
+      showNotification('Error', 'Clave de Google Maps no encontrada', 'destructive');
       return;
     }
 
     // Check if the map div exists
     const mapDiv = document.getElementById("map");
     if (!mapDiv) {
-      console.error('Map div not found');
+      console.error('❌ Map div not found, retrying...');
       setTimeout(initializeMap, 1000); // Retry after 1 second
       return;
     }
 
-    const loader = new Loader({
-      apiKey: GOOGLE_MAPS_API_KEY,
-      version: "weekly",
-      libraries: ["places", "geometry"]
-    });
+    console.log('✅ Map div found, creating map...');
 
     try {
+      // Create Loader with proper configuration
+      const loader = new Loader({
+        apiKey: GOOGLE_MAPS_API_KEY,
+        version: "weekly",
+        libraries: ["places", "geometry"],
+        language: "es",
+        region: "CL"
+      });
+
       // Load Google Maps
-      console.log('Loading Google Maps...');
+      console.log('⏳ Loading Google Maps API...');
       const google = await loader.load();
-      console.log('Google Maps loaded successfully');
+      console.log('✅ Google Maps API loaded successfully');
+      
+      // Ensure we have a valid center point
+      const mapCenter = userLocation || { lat: -33.4489, lng: -70.6693 }; // Default to Santiago
+      console.log('📍 Map center:', mapCenter);
       
       const mapInstance = new google.maps.Map(mapDiv, {
-        zoom: barbershops.length > 0 ? 12 : 10,
-        center: userLocation,
+        zoom: barbershops.length > 0 ? 12 : 11,
+        center: mapCenter,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true,
         styles: [
           {
             featureType: "all",
@@ -713,45 +727,103 @@ function App() {
             featureType: "water",
             elementType: "geometry",
             stylers: [{ color: "#0f1419" }]
+          },
+          {
+            featureType: "poi",
+            elementType: "labels",
+            stylers: [{ visibility: "off" }]
           }
         ]
       });
 
-      console.log('Map instance created');
+      console.log('✅ Map instance created successfully');
       setMap(mapInstance);
 
       // Add markers for barbershops
       let markerCount = 0;
-      barbershops.forEach(barbershop => {
+      const bounds = new google.maps.LatLngBounds();
+      
+      console.log(`📍 Adding markers for ${barbershops.length} barbershops...`);
+      
+      barbershops.forEach((barbershop, index) => {
         if (barbershop.lat && barbershop.lng) {
+          const position = { lat: barbershop.lat, lng: barbershop.lng };
+          
           const marker = new google.maps.Marker({
-            position: { lat: barbershop.lat, lng: barbershop.lng },
+            position,
             map: mapInstance,
             title: barbershop.name,
+            icon: {
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#f59e0b" stroke="#000" stroke-width="1" d="M15 2 C8 2 2 8 2 15 C2 22 15 38 15 38 S28 22 28 15 C28 8 22 2 15 2 Z"/>
+                  <circle cx="15" cy="15" r="6" fill="#000"/>
+                  <text x="15" y="19" text-anchor="middle" fill="#f59e0b" font-size="8" font-weight="bold">B</text>
+                </svg>
+              `),
+              scaledSize: new google.maps.Size(30, 40),
+              anchor: new google.maps.Point(15, 40)
+            }
+          });
+
+          // Create info window
+          const infoWindow = new google.maps.InfoWindow({
+            content: `
+              <div style="color: #000; padding: 8px; max-width: 250px;">
+                <h3 style="margin: 0 0 8px 0; color: #f59e0b; font-size: 16px;">${barbershop.name}</h3>
+                <p style="margin: 0 0 4px 0; font-size: 14px;">${barbershop.description || ''}</p>
+                <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">📍 ${barbershop.address}</p>
+                ${barbershop.phone ? `<p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">📞 ${barbershop.phone}</p>` : ''}
+                <div style="margin-top: 8px;">
+                  <button onclick="window.selectBarbershop && window.selectBarbershop('${barbershop.id}')" 
+                          style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                    Ver Detalles
+                  </button>
+                </div>
+              </div>
+            `
           });
 
           marker.addListener("click", () => {
+            infoWindow.open(mapInstance, marker);
             setSelectedBarbershop(barbershop);
           });
+          
+          bounds.extend(position);
           markerCount++;
+        } else {
+          console.warn(`⚠️ Barbershop ${barbershop.name} missing coordinates`);
         }
       });
       
-      console.log(`Added ${markerCount} markers to map`);
+      console.log(`✅ Added ${markerCount} markers to map`);
 
-      // If we have barbershops, adjust map bounds to show all markers
-      if (barbershops.length > 0) {
-        const bounds = new google.maps.LatLngBounds();
-        barbershops.forEach(barbershop => {
-          if (barbershop.lat && barbershop.lng) {
-            bounds.extend(new google.maps.LatLng(barbershop.lat, barbershop.lng));
-          }
-        });
+      // Make selectBarbershop available globally for info window buttons
+      window.selectBarbershop = (barbershopId) => {
+        const barbershop = barbershops.find(b => b.id === barbershopId);
+        if (barbershop) {
+          setSelectedBarbershop(barbershop);
+          setShowBooking(true);
+        }
+      };
+
+      // Adjust map view
+      if (markerCount > 0) {
         mapInstance.fitBounds(bounds);
+        // Ensure reasonable zoom level
+        const listener = google.maps.event.addListener(mapInstance, "idle", function() {
+          if (mapInstance.getZoom() > 15) mapInstance.setZoom(15);
+          google.maps.event.removeListener(listener);
+        });
+      } else {
+        console.log('📍 No markers to display, using default center');
       }
 
+      showNotification('🗺️ Mapa cargado', `Se encontraron ${markerCount} barberías`, 'success');
+
     } catch (error) {
-      console.error('Error loading Google Maps:', error);
+      console.error('❌ Error loading Google Maps:', error);
+      showNotification('Error', 'No se pudo cargar el mapa. Verifica tu conexión.', 'destructive');
     }
   };
 
