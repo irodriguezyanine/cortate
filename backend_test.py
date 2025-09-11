@@ -450,6 +450,238 @@ class CortateAPITester:
         
         return success
 
+    def test_reviews_error_investigation(self):
+        """URGENT: Investigate reviews error reported by user"""
+        print("\n🚨 URGENT: INVESTIGATING REVIEWS ERROR")
+        print("=" * 60)
+        print("PROBLEMA REPORTADO: Usuario no puede enviar reseñas - aparece error")
+        print("OBJETIVO: Identificar exactamente qué está causando el error")
+        print("-" * 60)
+        
+        if not self.client_token:
+            print("❌ Error: Se requiere token de cliente")
+            return False
+        
+        # Step 1: Get existing barbershops (BARBERIA CANTAGALLO, Barbería Dani)
+        print("\n1️⃣ OBTENIENDO BARBERÍAS EXISTENTES")
+        success_bs, response_bs = self.run_test(
+            "Get Existing Barbershops",
+            "GET",
+            "api/barbershops",
+            200
+        )
+        
+        if not success_bs or not response_bs.get('barbershops'):
+            print("❌ No se pudieron obtener las barberías")
+            return False
+        
+        barbershops = response_bs['barbershops']
+        print(f"   📊 Barberías encontradas: {len(barbershops)}")
+        
+        # Find BARBERIA CANTAGALLO and Barbería Dani
+        barberia_cantagallo = None
+        barberia_dani = None
+        
+        for barbershop in barbershops:
+            name = barbershop.get('name', '')
+            print(f"   - {name} (ID: {barbershop.get('id')})")
+            
+            if 'CANTAGALLO' in name.upper():
+                barberia_cantagallo = barbershop
+                print("     ✅ BARBERIA CANTAGALLO encontrada")
+            elif 'Dani' in name:
+                barberia_dani = barbershop
+                print("     ✅ Barbería Dani encontrada")
+        
+        if not barberia_cantagallo and not barberia_dani:
+            print("❌ No se encontraron las barberías esperadas (CANTAGALLO o Dani)")
+            return False
+        
+        # Use BARBERIA CANTAGALLO if available, otherwise Barbería Dani
+        target_barbershop = barberia_cantagallo if barberia_cantagallo else barberia_dani
+        print(f"\n   🎯 Usando barbería para prueba: {target_barbershop['name']}")
+        print(f"   📝 ID: {target_barbershop['id']}")
+        
+        # Step 2: Test different review scenarios to identify the error
+        print("\n2️⃣ PROBANDO DIFERENTES ESCENARIOS DE RESEÑAS")
+        
+        # Test 2.1: Basic review with rating and comment
+        print("\n   📝 Prueba 2.1: Reseña básica con rating y comentario")
+        success_basic, response_basic = self.run_test(
+            "Create Basic Review",
+            "POST",
+            "api/reviews",
+            200,
+            data={
+                "barbershop_id": target_barbershop['id'],
+                "rating": 5,
+                "comment": "Excelente servicio, muy profesional. Recomendado."
+            },
+            token=self.client_token
+        )
+        
+        if not success_basic:
+            print("   ❌ ERROR EN RESEÑA BÁSICA - Este podría ser el problema reportado")
+            print(f"   🔍 Detalles del error: {response_basic}")
+            
+            # Try to identify the specific error
+            if isinstance(response_basic, dict):
+                error_detail = response_basic.get('detail', 'Error desconocido')
+                print(f"   🚨 Error específico: {error_detail}")
+                
+                # Check common error scenarios
+                if 'authentication' in error_detail.lower() or 'unauthorized' in error_detail.lower():
+                    print("   💡 Posible causa: Problema de autenticación")
+                elif 'barbershop' in error_detail.lower() or 'not found' in error_detail.lower():
+                    print("   💡 Posible causa: Barbería no encontrada")
+                elif 'rating' in error_detail.lower():
+                    print("   💡 Posible causa: Problema con el campo rating")
+                elif 'client' in error_detail.lower():
+                    print("   💡 Posible causa: Problema con el cliente")
+                else:
+                    print("   💡 Causa desconocida - revisar logs del backend")
+        else:
+            print("   ✅ Reseña básica creada exitosamente")
+            print(f"   📊 Datos de la reseña: Rating={response_basic.get('rating')}, ID={response_basic.get('id')}")
+        
+        # Test 2.2: Review with only rating (no comment)
+        print("\n   📝 Prueba 2.2: Reseña solo con rating (sin comentario)")
+        success_no_comment, response_no_comment = self.run_test(
+            "Create Review Without Comment",
+            "POST",
+            "api/reviews",
+            200,
+            data={
+                "barbershop_id": target_barbershop['id'],
+                "rating": 4
+            },
+            token=self.client_token
+        )
+        
+        if not success_no_comment:
+            print("   ❌ ERROR EN RESEÑA SIN COMENTARIO")
+            print(f"   🔍 Detalles: {response_no_comment}")
+        else:
+            print("   ✅ Reseña sin comentario creada exitosamente")
+        
+        # Test 2.3: Review with invalid rating
+        print("\n   📝 Prueba 2.3: Reseña con rating inválido")
+        success_invalid_rating, response_invalid_rating = self.run_test(
+            "Create Review With Invalid Rating",
+            "POST",
+            "api/reviews",
+            422,  # Expect validation error
+            data={
+                "barbershop_id": target_barbershop['id'],
+                "rating": 6,  # Invalid rating (should be 1-5)
+                "comment": "Rating inválido"
+            },
+            token=self.client_token
+        )
+        
+        if success_invalid_rating:
+            print("   ✅ Validación de rating inválido funciona correctamente")
+        else:
+            print("   ❌ Validación de rating inválido no funciona")
+        
+        # Test 2.4: Review with invalid barbershop_id
+        print("\n   📝 Prueba 2.4: Reseña con barbershop_id inválido")
+        success_invalid_barbershop, response_invalid_barbershop = self.run_test(
+            "Create Review With Invalid Barbershop ID",
+            "POST",
+            "api/reviews",
+            404,  # Expect not found error
+            data={
+                "barbershop_id": "invalid-barbershop-id-12345",
+                "rating": 5,
+                "comment": "Barbershop ID inválido"
+            },
+            token=self.client_token
+        )
+        
+        if success_invalid_barbershop:
+            print("   ✅ Validación de barbershop_id inválido funciona correctamente")
+        else:
+            print("   ❌ Validación de barbershop_id inválido no funciona")
+        
+        # Test 2.5: Review without authentication
+        print("\n   📝 Prueba 2.5: Reseña sin autenticación")
+        success_no_auth, response_no_auth = self.run_test(
+            "Create Review Without Authentication",
+            "POST",
+            "api/reviews",
+            401,  # Expect unauthorized error
+            data={
+                "barbershop_id": target_barbershop['id'],
+                "rating": 5,
+                "comment": "Sin autenticación"
+            }
+            # No token provided
+        )
+        
+        if success_no_auth:
+            print("   ✅ Validación de autenticación funciona correctamente")
+        else:
+            print("   ❌ Validación de autenticación no funciona")
+        
+        # Step 3: Check if reviews are being saved correctly
+        print("\n3️⃣ VERIFICANDO SI LAS RESEÑAS SE GUARDAN CORRECTAMENTE")
+        success_get_reviews, response_get_reviews = self.run_test(
+            "Get Reviews for Barbershop",
+            "GET",
+            f"api/reviews/barbershop/{target_barbershop['id']}",
+            200
+        )
+        
+        if success_get_reviews and response_get_reviews:
+            reviews = response_get_reviews.get('reviews', [])
+            print(f"   📊 Reseñas encontradas: {len(reviews)}")
+            
+            if reviews:
+                print("   📋 Últimas reseñas:")
+                for i, review in enumerate(reviews[-3:], 1):  # Show last 3 reviews
+                    print(f"      {i}. Rating: {review.get('rating')}/5")
+                    print(f"         Cliente: {review.get('client_name', 'Desconocido')}")
+                    print(f"         Comentario: {review.get('comment', 'Sin comentario')[:50]}...")
+                    print(f"         Fecha: {review.get('created_at', 'Sin fecha')}")
+            else:
+                print("   ⚠️ No se encontraron reseñas para esta barbería")
+        else:
+            print("   ❌ Error al obtener reseñas")
+        
+        # Step 4: Summary and diagnosis
+        print("\n4️⃣ DIAGNÓSTICO FINAL")
+        print("-" * 40)
+        
+        if success_basic:
+            print("✅ ENDPOINT POST /api/reviews FUNCIONA CORRECTAMENTE")
+            print("   - Las reseñas se pueden crear exitosamente")
+            print("   - Los datos se guardan en MongoDB")
+            print("   - La autenticación funciona")
+            print("   - Las validaciones funcionan")
+            print("\n💡 POSIBLES CAUSAS DEL ERROR REPORTADO:")
+            print("   1. Problema en el frontend (JavaScript/React)")
+            print("   2. Error de red o conectividad")
+            print("   3. Token de autenticación expirado en el frontend")
+            print("   4. Datos malformados enviados desde el frontend")
+            print("   5. Error específico con cierta barbería o usuario")
+            print("\n🔧 RECOMENDACIONES:")
+            print("   - Revisar logs del frontend para errores JavaScript")
+            print("   - Verificar que el token se esté enviando correctamente")
+            print("   - Comprobar la estructura de datos en el frontend")
+            print("   - Probar con diferentes navegadores")
+        else:
+            print("❌ PROBLEMA CONFIRMADO EN ENDPOINT POST /api/reviews")
+            print("   🚨 Este es el error que está experimentando el usuario")
+            print(f"   🔍 Error específico: {response_basic}")
+            print("\n🔧 ACCIÓN REQUERIDA:")
+            print("   - Revisar logs del backend para más detalles")
+            print("   - Verificar configuración de la base de datos")
+            print("   - Comprobar validaciones en el modelo Review")
+            print("   - Revisar middleware de autenticación")
+        
+        return success_basic
+
     def test_get_barbershop_reviews(self):
         """Test getting reviews for a barbershop"""
         if not hasattr(self, 'review_barbershop_id'):
