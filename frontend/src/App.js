@@ -99,6 +99,15 @@ function App() {
   const [editingProfile, setEditingProfile] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
   const [bookingBarbershop, setBookingBarbershop] = useState(null);
+  
+  // Review states
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewData, setReviewData] = useState({
+    rating: 0,
+    comment: '',
+    images: []
+  });
+  const [completedQuickCut, setCompletedQuickCut] = useState(null);
 
   useEffect(() => {
     checkAuthStatus();
