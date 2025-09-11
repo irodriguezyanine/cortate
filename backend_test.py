@@ -5,7 +5,7 @@ from datetime import datetime
 import uuid
 
 class CortateAPITester:
-    def __init__(self, base_url="https://69b15e3c-1c42-4531-a006-528ed6b65e5f.preview.emergentagent.com"):
+    def __init__(self, base_url="https://quickcut-app.preview.emergentagent.com"):
         self.base_url = base_url
         self.client_token = None
         self.barber_token = None
