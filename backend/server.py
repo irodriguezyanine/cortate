@@ -114,12 +114,16 @@ class QuickCutRequest(BaseModel):
     client_name: Optional[str] = None
     service: str
     max_price: int
+    max_distance: Optional[int] = 5
+    service_location: Optional[str] = "local"
+    preferred_time: Optional[str] = "asap"
     lat: float
     lng: float
     status: str  # "pending", "accepted", "rejected", "completed"
     barber_id: Optional[str] = None
     distance: Optional[float] = None
     created_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
 
 class Review(BaseModel):
     id: Optional[str] = None
