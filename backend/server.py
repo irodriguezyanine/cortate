@@ -1162,6 +1162,137 @@ async def update_booking_status(
         logger.error(f"Error updating booking status: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
+@app.post("/api/user/avatar")
+async def upload_user_avatar(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        # Validate file type
+        if not file.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="El archivo debe ser una imagen")
+        
+        # Validate file size (5MB max)
+        if file.size > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="La imagen debe ser menor a 5MB")
+        
+        # Create filename
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+        filename = f"avatar_{current_user['id']}_{int(datetime.utcnow().timestamp())}.{file_extension}"
+        file_path = f"/app/uploads/avatars/{filename}"
+        
+        # Create directory if it doesn't exist
+        os.makedirs("/app/uploads/avatars", exist_ok=True)
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Update user avatar in database
+        avatar_url = f"/uploads/avatars/{filename}"
+        await database.users.update_one(
+            {"id": current_user["id"]},
+            {"$set": {"avatar": avatar_url}}
+        )
+        
+        return {"avatar_url": avatar_url}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading avatar: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+@app.put("/api/user/profile")
+async def update_user_profile(
+    profile_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        # Validate email uniqueness if changed
+        if profile_data.get("email") != current_user["email"]:
+            existing_user = await database.users.find_one({"email": profile_data["email"]})
+            if existing_user:
+                raise HTTPException(status_code=400, detail="Este email ya está en uso")
+        
+        # Update user profile
+        update_data = {
+            "name": profile_data.get("name", current_user["name"]),
+            "email": profile_data.get("email", current_user["email"]),
+            "phone": profile_data.get("phone", current_user.get("phone")),
+            "address": profile_data.get("address", current_user.get("address")),
+            "bio": profile_data.get("bio", current_user.get("bio")),
+            "updated_at": datetime.now(timezone.utc)
+        }
+        
+        await database.users.update_one(
+            {"id": current_user["id"]},
+            {"$set": update_data}
+        )
+        
+        return {"message": "Perfil actualizado exitosamente"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating profile: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+@app.get("/api/chat/{service_id}")
+async def get_chat_history(
+    service_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        # Get chat messages for this service
+        messages = await database.chat_messages.find({
+            "service_id": service_id,
+            "$or": [
+                {"sender_id": current_user["id"]},
+                {"recipient_id": current_user["id"]}
+            ]
+        }).sort("timestamp", 1).to_list(length=100)
+        
+        # Remove MongoDB _id from messages
+        for message in messages:
+            message.pop("_id", None)
+        
+        return {"messages": messages}
+        
+    except Exception as e:
+        logger.error(f"Error getting chat history: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+@app.post("/api/chat/send")
+async def send_chat_message(
+    message_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        # Create message document
+        message = {
+            "id": generate_uuid(),
+            "service_id": message_data["service_id"],
+            "sender_id": current_user["id"],
+            "sender_name": current_user["name"],
+            "recipient_id": message_data.get("recipient_id"),
+            "message": message_data["message"],
+            "type": message_data.get("type", "text"),
+            "timestamp": datetime.now(timezone.utc)
+        }
+        
+        # Save to database
+        await database.chat_messages.insert_one(message)
+        
+        # Remove MongoDB _id for response
+        message.pop("_id", None)
+        
+        return message
+        
+    except Exception as e:
+        logger.error(f"Error sending message: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
 @app.get("/api/bookings/barber")
 async def get_barber_bookings(current_user: dict = Depends(get_current_user)):
     try:
