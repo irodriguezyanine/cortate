@@ -2668,6 +2668,35 @@ function App() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Toast Notifications System */}
+      <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`
+              p-4 rounded-lg shadow-lg border transition-all duration-300 transform animate-in slide-in-from-right-full
+              ${toast.variant === 'success' ? 'bg-green-900 border-green-700 text-green-100' :
+                toast.variant === 'destructive' ? 'bg-red-900 border-red-700 text-red-100' :
+                toast.variant === 'info' ? 'bg-blue-900 border-blue-700 text-blue-100' :
+                'bg-gray-900 border-gray-700 text-gray-100'}
+            `}
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                {toast.variant === 'success' && <CheckCircle className="w-5 h-5 text-green-400" />}
+                {toast.variant === 'destructive' && <XCircle className="w-5 h-5 text-red-400" />}
+                {toast.variant === 'info' && <Info className="w-5 h-5 text-blue-400" />}
+                {toast.variant === 'default' && <AlertCircle className="w-5 h-5 text-gray-400" />}
+              </div>
+              <div className="flex-1">
+                {toast.title && <p className="font-medium text-sm">{toast.title}</p>}
+                {toast.description && <p className="text-sm opacity-90 mt-1">{toast.description}</p>}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
