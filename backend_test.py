@@ -251,6 +251,146 @@ class CortateAPITester:
         )
         return success
 
+    def test_quick_cut_with_preferred_time_asap(self):
+        """Test creating quick cut request with preferred_time: asap"""
+        if not self.client_token:
+            print("❌ Skipped - No client token available")
+            return False
+            
+        success, response = self.run_test(
+            "Quick Cut Request - preferred_time: asap",
+            "POST",
+            "api/quick-cuts/request",
+            200,
+            data={
+                "service": "Corte de pelo",
+                "max_price": 15000,
+                "max_distance": 5,
+                "service_location": "local",
+                "preferred_time": "asap",
+                "lat": -33.4489,
+                "lng": -70.6693
+            },
+            token=self.client_token
+        )
+        
+        if success and response:
+            # Verify the preferred_time field is saved correctly
+            if response.get('preferred_time') == 'asap':
+                print("   ✅ preferred_time field saved correctly: asap")
+            else:
+                print(f"   ❌ preferred_time field incorrect: expected 'asap', got '{response.get('preferred_time')}'")
+                return False
+                
+            # Verify other new fields
+            if response.get('max_distance') == 5:
+                print("   ✅ max_distance field saved correctly: 5")
+            else:
+                print(f"   ❌ max_distance field incorrect: expected 5, got {response.get('max_distance')}")
+                
+            if response.get('service_location') == 'local':
+                print("   ✅ service_location field saved correctly: local")
+            else:
+                print(f"   ❌ service_location field incorrect: expected 'local', got '{response.get('service_location')}'")
+        
+        return success
+
+    def test_quick_cut_with_preferred_time_30min(self):
+        """Test creating quick cut request with preferred_time: 30min"""
+        if not self.client_token:
+            print("❌ Skipped - No client token available")
+            return False
+            
+        success, response = self.run_test(
+            "Quick Cut Request - preferred_time: 30min",
+            "POST",
+            "api/quick-cuts/request",
+            200,
+            data={
+                "service": "Barba",
+                "max_price": 10000,
+                "max_distance": 3,
+                "service_location": "domicilio",
+                "preferred_time": "30min",
+                "lat": -33.4489,
+                "lng": -70.6693
+            },
+            token=self.client_token
+        )
+        
+        if success and response:
+            if response.get('preferred_time') == '30min':
+                print("   ✅ preferred_time field saved correctly: 30min")
+            else:
+                print(f"   ❌ preferred_time field incorrect: expected '30min', got '{response.get('preferred_time')}'")
+                return False
+        
+        return success
+
+    def test_quick_cut_with_preferred_time_1hour(self):
+        """Test creating quick cut request with preferred_time: 1hour"""
+        if not self.client_token:
+            print("❌ Skipped - No client token available")
+            return False
+            
+        success, response = self.run_test(
+            "Quick Cut Request - preferred_time: 1hour",
+            "POST",
+            "api/quick-cuts/request",
+            200,
+            data={
+                "service": "Corte de pelo",
+                "max_price": 20000,
+                "max_distance": 8,
+                "service_location": "local",
+                "preferred_time": "1hour",
+                "lat": -33.4489,
+                "lng": -70.6693
+            },
+            token=self.client_token
+        )
+        
+        if success and response:
+            if response.get('preferred_time') == '1hour':
+                print("   ✅ preferred_time field saved correctly: 1hour")
+            else:
+                print(f"   ❌ preferred_time field incorrect: expected '1hour', got '{response.get('preferred_time')}'")
+                return False
+        
+        return success
+
+    def test_quick_cut_with_preferred_time_2hours(self):
+        """Test creating quick cut request with preferred_time: 2hours"""
+        if not self.client_token:
+            print("❌ Skipped - No client token available")
+            return False
+            
+        success, response = self.run_test(
+            "Quick Cut Request - preferred_time: 2hours",
+            "POST",
+            "api/quick-cuts/request",
+            200,
+            data={
+                "service": "Corte completo",
+                "max_price": 25000,
+                "max_distance": 10,
+                "service_location": "domicilio",
+                "preferred_time": "2hours",
+                "lat": -33.4489,
+                "lng": -70.6693
+            },
+            token=self.client_token
+        )
+        
+        if success and response:
+            if response.get('preferred_time') == '2hours':
+                print("   ✅ preferred_time field saved correctly: 2hours")
+            else:
+                print(f"   ❌ preferred_time field incorrect: expected '2hours', got '{response.get('preferred_time')}'")
+                return False
+        
+        return success
+
     def test_get_quick_cut_requests(self):
         """Test getting quick cut requests (barber only)"""
         if not self.barber_token:
