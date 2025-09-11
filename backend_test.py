@@ -335,6 +335,183 @@ class CortateAPITester:
         )
         return success
 
+    def test_create_barbershop(self):
+        """Test creating a barbershop (barber only)"""
+        if not self.barber_token:
+            print("❌ Skipped - No barber token available")
+            return False
+            
+        success, response = self.run_test(
+            "Create Barbershop",
+            "POST",
+            "api/barbershops",
+            200,
+            data={
+                "name": "Barbería Test Premium",
+                "description": "Una barbería de prueba con servicios premium",
+                "address": "Av. Providencia 1234, Santiago",
+                "phone": "+56987654321",
+                "services": [
+                    {"name": "Corte de pelo", "price": 12000, "duration": 30},
+                    {"name": "Barba", "price": 8000, "duration": 20}
+                ],
+                "working_hours": {
+                    "monday": {"open": "09:00", "close": "19:00"},
+                    "tuesday": {"open": "09:00", "close": "19:00"},
+                    "wednesday": {"open": "09:00", "close": "19:00"},
+                    "thursday": {"open": "09:00", "close": "19:00"},
+                    "friday": {"open": "09:00", "close": "19:00"},
+                    "saturday": {"open": "10:00", "close": "18:00"},
+                    "sunday": {"closed": True}
+                }
+            },
+            token=self.barber_token
+        )
+        
+        if success and 'id' in response:
+            self.barbershop_id = response['id']
+            print(f"   Barbershop created with ID: {self.barbershop_id}")
+        
+        return success
+
+    def test_get_my_barbershop(self):
+        """Test getting barber's own barbershop"""
+        if not self.barber_token:
+            print("❌ Skipped - No barber token available")
+            return False
+            
+        success, response = self.run_test(
+            "Get My Barbershop",
+            "GET",
+            "api/barbershops/my",
+            200,
+            token=self.barber_token
+        )
+        
+        if success and response.get('barbershop'):
+            barbershop = response['barbershop']
+            print(f"   Found barbershop: {barbershop.get('name', 'Unknown')}")
+            print(f"   Address: {barbershop.get('address', 'No address')}")
+            print(f"   Services: {len(barbershop.get('services', []))}")
+        elif success and not response.get('barbershop'):
+            print("   ⚠️ No barbershop found for this barber")
+        
+        return success
+
+    def test_barbershop_persistence(self):
+        """Test that barbershop data persists after creation"""
+        if not self.barber_token:
+            print("❌ Skipped - No barber token available")
+            return False
+            
+        # First get the barbershop
+        success1, response1 = self.run_test(
+            "Check Barbershop Persistence",
+            "GET",
+            "api/barbershops/my",
+            200,
+            token=self.barber_token
+        )
+        
+        if not success1:
+            return False
+            
+        if not response1.get('barbershop'):
+            print("   ❌ Barbershop not found - persistence failed")
+            return False
+            
+        barbershop = response1['barbershop']
+        
+        # Verify all data is present
+        required_fields = ['name', 'description', 'address', 'services', 'working_hours']
+        missing_fields = []
+        
+        for field in required_fields:
+            if not barbershop.get(field):
+                missing_fields.append(field)
+        
+        if missing_fields:
+            print(f"   ❌ Missing fields in persisted data: {missing_fields}")
+            return False
+        
+        print("   ✅ All barbershop data persisted correctly")
+        return True
+
+    def test_create_traditional_booking(self):
+        """Test creating a traditional booking"""
+        if not self.client_token or not hasattr(self, 'barbershop_id'):
+            print("❌ Skipped - Need client token and barbershop ID")
+            return False
+            
+        # Get barbershop info first
+        success_bs, response_bs = self.run_test(
+            "Get Barbershop for Booking",
+            "GET",
+            "api/barbershops",
+            200
+        )
+        
+        if not success_bs or not response_bs.get('barbershops'):
+            print("❌ No barbershops available for booking")
+            return False
+            
+        barbershop = response_bs['barbershops'][0]  # Use first available barbershop
+        
+        booking_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+        
+        success, response = self.run_test(
+            "Create Traditional Booking",
+            "POST",
+            "api/bookings",
+            200,
+            data={
+                "barbershop_id": barbershop['id'],
+                "barber_id": barbershop['barber_id'],
+                "service": "Corte de pelo",
+                "date": booking_date,
+                "price": 12000,
+                "notes": "Booking de prueba"
+            },
+            token=self.client_token
+        )
+        
+        if success and 'id' in response:
+            self.booking_id = response['id']
+            print(f"   Booking created with ID: {self.booking_id}")
+        
+        return success
+
+    def test_debug_endpoints(self):
+        """Test debug endpoints to check data persistence"""
+        print("\n🔍 DEBUGGING DATA PERSISTENCE")
+        print("-" * 40)
+        
+        # Test debug barbershops endpoint
+        success1, response1 = self.run_test(
+            "Debug Barbershops",
+            "GET",
+            "api/debug/barbershops",
+            200
+        )
+        
+        if success1 and 'barbershops' in response1:
+            barbershops = response1['barbershops']
+            print(f"   Total barbershops in DB: {len(barbershops)}")
+            for i, bs in enumerate(barbershops[:3]):  # Show first 3
+                print(f"   Barbershop {i+1}: {bs.get('name', 'Unknown')} (ID: {bs.get('id', 'No ID')})")
+        
+        # Test debug user endpoint if we have tokens
+        if self.barber_token:
+            success2, response2 = self.run_test(
+                "Debug Current User",
+                "GET",
+                "api/debug/user",
+                200,
+                token=self.barber_token
+            )
+        
+        return success1
+
 def main():
     print("🚀 Starting CÓRTATE.CL API Testing...")
     print("=" * 60)
