@@ -11,6 +11,8 @@ class CortateAPITester:
         self.barber_token = None
         self.client_user = None
         self.barber_user = None
+        self.barbershop_id = None
+        self.booking_id = None
         self.tests_run = 0
         self.tests_passed = 0
         
