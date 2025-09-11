@@ -201,13 +201,21 @@ function App() {
   };
 
   const initializeMap = async () => {
-    if (!barbershops.length) {
-      console.log('No barbershops to show');
+    console.log('Initializing map...');
+    console.log('Barbershops:', barbershops.length);
+    console.log('User:', user?.user_type);
+    console.log('API Key exists:', !!GOOGLE_MAPS_API_KEY);
+    
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.error('No Google Maps API key');
       return;
     }
 
-    if (!GOOGLE_MAPS_API_KEY) {
-      console.error('No Google Maps API key');
+    // Check if the map div exists
+    const mapDiv = document.getElementById("map");
+    if (!mapDiv) {
+      console.error('Map div not found');
+      setTimeout(initializeMap, 1000); // Retry after 1 second
       return;
     }
 
@@ -219,10 +227,12 @@ function App() {
 
     try {
       // Load Google Maps
+      console.log('Loading Google Maps...');
       const google = await loader.load();
+      console.log('Google Maps loaded successfully');
       
-      const mapInstance = new google.maps.Map(document.getElementById("map"), {
-        zoom: 12,
+      const mapInstance = new google.maps.Map(mapDiv, {
+        zoom: barbershops.length > 0 ? 12 : 10,
         center: userLocation,
         styles: [
           {
@@ -234,13 +244,25 @@ function App() {
             featureType: "all",
             elementType: "labels.text.fill",
             stylers: [{ color: "#ffffff" }]
+          },
+          {
+            featureType: "road",
+            elementType: "geometry",
+            stylers: [{ color: "#2a2a2a" }]
+          },
+          {
+            featureType: "water",
+            elementType: "geometry",
+            stylers: [{ color: "#0f1419" }]
           }
         ]
       });
 
+      console.log('Map instance created');
       setMap(mapInstance);
 
       // Add markers for barbershops
+      let markerCount = 0;
       barbershops.forEach(barbershop => {
         if (barbershop.lat && barbershop.lng) {
           const marker = new google.maps.Marker({
@@ -252,8 +274,22 @@ function App() {
           marker.addListener("click", () => {
             setSelectedBarbershop(barbershop);
           });
+          markerCount++;
         }
       });
+      
+      console.log(`Added ${markerCount} markers to map`);
+
+      // If we have barbershops, adjust map bounds to show all markers
+      if (barbershops.length > 0) {
+        const bounds = new google.maps.LatLngBounds();
+        barbershops.forEach(barbershop => {
+          if (barbershop.lat && barbershop.lng) {
+            bounds.extend(new google.maps.LatLng(barbershop.lat, barbershop.lng));
+          }
+        });
+        mapInstance.fitBounds(bounds);
+      }
 
     } catch (error) {
       console.error('Error loading Google Maps:', error);
