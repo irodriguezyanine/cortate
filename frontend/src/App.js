@@ -2066,64 +2066,101 @@ function App() {
           <Card className="bg-gray-900 border-gray-700">
             <CardContent className="p-6 space-y-4">
               <div className="text-center">
-                <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-400" />
-                <h3 className="text-white text-xl font-semibold mb-2">¡Barbero Encontrado!</h3>
-                <p className="text-gray-400">Tu barbero ha aceptado el corte</p>
+                <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-white text-xl font-semibold mb-2">¡Barbero encontrado!</h3>
+                <p className="text-gray-400 mb-4">
+                  {matchedBarber.name} ha aceptado tu solicitud
+                </p>
               </div>
-
+              
               <div className="bg-gray-800 p-4 rounded-lg">
-                <div className="flex items-center gap-3 mb-3">
-                  <Avatar>
-                    <AvatarImage src={matchedBarber.image} />
-                    <AvatarFallback>{matchedBarber.name?.[0]}</AvatarFallback>
-                  </Avatar>
-                  <div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center">
+                    <User className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
                     <h4 className="text-white font-medium">{matchedBarber.name}</h4>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                      <span className="text-sm text-gray-400">{matchedBarber.rating}</span>
+                    <p className="text-gray-400 text-sm">{matchedBarber.barbershop}</p>
+                    <div className="flex items-center gap-4 mt-1">
+                      <span className="text-amber-400">${matchedBarber.price?.toLocaleString()}</span>
+                      <span className="text-blue-400">{matchedBarber.distance} km</span>
                     </div>
                   </div>
                 </div>
-                
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Servicio:</span>
-                    <span className="text-white">{selectedService}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Precio:</span>
-                    <span className="text-amber-400">${matchedBarber.price?.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Distancia:</span>
-                    <span className="text-white">{matchedBarber.distance} km</span>
+              </div>
+
+              {/* Estado pendiente hasta completar */}
+              <div className="bg-yellow-900/20 border border-yellow-700 p-4 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                  <div>
+                    <p className="text-yellow-300 font-medium">Estado: PENDIENTE</p>
+                    <p className="text-yellow-400 text-sm">Esperando a que el barbero complete el servicio</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-amber-900/20 border border-amber-400/30 p-4 rounded-lg">
-                <h5 className="text-amber-400 font-medium mb-2">📍 Dirección de la Barbería:</h5>
-                <p className="text-white">{matchedBarber.address}</p>
-                <p className="text-gray-400 text-sm mt-2">
-                  Dirígete a esta dirección para tu corte
-                </p>
+              <div className="space-y-2 text-sm text-gray-300">
+                <div className="flex justify-between">
+                  <span>Servicio:</span>
+                  <span>{selectedService}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Ubicación:</span>
+                  <span>{serviceLocation === 'home' ? 'A domicilio' : 'En el local'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tiempo preferido:</span>
+                  <span>{
+                    preferredTime === 'asap' ? 'Lo antes posible' :
+                    preferredTime === '30min' ? 'En 30 minutos' :
+                    preferredTime === '1hour' ? 'En 1 hora' :
+                    'En 2 horas'
+                  }</span>
+                </div>
               </div>
 
               <div className="flex gap-2">
                 <Button 
-                  onClick={() => setQuickCutStatus('pending')}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  onClick={() => {
+                    setShowChat(true);
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
-                  Ir al Local
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Chat con Barbero
                 </Button>
+                
                 <Button 
+                  onClick={() => {
+                    if (serviceLocation === 'local') {
+                      window.open(`https://maps.google.com/maps?q=${matchedBarber.lat},${matchedBarber.lng}`, '_blank');
+                    }
+                  }}
                   variant="outline"
-                  className="flex-1 border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
+                  className="flex-1 text-white border-gray-600"
                 >
-                  Cancelar
+                  <MapPin className="w-4 h-4 mr-2" />
+                  {serviceLocation === 'home' ? 'Barbero en camino' : 'Ir al Local'}
                 </Button>
               </div>
+              
+              {/* Botón para marcar como completado - solo cliente puede hacerlo */}
+              <Button 
+                onClick={() => {
+                  setCompletedQuickCut({
+                    barber: matchedBarber,
+                    service: selectedService,
+                    price: matchedBarber.price
+                  });
+                  setShowReviewModal(true);
+                }}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                Marcar como Completado
+              </Button>
             </CardContent>
           </Card>
         )}
