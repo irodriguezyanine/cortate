@@ -2737,7 +2737,24 @@ function App() {
       {bookingBarbershop && <BookingModal />}
 
       {/* Review Modal */}
-      {showReviewModal && <ReviewModal />}
+      {showReviewModal && (
+        <ReviewModal 
+          showReviewModal={showReviewModal}
+          setShowReviewModal={setShowReviewModal}
+          reviewData={reviewData}
+          setReviewData={setReviewData}
+          completedQuickCut={completedQuickCut}
+          setCompletedQuickCut={setCompletedQuickCut}
+          setQuickCutStatus={setQuickCutStatus}
+          setMatchedBarber={setMatchedBarber}
+          setSuccess={setSuccess}
+          loadClientHistory={loadClientHistory}
+          setError={setError}
+          loading={loading}
+          setLoading={setLoading}
+          BACKEND_URL={BACKEND_URL}
+        />
+      )}
 
       {/* Selected Barbershop Modal */}
       {selectedBarbershop && (
