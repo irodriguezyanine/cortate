@@ -114,10 +114,13 @@ function App() {
   }, [user]);
 
   useEffect(() => {
-    if (barbershops.length > 0 && user && user.user_type === 'client') {
-      initializeMap();
+    if (user && user.user_type === 'client') {
+      // Initialize map even if no barbershops yet, or when barbershops are loaded
+      if (activeTab === 'map') {
+        setTimeout(initializeMap, 500); // Small delay to ensure DOM is ready
+      }
     }
-  }, [barbershops, user]);
+  }, [barbershops, user, activeTab]);
 
   // Check if user is already logged in
   const checkAuthStatus = async () => {
