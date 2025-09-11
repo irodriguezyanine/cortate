@@ -1908,9 +1908,20 @@ function App() {
                         </div>
                         <p className="text-gray-400">Cliente: {request.client_name}</p>
                         <p className="text-amber-400">Presupuesto: ${request.max_price?.toLocaleString()}</p>
+                        {request.preferred_time && (
+                          <p className="text-blue-400 text-sm">
+                            ⏱️ {
+                              request.preferred_time === 'asap' ? 'Lo antes posible' :
+                              request.preferred_time === '30min' ? 'En 30 minutos' :
+                              request.preferred_time === '1hour' ? 'En 1 hora' :
+                              request.preferred_time === '2hours' ? 'En 2 horas' :
+                              'Horario flexible'
+                            }
+                          </p>
+                        )}
                         {request.service_location === 'home' && (
-                          <Badge variant="outline" className="text-blue-400 border-blue-400">
-                            A domicilio
+                          <Badge variant="outline" className="text-blue-400 border-blue-400 mt-1">
+                            🏠 A domicilio
                           </Badge>
                         )}
                       </div>
