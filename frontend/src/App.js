@@ -2473,7 +2473,13 @@ function App() {
     </div>
   );
 
-  const QuickCutRequests = () => {
+  const BarberRequests = () => {
+    // Combinar quick cuts y reservas tradicionales
+    const allRequests = [
+      ...quickCutRequests.map(req => ({ ...req, type: 'quick_cut' })),
+      ...barberBookings.filter(booking => booking.status === 'pending').map(booking => ({ ...booking, type: 'traditional_booking' }))
+    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    
     const getTimeLeft = (createdAt, expiresAt) => {
       const now = new Date();
       const expires = new Date(expiresAt);
@@ -2484,118 +2490,209 @@ function App() {
       return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     };
 
+    const handleAcceptRequest = async (request) => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        
+        if (request.type === 'quick_cut') {
+          // Accept quick cut request
+          await axios.post(`${BACKEND_URL}/api/quick-cuts/respond`, {
+            request_id: request.id,
+            accept: true
+          }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          showNotification('✅ Solicitud Aceptada', `Corte rápido de ${request.client_name} aceptado`, 'success');
+        } else {
+          // Accept traditional booking
+          await axios.put(`${BACKEND_URL}/api/bookings/${request.id}/status`, {
+            status: 'accepted'
+          }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          showNotification('✅ Reserva Aceptada', `Reserva de ${request.client_name} aceptada`, 'success');
+        }
+        
+        // Refresh data
+        loadBarberData();
+        
+      } catch (error) {
+        console.error('Error accepting request:', error);
+        showNotification('❌ Error', 'No se pudo aceptar la solicitud', 'destructive');
+      }
+    };
+
+    const handleRejectRequest = async (request) => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        
+        if (request.type === 'quick_cut') {
+          // Reject quick cut request
+          await axios.post(`${BACKEND_URL}/api/quick-cuts/respond`, {
+            request_id: request.id,
+            accept: false
+          }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          showNotification('❌ Solicitud Rechazada', `Corte rápido de ${request.client_name} rechazado`, 'info');
+        } else {
+          // Reject traditional booking
+          await axios.put(`${BACKEND_URL}/api/bookings/${request.id}/status`, {
+            status: 'rejected'
+          }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          showNotification('❌ Reserva Rechazada', `Reserva de ${request.client_name} rechazada`, 'info');
+        }
+        
+        // Refresh data
+        loadBarberData();
+        
+      } catch (error) {
+        console.error('Error rejecting request:', error);
+        showNotification('❌ Error', 'No se pudo rechazar la solicitud', 'destructive');
+      }
+    };
+
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-2">Solicitudes de Corte Rápido</h2>
-          <p className="text-gray-400">Responde a las solicitudes de clientes cercanos</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Solicitudes Pendientes</h2>
+          <p className="text-gray-400">Gestiona tus cortes rápidos y reservas tradicionales</p>
         </div>
 
         <div className="space-y-4">
-          {quickCutRequests.length === 0 ? (
+          {allRequests.length === 0 ? (
             <Card className="bg-gray-900 border-gray-700">
               <CardContent className="p-8 text-center">
                 <Bell className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-400">No hay solicitudes pendientes</p>
+                <h3 className="text-white text-xl mb-2">No hay solicitudes pendientes</h3>
+                <p className="text-gray-400">Las nuevas solicitudes aparecerán aquí</p>
               </CardContent>
             </Card>
           ) : (
-            quickCutRequests.map((request, index) => (
-              <Card key={request.id} className={`bg-gray-900 border-gray-700 ${index === 0 ? 'ring-2 ring-amber-400' : ''}`}>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-white font-semibold">{request.service}</h3>
-                          {index === 0 && (
-                            <Badge className="bg-amber-600 text-white animate-pulse">
-                              ¡NUEVO!
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-gray-400">Cliente: {request.client_name}</p>
-                        <p className="text-amber-400">Presupuesto: ${request.max_price?.toLocaleString()}</p>
-                        {request.preferred_time && (
-                          <p className="text-blue-400 text-sm">
-                            ⏱️ {
-                              request.preferred_time === 'asap' ? 'Lo antes posible' :
-                              request.preferred_time === '30min' ? 'En 30 minutos' :
-                              request.preferred_time === '1hour' ? 'En 1 hora' :
-                              request.preferred_time === '2hours' ? 'En 2 horas' :
-                              'Horario flexible'
-                            }
-                          </p>
-                        )}
-                        {request.service_location === 'home' && (
-                          <Badge variant="outline" className="text-blue-400 border-blue-400 mt-1">
-                            🏠 A domicilio
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <Badge variant="outline" className="mb-2">
-                          <MapPin className="w-3 h-3 mr-1" />
-                          {request.distance} km de distancia
+            allRequests.map((request, index) => (
+              <Card key={`${request.type}-${request.id}-${index}`} className="bg-gray-900 border-gray-700">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-white font-medium">{request.service}</h3>
+                        <Badge 
+                          variant="outline" 
+                          className={request.type === 'quick_cut' ? "text-amber-400 border-amber-400" : "text-blue-400 border-blue-400"}
+                        >
+                          {request.type === 'quick_cut' ? '⚡ Corte Rápido' : '📅 Reserva'}
                         </Badge>
-                        <div className="text-red-400 font-mono text-lg mb-1">
-                          ⏰ {getTimeLeft(request.created_at, request.expires_at)}
-                        </div>
-                        <p className="text-xs text-gray-400">Tiempo para responder</p>
-                        {request.lat && request.lng && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            📍 Zona: {request.lat.toFixed(3)}, {request.lng.toFixed(3)}
-                          </p>
-                        )}
                       </div>
+                      
+                      <p className="text-gray-400">Cliente: {request.client_name}</p>
+                      <p className="text-amber-400">
+                        {request.type === 'quick_cut' 
+                          ? `Presupuesto: $${request.max_price?.toLocaleString()}` 
+                          : `Precio: $${request.price?.toLocaleString()}`
+                        }
+                      </p>
+                      
+                      {request.type === 'traditional_booking' && (
+                        <p className="text-purple-400 text-sm">
+                          📅 Fecha: {new Date(request.date).toLocaleDateString('es-CL')}
+                        </p>
+                      )}
+                      
+                      {request.preferred_time && request.type === 'quick_cut' && (
+                        <p className="text-blue-400 text-sm">
+                          ⏱️ {
+                            request.preferred_time === 'asap' ? 'Lo antes posible' :
+                            request.preferred_time === '30min' ? 'En 30 minutos' :
+                            request.preferred_time === '1hour' ? 'En 1 hora' :
+                            request.preferred_time === '2hours' ? 'En 2 horas' :
+                            'Horario flexible'
+                          }
+                        </p>
+                      )}
+                      
+                      {request.service_location === 'home' && (
+                        <Badge variant="outline" className="text-blue-400 border-blue-400 mt-1">
+                          🏠 A domicilio
+                        </Badge>
+                      )}
+                      
+                      {request.notes && (
+                        <p className="text-gray-300 text-sm mt-2">
+                          💬 {request.notes}
+                        </p>
+                      )}
                     </div>
                     
-                    {/* Additional details */}
-                    <div className="bg-gray-800 p-3 rounded-lg">
-                      <h4 className="text-white text-sm font-medium mb-2">Detalles de la Solicitud:</h4>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="text-right">
+                      <Badge variant="outline" className="mb-2">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        {request.distance || 'N/A'} km
+                      </Badge>
+                      
+                      {request.type === 'quick_cut' && request.expires_at && (
                         <div>
-                          <span className="text-gray-400">Solicitud creada:</span>
-                          <p className="text-white">{new Date(request.created_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}</p>
+                          <div className="text-red-400 font-mono text-lg mb-1">
+                            ⏰ {getTimeLeft(request.created_at, request.expires_at)}
+                          </div>
+                          <p className="text-xs text-gray-400">Tiempo para responder</p>
                         </div>
+                      )}
+                      
+                      {request.lat && request.lng && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          📍 Zona: {request.lat.toFixed(3)}, {request.lng.toFixed(3)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Additional details */}
+                  <div className="bg-gray-800 p-3 rounded-lg mb-4">
+                    <h4 className="text-white text-sm font-medium mb-2">Detalles de la Solicitud:</h4>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-gray-400">Solicitud creada:</span>
+                        <p className="text-white">{new Date(request.created_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Tipo:</span>
+                        <p className="text-white">{request.type === 'quick_cut' ? 'Corte Rápido' : 'Reserva Tradicional'}</p>
+                      </div>
+                      {request.max_distance && (
                         <div>
                           <span className="text-gray-400">Máx. distancia:</span>
-                          <p className="text-white">{request.max_distance || 5} km</p>
+                          <p className="text-white">{request.max_distance} km</p>
                         </div>
-                        {request.preferred_time !== 'asap' && (
-                          <div>
-                            <span className="text-gray-400">Tiempo deseado:</span>
-                            <p className="text-white">
-                              {request.preferred_time === '30min' ? '30 min' :
-                               request.preferred_time === '1hour' ? '1 hora' :
-                               request.preferred_time === '2hours' ? '2 horas' : 'Flexible'}
-                            </p>
-                          </div>
-                        )}
-                        <div>
-                          <span className="text-gray-400">Estado:</span>
-                          <p className="text-green-400">Pendiente</p>
-                        </div>
+                      )}
+                      <div>
+                        <span className="text-gray-400">Estado:</span>
+                        <p className="text-green-400">Pendiente</p>
                       </div>
                     </div>
-                    
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={() => handleQuickCutResponse(request.id, true)}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Aceptar
-                      </Button>
-                      <Button 
-                        onClick={() => handleQuickCutResponse(request.id, false)}
-                        variant="outline"
-                        className="flex-1 border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
-                      >
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Rechazar
-                      </Button>
-                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => handleAcceptRequest(request)}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Aceptar
+                    </Button>
+                    <Button 
+                      onClick={() => handleRejectRequest(request)}
+                      variant="outline"
+                      className="flex-1 border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Rechazar
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
