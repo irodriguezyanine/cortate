@@ -761,6 +761,7 @@ async def create_quick_cut_request(request_data: QuickCutRequestCreate, current_
             "max_price": request_data.max_price,
             "max_distance": getattr(request_data, 'max_distance', 5),
             "service_location": getattr(request_data, 'service_location', 'local'),
+            "preferred_time": getattr(request_data, 'preferred_time', 'asap'),
             "lat": request_data.lat,
             "lng": request_data.lng,
             "status": "pending",
