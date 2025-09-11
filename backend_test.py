@@ -1525,11 +1525,6 @@ def main():
     
     tester = CortateAPITester()
     
-    # SPECIAL REQUEST: Database cleanup analysis and execution
-    print("\n🧹 ANÁLISIS Y LIMPIEZA DE BASE DE DATOS")
-    print("=" * 60)
-    cleanup_analysis_success = tester.analyze_barbershop_database_cleanup()
-    
     # Basic connectivity tests
     print("\n📡 CONNECTIVITY TESTS")
     print("-" * 30)
@@ -1548,22 +1543,15 @@ def main():
     tester.test_get_current_user_barber()
     tester.test_unauthorized_access()
     
+    # URGENT CORRECTION: Restore BARBERIA CANTAGALLO and clean fake barbershops
+    print("\n🚨 URGENT BARBERSHOP CORRECTION")
+    print("=" * 60)
+    urgent_correction_success = tester.urgent_barbershop_correction()
+    
     # Data access tests
     print("\n📊 DATA ACCESS TESTS")
     print("-" * 30)
     tester.test_get_barbershops()
-    
-    # DATABASE CLEANUP EXECUTION TESTS
-    print("\n🧹 DATABASE CLEANUP EXECUTION TESTS")
-    print("-" * 50)
-    individual_deletion_success = tester.test_individual_barbershop_deletion()
-    bulk_cleanup_success = tester.test_bulk_database_cleanup()
-    
-    # Google Maps API Integration Tests (HIGH PRIORITY)
-    print("\n🗺️ GOOGLE MAPS API TESTS")
-    print("-" * 30)
-    google_maps_success = tester.test_google_maps_geocoding()
-    barbershop_list_success = tester.test_barbershop_appears_in_list()
     
     # Business logic tests
     print("\n💼 BUSINESS LOGIC TESTS")
@@ -1596,6 +1584,18 @@ def main():
     tester.test_create_traditional_booking()
     tester.test_get_barber_bookings()
     
+    # DATABASE CLEANUP EXECUTION TESTS
+    print("\n🧹 DATABASE CLEANUP EXECUTION TESTS")
+    print("-" * 50)
+    individual_deletion_success = tester.test_individual_barbershop_deletion()
+    bulk_cleanup_success = tester.test_bulk_database_cleanup()
+    
+    # Google Maps API Integration Tests (HIGH PRIORITY)
+    print("\n🗺️ GOOGLE MAPS API TESTS")
+    print("-" * 30)
+    google_maps_success = tester.test_google_maps_geocoding()
+    barbershop_list_success = tester.test_barbershop_appears_in_list()
+    
     # Debug and persistence tests
     tester.test_debug_endpoints()
     
@@ -1611,14 +1611,18 @@ def main():
     print(f"Tests passed: {tester.tests_passed}/{tester.tests_run}")
     print(f"Success rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
     
+    # Special focus on URGENT CORRECTION results
+    print("\n🚨 URGENT CORRECTION RESULTS:")
+    if urgent_correction_success:
+        print("✅ BARBERIA CANTAGALLO restoration: COMPLETED")
+        print("✅ Fake barbershops cleanup: COMPLETED")
+        print("✅ Only 2 legitimate barbershops remain: Barbería Dani + BARBERIA CANTAGALLO")
+    else:
+        print("❌ URGENT CORRECTION: FAILED")
+        print("⚠️ Manual intervention may be required")
+    
     # Special focus on database cleanup results
     print("\n🧹 DATABASE CLEANUP RESULTS:")
-    if cleanup_analysis_success:
-        print("✅ Database cleanup analysis: COMPLETED")
-        print("📋 Detailed cleanup report generated above")
-    else:
-        print("❌ Database cleanup analysis: FAILED")
-    
     if individual_deletion_success:
         print("✅ Individual barbershop deletion: WORKING")
     else:
