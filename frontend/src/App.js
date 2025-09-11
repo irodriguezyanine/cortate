@@ -68,6 +68,7 @@ function App() {
   const [searchTimeLeft, setSearchTimeLeft] = useState(900); // 15 minutes = 900 seconds
   const [maxDistance, setMaxDistance] = useState([5]); // km
   const [serviceLocation, setServiceLocation] = useState('local'); // 'local' or 'home'
+  const [preferredTime, setPreferredTime] = useState('asap'); // 'asap', '30min', '1hour', '2hours'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
