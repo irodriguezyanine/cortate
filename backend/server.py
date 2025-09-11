@@ -734,6 +734,77 @@ async def get_barbershop_reviews(barbershop_id: str):
         logger.error(f"Error fetching reviews: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
+@app.get("/api/client/history")
+async def get_client_history(current_user: dict = Depends(get_current_user)):
+    try:
+        if current_user["user_type"] != "client":
+            raise HTTPException(status_code=403, detail="Solo clientes pueden ver su historial")
+        
+        # Get completed bookings
+        bookings = await database.bookings.find({
+            "client_id": current_user["id"],
+            "status": "completed"
+        }).to_list(length=100)
+        
+        # Get completed quick cut requests
+        quick_cuts = await database.quick_cut_requests.find({
+            "client_id": current_user["id"],
+            "status": "completed"
+        }).to_list(length=100)
+        
+        # Get reviews by this client
+        reviews = await database.reviews.find({
+            "client_id": current_user["id"]
+        }).to_list(length=100)
+        
+        # Create reviews lookup
+        reviews_by_barbershop = {review["barbershop_id"]: review for review in reviews}
+        
+        # Combine and enrich history
+        history = []
+        
+        # Add bookings to history
+        for booking in bookings:
+            if "_id" in booking:
+                booking.pop("_id")
+            
+            # Get barbershop info
+            barbershop = await database.barbershops.find_one({"id": booking["barbershop_id"]})
+            if barbershop:
+                barbershop.pop("_id", None)
+                booking["barbershop"] = barbershop
+            
+            # Add review if exists
+            if booking["barbershop_id"] in reviews_by_barbershop:
+                booking["review"] = reviews_by_barbershop[booking["barbershop_id"]]
+            
+            booking["type"] = "booking"
+            history.append(booking)
+        
+        # Add quick cuts to history
+        for quick_cut in quick_cuts:
+            if "_id" in quick_cut:
+                quick_cut.pop("_id")
+            
+            # Get barbershop info
+            if quick_cut.get("barber_id"):
+                barbershop = await database.barbershops.find_one({"barber_id": quick_cut["barber_id"]})
+                if barbershop:
+                    barbershop.pop("_id", None)
+                    quick_cut["barbershop"] = barbershop
+            
+            quick_cut["type"] = "quick_cut"
+            history.append(quick_cut)
+        
+        # Sort by date (most recent first)
+        history.sort(key=lambda x: x.get("created_at", datetime.min), reverse=True)
+        
+        return {"history": history}
+        
+    except Exception as e:
+        logger.error(f"Error fetching client history: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
 # Quick Cut Routes (unchanged from previous version)
 @app.post("/api/quick-cuts/request")
 async def create_quick_cut_request(request_data: QuickCutRequestCreate, current_user: dict = Depends(get_current_user)):
