@@ -2858,6 +2858,88 @@ function AppContent() {
   // Initialize toast system
   const { toast, toasts } = useToast();
 
+  const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('map');
+  const [map, setMap] = useState(null);
+  const [barbershops, setBarbershops] = useState([]);
+  const [selectedBarbershop, setSelectedBarbershop] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+  const [userLocation, setUserLocation] = useState({ lat: -33.4489, lng: -70.6693 });
+  const [priceLimit, setPriceLimit] = useState([50000]);
+  const [selectedService, setSelectedService] = useState('');
+  // Quick cut states for real-time Uber-style matching
+  const [quickCutStatus, setQuickCutStatus] = useState('idle'); // 'idle', 'searching', 'matched', 'pending', 'completed'
+  const [matchedBarber, setMatchedBarber] = useState(null);
+  const [quickCutTimer, setQuickCutTimer] = useState(0);
+  const [searchTimeLeft, setSearchTimeLeft] = useState(900); // 15 minutes = 900 seconds
+  const [maxDistance, setMaxDistance] = useState([5]); // km
+  const [serviceLocation, setServiceLocation] = useState('local'); // 'local' or 'home'
+  const [preferredTime, setPreferredTime] = useState('asap'); // 'asap', '30min', '1hour', '2hours'
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  
+  // Advanced features states
+  const [realTimeTracking, setRealTimeTracking] = useState(false);
+  const [estimatedArrival, setEstimatedArrival] = useState(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [quickCutProgress, setQuickCutProgress] = useState(0);
+  const [barberRating, setBarberRating] = useState(null);
+  const [isLocationTracking, setIsLocationTracking] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [loyaltyPoints, setLoyaltyPoints] = useState(0);
+  const [clientLevel, setClientLevel] = useState('Bronze');
+  const [totalSpent, setTotalSpent] = useState(0);
+  const [totalCuts, setTotalCuts] = useState(0);
+  const [achievements, setAchievements] = useState([]);
+  const [promoCodes, setPromoCodes] = useState([]);
+  
+  // Enterprise features
+  const [analyticsData, setAnalyticsData] = useState({});
+  const [performanceMetrics, setPerformanceMetrics] = useState({});
+  const [realTimeUpdates, setRealTimeUpdates] = useState(true);
+  const [smartRecommendations, setSmartRecommendations] = useState([]);
+  const [dynamicPricing, setDynamicPricing] = useState(false);
+
+  // Barber specific states
+  const [appointments, setAppointments] = useState([]);
+  const [quickCutRequests, setQuickCutRequests] = useState([]);
+  const [barberBookings, setBarberBookings] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [myBarbershop, setMyBarbershop] = useState(null);
+  const [showCreateBarbershop, setShowCreateBarbershop] = useState(false);
+
+  // Client specific states
+  const [bookingHistory, setBookingHistory] = useState([]);
+  const [userSettings, setUserSettings] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    age: '',
+    address: '',
+    hairPreference: '',
+    notifications: {
+      offers: true,
+      reminders: true
+    }
+  });
+  const [showHistory, setShowHistory] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
+  const [bookingBarbershop, setBookingBarbershop] = useState(null);
+  const [showChat, setShowChat] = useState(false);
+  
+  // Review states
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewData, setReviewData] = useState({
+    rating: 0,
+    comment: '',
+    images: []
+  });
+  const [completedQuickCut, setCompletedQuickCut] = useState(null);
+
   // Real-time location tracking
   const handleLocationUpdate = (location) => {
     setCurrentLocation(location);
