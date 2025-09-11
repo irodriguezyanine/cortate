@@ -264,3 +264,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Identificados múltiples problemas críticos de persistencia de datos en MongoDB y sincronización frontend-backend. El usuario reporta que las barberías no se guardan correctamente y las solicitudes no llegan a los barberos. Prioridad: resolver primero los problemas de backend para datos persistentes, luego frontend UI/UX."
+  - agent: "testing"
+    message: "TESTING COMPLETED - MAJOR SUCCESS: Fixed critical barbershop persistence bug (FastAPI route ordering issue). 4/5 backend tasks now working correctly. MongoDB data persistence RESOLVED for users and barbershops. Quick cut and traditional booking systems FUNCTIONAL. Only remaining issue: Google Maps API key returning REQUEST_DENIED errors. Backend test success rate: 95.7% (22/23 tests passed). All core business logic working properly."
