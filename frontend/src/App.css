@@ -83,6 +83,26 @@ html {
   box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
 }
 
+/* Improved button styling for dark theme */
+.btn-outline-dark {
+  background: transparent;
+  border: 1px solid #6b7280;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-dark:hover {
+  border-color: #f59e0b;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.btn-outline-dark.selected {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #ffffff;
+}
+
 /* Card animations */
 .card-hover {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
