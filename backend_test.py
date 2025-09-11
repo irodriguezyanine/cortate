@@ -1146,6 +1146,26 @@ def main():
     tester.test_create_barbershop()
     tester.test_get_my_barbershop()
     tester.test_barbershop_persistence()
+    
+    # NEW FUNCTIONALITY TESTS - CÓRTATE.CL SPECIFIC
+    print("\n🆕 NEW FUNCTIONALITY TESTS - CÓRTATE.CL")
+    print("-" * 50)
+    print("Testing new features: preferred_time, reviews system, client history")
+    
+    # Quick Cut with preferred_time tests
+    tester.test_quick_cut_with_preferred_time_asap()
+    tester.test_quick_cut_with_preferred_time_30min()
+    tester.test_quick_cut_with_preferred_time_1hour()
+    tester.test_quick_cut_with_preferred_time_2hours()
+    
+    # Reviews system tests
+    tester.test_create_review()
+    tester.test_get_barbershop_reviews()
+    
+    # Client history tests
+    tester.test_client_history_endpoint()
+    
+    # Original quick cut and booking tests
     tester.test_create_quick_cut_request()
     tester.test_get_quick_cut_requests()
     tester.test_create_traditional_booking()
