@@ -219,25 +219,49 @@ html {
   color: white;
 }
 
-/* Tab enhancements */
-.tab-indicator {
-  position: relative;
+/* Calendar dark theme improvements */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: #f59e0b;
+  --rdp-background-color: #1f2937;
+  --rdp-accent-color-dark: #d97706;
+  --rdp-background-color-dark: #111827;
+  --rdp-outline: 2px solid var(--rdp-accent-color);
 }
 
-.tab-indicator::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #f59e0b;
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
+.rdp-day_selected {
+  background-color: #f59e0b !important;
+  color: white !important;
 }
 
-.tab-indicator.active::after {
-  transform: scaleX(1);
+.rdp-day:hover {
+  background-color: #374151 !important;
+  color: white !important;
+}
+
+.rdp-head_cell {
+  color: #9ca3af !important;
+  font-weight: 600;
+}
+
+.rdp-nav_button {
+  color: white !important;
+}
+
+.rdp-nav_button:hover {
+  background-color: #374151 !important;
+}
+
+.rdp-button:not(.rdp-day_selected) {
+  color: white !important;
+}
+
+/* Calendar container styling */
+.calendar-container {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 1rem;
 }
 
 /* Map info window custom styling */
