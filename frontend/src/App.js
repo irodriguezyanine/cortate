@@ -1026,7 +1026,7 @@ function App() {
                     variant="outline"
                     size="sm"
                     onClick={() => setPriceLimit([8000])}
-                    className={priceLimit[0] === 8000 ? "bg-amber-600 text-white" : ""}
+                    className={priceLimit[0] === 8000 ? "bg-amber-600 text-white border-amber-600" : "text-white border-gray-600 hover:border-amber-600 hover:text-amber-600"}
                   >
                     $8.000
                   </Button>
@@ -1035,7 +1035,7 @@ function App() {
                     variant="outline"
                     size="sm"
                     onClick={() => setPriceLimit([12000])}
-                    className={priceLimit[0] === 12000 ? "bg-amber-600 text-white" : ""}
+                    className={priceLimit[0] === 12000 ? "bg-amber-600 text-white border-amber-600" : "text-white border-gray-600 hover:border-amber-600 hover:text-amber-600"}
                   >
                     $12.000
                   </Button>
@@ -1044,7 +1044,7 @@ function App() {
                     variant="outline"
                     size="sm"
                     onClick={() => setPriceLimit([18000])}
-                    className={priceLimit[0] === 18000 ? "bg-amber-600 text-white" : ""}
+                    className={priceLimit[0] === 18000 ? "bg-amber-600 text-white border-amber-600" : "text-white border-gray-600 hover:border-amber-600 hover:text-amber-600"}
                   >
                     $18.000
                   </Button>
@@ -1053,7 +1053,7 @@ function App() {
                     variant="outline"
                     size="sm"
                     onClick={() => setPriceLimit([25000])}
-                    className={priceLimit[0] === 25000 ? "bg-amber-600 text-white" : ""}
+                    className={priceLimit[0] === 25000 ? "bg-amber-600 text-white border-amber-600" : "text-white border-gray-600 hover:border-amber-600 hover:text-amber-600"}
                   >
                     $25.000+
                   </Button>
