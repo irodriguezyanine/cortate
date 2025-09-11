@@ -2846,6 +2846,16 @@ function App() {
   );
 
   return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  );
+}
+
+function AppContent() {
+  const { t } = useLanguage();
+
+  return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <header className="bg-gray-900 border-b border-gray-800 px-4 py-3">
