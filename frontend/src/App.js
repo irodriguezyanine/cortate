@@ -1278,21 +1278,21 @@ function App() {
                   placeholder="Servicio"
                   value={service.name}
                   onChange={(e) => updateService(index, 'name', e.target.value)}
-                  className="flex-1"
+                  className="flex-1 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 />
                 <Input
                   type="number"
                   placeholder="Precio"
                   value={service.price}
                   onChange={(e) => updateService(index, 'price', parseInt(e.target.value) || 0)}
-                  className="w-24"
+                  className="w-24 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 />
                 <Input
                   type="number"
                   placeholder="Min"
                   value={service.duration}
                   onChange={(e) => updateService(index, 'duration', parseInt(e.target.value) || 0)}
-                  className="w-16"
+                  className="w-16 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 />
                 {formData.services.length > 1 && (
                   <Button
