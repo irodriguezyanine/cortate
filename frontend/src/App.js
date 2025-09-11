@@ -1548,7 +1548,7 @@ function App() {
       </TabsContent>
 
       <TabsContent value="requests">
-        <QuickCutRequests />
+        <BarberRequests />
       </TabsContent>
 
       <TabsContent value="business">
