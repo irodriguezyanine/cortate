@@ -546,9 +546,16 @@ def main():
     # Business logic tests
     print("\n💼 BUSINESS LOGIC TESTS")
     print("-" * 30)
+    tester.test_create_barbershop()
+    tester.test_get_my_barbershop()
+    tester.test_barbershop_persistence()
     tester.test_create_quick_cut_request()
     tester.test_get_quick_cut_requests()
+    tester.test_create_traditional_booking()
     tester.test_get_barber_bookings()
+    
+    # Debug and persistence tests
+    tester.test_debug_endpoints()
     
     # Authorization tests
     print("\n🛡️ AUTHORIZATION TESTS")
