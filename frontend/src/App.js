@@ -84,6 +84,28 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+  // Advanced features states
+  const [realTimeTracking, setRealTimeTracking] = useState(false);
+  const [estimatedArrival, setEstimatedArrival] = useState(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [quickCutProgress, setQuickCutProgress] = useState(0);
+  const [barberRating, setBarberRating] = useState(null);
+  const [isLocationTracking, setIsLocationTracking] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [loyaltyPoints, setLoyaltyPoints] = useState(0);
+  const [clientLevel, setClientLevel] = useState('Bronze');
+  const [totalSpent, setTotalSpent] = useState(0);
+  const [totalCuts, setTotalCuts] = useState(0);
+  const [achievements, setAchievements] = useState([]);
+  const [promoCodes, setPromoCodes] = useState([]);
+  
+  // Enterprise features
+  const [analyticsData, setAnalyticsData] = useState({});
+  const [performanceMetrics, setPerformanceMetrics] = useState({});
+  const [realTimeUpdates, setRealTimeUpdates] = useState(true);
+  const [smartRecommendations, setSmartRecommendations] = useState([]);
+  const [dynamicPricing, setDynamicPricing] = useState(false);
 
   // Barber specific states
   const [appointments, setAppointments] = useState([]);
