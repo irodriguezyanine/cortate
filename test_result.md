@@ -101,3 +101,156 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Usuario reporta múltiples problemas críticos en CÓRTATE.CL:
+  
+  **PERFIL CLIENTE:**
+  1. No aparece el mapa con las peluquerías registradas (usando Google Maps API)
+  2. Cuando reserva un corte, la solicitud no llega al perfil del barbero
+  3. En "corte rápido" las letras de los números deben ser blancas (no se ven con fondo oscuro)
+  4. En "corte rápido" cuando presiona buscar, no aparece alerta en perfil del barbero
+  
+  **PERFIL BARBERO:**
+  1. En el calendario los números no se ven bien (cambiar a blanco)
+  2. En el calendario no aparecen las reservas de clientes
+  3. En solicitudes no aparecen las solicitudes de corte rápido
+  4. En "Mi negocio" cuando se crea una barbería, no queda guardado persistentemente
+  5. Direcciones de barberías deben integrarse con Google Places API y aparecer automáticamente en mapa
+  
+  **MEJORAS UX/UI:**
+  - Implementar diseño elegante basado en imagen de referencia (tema oscuro con acentos dorados)
+  - Mejorar colores y fuentes siguiendo mockup proporcionado
+
+backend:
+  - task: "MongoDB data persistence - User registration"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 2
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Usuario reporta que no se pueden crear barberías persistentemente. Los datos no se guardan correctamente en MongoDB."
+
+  - task: "MongoDB data persistence - Barbershop creation"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 2
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Las barberías creadas no persisten en la base de datos. No aparecen en el mapa del cliente."
+
+  - task: "Quick cut request system"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Solicitudes de corte rápido no llegan al barbero. Sistema de matching no funciona correctamente."
+
+  - task: "Traditional booking system"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Reservas tradicionales no aparecen en el calendario del barbero. Problema de sincronización."
+
+  - task: "Google Maps API integration"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Mapa no se muestra en el perfil del cliente. Falta integración con Google Places API."
+
+frontend:
+  - task: "Google Maps display in client profile"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Mapa no aparece en la pestaña del cliente. Debe mostrar ubicaciones de todas las peluquerías."
+
+  - task: "Quick cut UI styling - white text on dark background"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Letras de números en corte rápido no se ven bien con fondo oscuro. Necesitan ser blancas."
+
+  - task: "Barber calendar styling - white text"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Números del calendario no se ven bien. Necesitan cambiar a letras y números blancos."
+
+  - task: "Overall UX/UI design improvement"
+    implemented: false
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Diseño necesita mejoras siguiendo imagen de referencia con tema oscuro elegante y acentos dorados."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "MongoDB data persistence - User registration"
+    - "MongoDB data persistence - Barbershop creation"
+    - "Quick cut request system"
+    - "Traditional booking system"
+    - "Google Maps display in client profile"
+  stuck_tasks:
+    - "MongoDB data persistence - User registration"
+    - "MongoDB data persistence - Barbershop creation"
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Identificados múltiples problemas críticos de persistencia de datos en MongoDB y sincronización frontend-backend. El usuario reporta que las barberías no se guardan correctamente y las solicitudes no llegan a los barberos. Prioridad: resolver primero los problemas de backend para datos persistentes, luego frontend UI/UX."
