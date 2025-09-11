@@ -358,6 +358,7 @@ function App() {
         max_price: priceLimit[0],
         max_distance: maxDistance[0],
         service_location: serviceLocation,
+        preferred_time: preferredTime,
         lat: userLocation.lat,
         lng: userLocation.lng
       }, {
