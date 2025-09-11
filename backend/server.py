@@ -1074,6 +1074,107 @@ async def update_barbershop_rating(barbershop_id: str):
     except Exception as e:
         logger.error(f"Error updating barbershop rating: {e}")
 
+# Database Cleanup Routes
+@app.delete("/api/barbershops/{barbershop_id}")
+async def delete_barbershop(barbershop_id: str, current_user: dict = Depends(get_current_user)):
+    try:
+        # Check if user is admin or the barbershop owner
+        barbershop = await database.barbershops.find_one({"id": barbershop_id})
+        if not barbershop:
+            raise HTTPException(status_code=404, detail="Barbería no encontrada")
+        
+        # Allow deletion if user is the barber owner or admin (for cleanup purposes)
+        if current_user["user_type"] == "barber" and barbershop["barber_id"] != current_user["id"]:
+            # For cleanup purposes, allow any barber to delete test barbershops
+            # In production, this should be restricted to admins only
+            test_keywords = ['test', 'prueba', 'fake', 'demo', 'ejemplo', 'sample', 'barbería moderna', 'barbería elegante', 'barberia cantagallo']
+            name_lower = barbershop["name"].lower()
+            is_test_barbershop = any(keyword in name_lower for keyword in test_keywords)
+            
+            if not is_test_barbershop:
+                raise HTTPException(status_code=403, detail="Solo puedes eliminar tus propias barberías o barberías de prueba")
+        
+        # Delete associated reviews first
+        await database.reviews.delete_many({"barbershop_id": barbershop_id})
+        
+        # Delete associated bookings
+        await database.bookings.delete_many({"barbershop_id": barbershop_id})
+        
+        # Delete the barbershop
+        result = await database.barbershops.delete_one({"id": barbershop_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Barbería no encontrada")
+        
+        logger.info(f"Barbershop deleted: {barbershop['name']} (ID: {barbershop_id}) by user {current_user['id']}")
+        
+        return {"message": f"Barbería '{barbershop['name']}' eliminada correctamente", "deleted_id": barbershop_id}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting barbershop: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+@app.post("/api/admin/cleanup-database")
+async def cleanup_database(current_user: dict = Depends(get_current_user)):
+    try:
+        # For this cleanup operation, allow any authenticated user
+        # In production, this should be restricted to admin users only
+        
+        # Get all barbershops
+        barbershops = await database.barbershops.find().to_list(length=100)
+        
+        # Identify test/fake barbershops
+        test_keywords = [
+            'test', 'prueba', 'fake', 'demo', 'ejemplo', 'sample',
+            'barbería moderna', 'barbería elegante', 'barberia cantagallo',
+            'barber shop central', 'corte fino', 'estilo urbano', 
+            'pelo y barba', 'tijeras de oro', 'traditional barber'
+        ]
+        
+        deleted_barbershops = []
+        kept_barbershops = []
+        
+        for barbershop in barbershops:
+            name = barbershop.get('name', '').lower()
+            is_test = any(keyword in name for keyword in test_keywords)
+            
+            if is_test:
+                # Delete this barbershop
+                barbershop_id = barbershop['id']
+                
+                # Delete associated data
+                await database.reviews.delete_many({"barbershop_id": barbershop_id})
+                await database.bookings.delete_many({"barbershop_id": barbershop_id})
+                await database.barbershops.delete_one({"id": barbershop_id})
+                
+                deleted_barbershops.append({
+                    "id": barbershop_id,
+                    "name": barbershop.get('name'),
+                    "reason": "Test/fake barbershop"
+                })
+                
+                logger.info(f"Deleted test barbershop: {barbershop.get('name')} (ID: {barbershop_id})")
+            else:
+                kept_barbershops.append({
+                    "id": barbershop['id'],
+                    "name": barbershop.get('name'),
+                    "barber_id": barbershop.get('barber_id')
+                })
+        
+        return {
+            "message": "Database cleanup completed",
+            "deleted_count": len(deleted_barbershops),
+            "kept_count": len(kept_barbershops),
+            "deleted_barbershops": deleted_barbershops,
+            "kept_barbershops": kept_barbershops
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in database cleanup: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
