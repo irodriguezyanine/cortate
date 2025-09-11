@@ -57,8 +57,12 @@ import { LoadingSpinner } from './components/ui/loading-spinner';
 import { Progress } from './components/ui/progress';
 import { LocationTracker } from './components/advanced/LocationTracker';
 import { BarbershopManagement } from './components/barber/BarbershopManagement';
+import { ProfileManagement } from './components/user/ProfileManagement';
+import { AppointmentManager } from './components/barber/AppointmentManager';
+import { RealTimeChat } from './components/chat/RealTimeChat';
 import { useToast } from './hooks/useToast';
 import { useGooglePlaces } from './hooks/useGooglePlaces';
+import { LanguageProvider, useLanguage } from './hooks/useLanguage';
 import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
