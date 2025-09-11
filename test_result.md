@@ -376,6 +376,8 @@ test_plan:
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
+  completed_urgent_tasks:
+    - "URGENT: Restore BARBERIA CANTAGALLO and clean fake barbershops"
 
 agent_communication:
   - agent: "main"
