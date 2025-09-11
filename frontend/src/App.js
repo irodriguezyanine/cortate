@@ -1535,7 +1535,7 @@ function App() {
         </TabsTrigger>
         <TabsTrigger value="requests" className="text-white data-[state=active]:bg-amber-600">
           <Bell className="w-4 h-4 mr-1" />
-          Solicitudes ({quickCutRequests.length})
+          Solicitudes ({quickCutRequests.length + barberBookings.filter(booking => booking.status === 'pending').length})
         </TabsTrigger>
         <TabsTrigger value="business" className="text-white data-[state=active]:bg-amber-600">
           <Settings className="w-4 h-4 mr-1" />
