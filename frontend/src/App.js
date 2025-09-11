@@ -641,6 +641,7 @@ function App() {
       
       setAppointments(appointmentsRes.data.bookings || []);
       setQuickCutRequests(requestsRes.data.requests || []);
+      setBarberBookings(appointmentsRes.data.bookings || []);
       setMyBarbershop(barbershopRes.data.barbershop);
       
     } catch (error) {
