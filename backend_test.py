@@ -1098,7 +1098,242 @@ class CortateAPITester:
         
         print(f"\n⚠️ IMPORTANTE: Este es solo un análisis. NO se han eliminado datos.")
         
+        # Store analysis results for cleanup execution
+        self.cleanup_analysis = {
+            'test_barbershops': test_barbershops,
+            'legitimate_barbershops': legitimate_barbershops,
+            'suspicious_barbershops': suspicious_barbershops,
+            'total_barbershops': total_barbershops
+        }
+        
         return True
+
+    def execute_database_cleanup(self):
+        """Execute database cleanup by deleting identified fake/test barbershops"""
+        print("\n🧹 EJECUTANDO LIMPIEZA DE BASE DE DATOS")
+        print("=" * 60)
+        print("OBJETIVO: Eliminar barberías ficticias identificadas en el análisis")
+        print("-" * 60)
+        
+        if not hasattr(self, 'cleanup_analysis'):
+            print("❌ Error: Debe ejecutar análisis primero")
+            return False
+        
+        if not self.barber_token:
+            print("❌ Error: Se requiere token de barbero para ejecutar limpieza")
+            return False
+        
+        analysis = self.cleanup_analysis
+        test_barbershops = analysis['test_barbershops']
+        
+        if not test_barbershops:
+            print("✅ No hay barberías de prueba para eliminar")
+            return True
+        
+        print(f"\n🎯 ELIMINANDO {len(test_barbershops)} BARBERÍAS DE PRUEBA:")
+        print("-" * 50)
+        
+        deleted_count = 0
+        failed_deletions = []
+        
+        for item in test_barbershops:
+            barbershop = item['barbershop']
+            barbershop_id = barbershop.get('id')
+            barbershop_name = barbershop.get('name')
+            
+            print(f"\n🗑️ Eliminando: {barbershop_name}")
+            print(f"   ID: {barbershop_id}")
+            print(f"   Razones: {', '.join(item['reasons'])}")
+            
+            success, response = self.run_test(
+                f"Delete Barbershop: {barbershop_name}",
+                "DELETE",
+                f"api/barbershops/{barbershop_id}",
+                200,
+                token=self.barber_token
+            )
+            
+            if success:
+                deleted_count += 1
+                print(f"   ✅ Eliminada exitosamente")
+            else:
+                failed_deletions.append({
+                    'id': barbershop_id,
+                    'name': barbershop_name,
+                    'error': response
+                })
+                print(f"   ❌ Error al eliminar")
+        
+        print(f"\n📊 RESULTADOS DE LA LIMPIEZA:")
+        print(f"   Barberías eliminadas: {deleted_count}")
+        print(f"   Eliminaciones fallidas: {len(failed_deletions)}")
+        
+        if failed_deletions:
+            print(f"\n❌ ELIMINACIONES FALLIDAS:")
+            for failure in failed_deletions:
+                print(f"   - {failure['name']} (ID: {failure['id']})")
+        
+        # Verify cleanup by checking remaining barbershops
+        print(f"\n🔍 VERIFICANDO LIMPIEZA...")
+        success, response = self.run_test(
+            "Verify Cleanup - Get Remaining Barbershops",
+            "GET",
+            "api/debug/barbershops",
+            200
+        )
+        
+        if success and 'barbershops' in response:
+            remaining_barbershops = response['barbershops']
+            print(f"   Barberías restantes: {len(remaining_barbershops)}")
+            
+            # Check if any test barbershops remain
+            remaining_test = []
+            for barbershop in remaining_barbershops:
+                name = barbershop.get('name', '').lower()
+                test_keywords = [
+                    'test', 'prueba', 'fake', 'demo', 'ejemplo', 'sample',
+                    'barbería moderna', 'barbería elegante', 'barberia cantagallo'
+                ]
+                if any(keyword in name for keyword in test_keywords):
+                    remaining_test.append(barbershop.get('name'))
+            
+            if remaining_test:
+                print(f"   ⚠️ Barberías de prueba que aún permanecen: {remaining_test}")
+            else:
+                print(f"   ✅ No quedan barberías de prueba en la base de datos")
+            
+            print(f"\n📋 BARBERÍAS LEGÍTIMAS RESTANTES:")
+            for barbershop in remaining_barbershops:
+                name = barbershop.get('name')
+                barber_id = barbershop.get('barber_id')
+                print(f"   - {name} (Barbero: {barber_id})")
+        
+        cleanup_success = deleted_count > 0 and len(failed_deletions) == 0
+        
+        if cleanup_success:
+            print(f"\n🎉 LIMPIEZA COMPLETADA EXITOSAMENTE")
+            print(f"   Base de datos limpia de barberías ficticias")
+        else:
+            print(f"\n⚠️ LIMPIEZA PARCIAL O CON ERRORES")
+            print(f"   Revisar eliminaciones fallidas")
+        
+        return cleanup_success
+
+    def test_bulk_database_cleanup(self):
+        """Test bulk database cleanup endpoint"""
+        if not self.barber_token:
+            print("❌ Skipped - No barber token available")
+            return False
+        
+        print("\n🧹 TESTING BULK DATABASE CLEANUP ENDPOINT")
+        print("-" * 50)
+        
+        success, response = self.run_test(
+            "Bulk Database Cleanup",
+            "POST",
+            "api/admin/cleanup-database",
+            200,
+            token=self.barber_token
+        )
+        
+        if success and response:
+            deleted_count = response.get('deleted_count', 0)
+            kept_count = response.get('kept_count', 0)
+            deleted_barbershops = response.get('deleted_barbershops', [])
+            kept_barbershops = response.get('kept_barbershops', [])
+            
+            print(f"   📊 Cleanup Results:")
+            print(f"      Deleted: {deleted_count} barbershops")
+            print(f"      Kept: {kept_count} barbershops")
+            
+            if deleted_barbershops:
+                print(f"   🗑️ Deleted Barbershops:")
+                for barbershop in deleted_barbershops:
+                    print(f"      - {barbershop.get('name')} (ID: {barbershop.get('id')})")
+                    print(f"        Reason: {barbershop.get('reason')}")
+            
+            if kept_barbershops:
+                print(f"   ✅ Kept Barbershops:")
+                for barbershop in kept_barbershops:
+                    print(f"      - {barbershop.get('name')} (ID: {barbershop.get('id')})")
+                    print(f"        Barber: {barbershop.get('barber_id')}")
+            
+            print(f"   ✅ Bulk cleanup completed successfully")
+        
+        return success
+
+    def test_individual_barbershop_deletion(self):
+        """Test individual barbershop deletion"""
+        if not self.barber_token:
+            print("❌ Skipped - No barber token available")
+            return False
+        
+        print("\n🗑️ TESTING INDIVIDUAL BARBERSHOP DELETION")
+        print("-" * 50)
+        
+        # First create a test barbershop to delete
+        success_create, response_create = self.run_test(
+            "Create Test Barbershop for Deletion",
+            "POST",
+            "api/barbershops",
+            200,
+            data={
+                "name": "Test Barbería Google API",
+                "description": "Barbería de prueba para eliminar",
+                "address": "Santiago, Chile",
+                "phone": "+56987654321",
+                "services": [
+                    {"name": "Corte de pelo", "price": 10000, "duration": 30}
+                ],
+                "working_hours": {
+                    "monday": {"open": "09:00", "close": "19:00"},
+                    "tuesday": {"open": "09:00", "close": "19:00"},
+                    "wednesday": {"open": "09:00", "close": "19:00"},
+                    "thursday": {"open": "09:00", "close": "19:00"},
+                    "friday": {"open": "09:00", "close": "19:00"},
+                    "saturday": {"open": "10:00", "close": "18:00"},
+                    "sunday": {"closed": True}
+                }
+            },
+            token=self.barber_token
+        )
+        
+        if not success_create or 'id' not in response_create:
+            print("❌ Failed to create test barbershop for deletion")
+            return False
+        
+        test_barbershop_id = response_create['id']
+        print(f"   Created test barbershop with ID: {test_barbershop_id}")
+        
+        # Now delete it
+        success_delete, response_delete = self.run_test(
+            "Delete Test Barbershop",
+            "DELETE",
+            f"api/barbershops/{test_barbershop_id}",
+            200,
+            token=self.barber_token
+        )
+        
+        if success_delete:
+            print(f"   ✅ Test barbershop deleted successfully")
+            
+            # Verify it's gone
+            success_verify, response_verify = self.run_test(
+                "Verify Barbershop Deletion",
+                "GET",
+                f"api/barbershops/{test_barbershop_id}",
+                404
+            )
+            
+            if success_verify:
+                print(f"   ✅ Deletion verified - barbershop no longer exists")
+                return True
+            else:
+                print(f"   ❌ Deletion verification failed - barbershop still exists")
+                return False
+        else:
+            print(f"   ❌ Failed to delete test barbershop")
+            return False
 
 def main():
     print("🚀 Starting CÓRTATE.CL API Testing...")
