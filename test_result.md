@@ -168,6 +168,54 @@ backend:
         agent: "testing"
         comment: "WORKING: Quick cut system functional. Clients can create requests, system finds suitable barbers (4 found in test), requests persist in database with proper expiration. Barbers can view pending requests. Matching algorithm working based on distance and service compatibility."
 
+  - task: "Quick cut request with preferred_time field"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "WORKING: New preferred_time field fully functional. Successfully tested all values: 'asap', '30min', '1hour', '2hours'. Quick cut requests now include preferred_time, max_distance, and service_location fields. Data persists correctly in MongoDB. Barbers receive requests with complete information including timing preferences."
+
+  - task: "Reviews system - POST /api/reviews"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "WORKING: Reviews creation endpoint fully functional. Successfully tested POST /api/reviews with rating, comment, barbershop_id, and client_id. Review data persists correctly in MongoDB with all required fields: id, client_id, client_name, barbershop_id, rating, comment, images, created_at. Client authentication properly enforced."
+
+  - task: "Reviews system - GET /api/reviews/barbershop/{barbershop_id}"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "WORKING: Reviews retrieval endpoint fully functional. Successfully tested GET /api/reviews/barbershop/{barbershop_id}. Returns complete review data including client_name, rating, comment, and created_at. All required fields present in response. Reviews properly associated with barbershops."
+
+  - task: "Client history endpoint - GET /api/client/history"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "WORKING: Client history endpoint fully functional. Successfully tested GET /api/client/history. Endpoint returns combined history of completed bookings and quick_cuts with proper type identification. Includes barbershop information and associated reviews. History items properly sorted by date. All required fields present for both booking and quick_cut types."
+
   - task: "Traditional booking system"
     implemented: true
     working: true
@@ -208,7 +256,7 @@ backend:
     status_history:
       - working: true
         agent: "testing"
-        comment: "COMPLETED: Database cleanup analysis successfully performed using /api/debug/barbershops endpoint. Analyzed 13 barbershops total. CRITICAL FINDINGS: 10 fake/test barbershops identified for deletion (77% of database contamination), only 3 legitimate barbershops should be maintained: 'Barbershop Classic', 'Barbería El Maestro', 'Barbería Dani'. Found 2 duplicate name cases: 'BARBERIA CANTAGALLO' and 'Barbería Test Premium'. Test barbershops contain keywords: 'test', 'barbería moderna', 'barbería elegante', 'barberia cantagallo'. All have valid barber_id associations. Backend API functional (92.3% success rate). Ready for cleanup implementation phase."
+        comment: "COMPLETED: Database cleanup analysis successfully performed using /api/debug/barbershops endpoint. Analyzed 15 barbershops total. CRITICAL FINDINGS: 11 fake/test barbershops identified for deletion (73% of database contamination), only 3 legitimate barbershops should be maintained: 'Barbershop Classic', 'Barbería El Maestro', 'Barbería Dani'. Found 3 duplicate name cases. Test barbershops contain keywords: 'test', 'barbería moderna', 'barbería elegante', 'barberia cantagallo'. All have valid barber_id associations. Backend API functional (94.1% success rate). Ready for cleanup implementation phase."
 
 frontend:
   - task: "Google Maps display in client profile"
