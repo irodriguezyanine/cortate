@@ -205,11 +205,14 @@ frontend:
     file: "/app/frontend/src/App.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
         comment: "Mapa no aparece en la pestaña del cliente. Debe mostrar ubicaciones de todas las peluquerías."
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL ISSUE: Google Maps container exists but is completely empty (no canvas, no Google Maps elements, no content). Map div found but isEmpty=true, childrenCount=0. However, barbershop listings are working correctly (13 barbershops found and displayed below map). Google Maps API key exists but map not rendering. Console shows deprecated Marker warning but no critical errors."
 
   - task: "Quick cut UI styling - white text on dark background"
     implemented: true
@@ -217,23 +220,29 @@ frontend:
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
         comment: "Letras de números en corte rápido no se ven bien con fondo oscuro. Necesitan ser blancas."
+      - working: false
+        agent: "testing"
+        comment: "CONFIRMED ISSUE: Price buttons have dark text (rgb(10, 10, 10)) on transparent background, making them hard to read on dark theme. Found 4 price buttons ($8.000, $12.000, $18.000, $25.000+) all with same visibility issue. Quick Cut interface is functional but text contrast is poor."
 
   - task: "Barber calendar styling - white text"
     implemented: true
-    working: false
+    working: "NA"
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
         comment: "Números del calendario no se ven bien. Necesitan cambiar a letras y números blancos."
+      - working: "NA"
+        agent: "testing"
+        comment: "UNABLE TO TEST: Could not access barber interface during testing. Registration process completed but interface did not switch to barber mode. Need to verify barber registration flow and calendar access."
 
   - task: "Overall UX/UI design improvement"
     implemented: false
