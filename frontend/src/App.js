@@ -1182,6 +1182,46 @@ function App() {
                 </div>
               </div>
 
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  ¿Cuándo quieres cortarte?
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant={preferredTime === 'asap' ? 'default' : 'outline'}
+                    onClick={() => setPreferredTime('asap')}
+                    className={preferredTime === 'asap' ? "bg-amber-600 hover:bg-amber-700" : "text-white border-gray-600 hover:border-amber-600 hover:text-amber-600"}
+                  >
+                    Lo antes posible
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={preferredTime === '30min' ? 'default' : 'outline'}
+                    onClick={() => setPreferredTime('30min')}
+                    className={preferredTime === '30min' ? "bg-amber-600 hover:bg-amber-700" : "text-white border-gray-600 hover:border-amber-600 hover:text-amber-600"}
+                  >
+                    En 30 minutos
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={preferredTime === '1hour' ? 'default' : 'outline'}
+                    onClick={() => setPreferredTime('1hour')}
+                    className={preferredTime === '1hour' ? "bg-amber-600 hover:bg-amber-700" : "text-white border-gray-600 hover:border-amber-600 hover:text-amber-600"}
+                  >
+                    En 1 hora
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={preferredTime === '2hours' ? 'default' : 'outline'}
+                    onClick={() => setPreferredTime('2hours')}
+                    className={preferredTime === '2hours' ? "bg-amber-600 hover:bg-amber-700" : "text-white border-gray-600 hover:border-amber-600 hover:text-amber-600"}
+                  >
+                    En 2 horas
+                  </Button>
+                </div>
+              </div>
+
               <Button 
                 onClick={handleQuickSearch}
                 disabled={!selectedService}
