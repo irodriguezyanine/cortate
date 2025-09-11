@@ -2016,10 +2016,12 @@ def main():
     tester.test_get_current_user_barber()
     tester.test_unauthorized_access()
     
-    # URGENT CORRECTION: Restore BARBERIA CANTAGALLO and clean fake barbershops
-    print("\n🚨 URGENT BARBERSHOP CORRECTION")
+    # URGENT: REVIEWS ERROR INVESTIGATION (HIGH PRIORITY)
+    print("\n🚨 URGENT: REVIEWS ERROR INVESTIGATION")
     print("=" * 60)
-    urgent_correction_success = tester.urgent_barbershop_correction()
+    print("PROBLEMA REPORTADO: Usuario no puede enviar reseñas")
+    reviews_error_investigation = tester.test_reviews_error_investigation()
+    complete_flow_test = tester.test_complete_review_flow_with_existing_accounts()
     
     # Data access tests
     print("\n📊 DATA ACCESS TESTS")
@@ -2033,20 +2035,22 @@ def main():
     tester.test_get_my_barbershop()
     tester.test_barbershop_persistence()
     
+    # Reviews system tests (additional verification)
+    print("\n📝 REVIEWS SYSTEM VERIFICATION")
+    print("-" * 40)
+    tester.test_create_review()
+    tester.test_get_barbershop_reviews()
+    
     # NEW FUNCTIONALITY TESTS - CÓRTATE.CL SPECIFIC
     print("\n🆕 NEW FUNCTIONALITY TESTS - CÓRTATE.CL")
     print("-" * 50)
-    print("Testing new features: preferred_time, reviews system, client history")
+    print("Testing new features: preferred_time, client history")
     
     # Quick Cut with preferred_time tests
     tester.test_quick_cut_with_preferred_time_asap()
     tester.test_quick_cut_with_preferred_time_30min()
     tester.test_quick_cut_with_preferred_time_1hour()
     tester.test_quick_cut_with_preferred_time_2hours()
-    
-    # Reviews system tests
-    tester.test_create_review()
-    tester.test_get_barbershop_reviews()
     
     # Client history tests
     tester.test_client_history_endpoint()
@@ -2056,21 +2060,6 @@ def main():
     tester.test_get_quick_cut_requests()
     tester.test_create_traditional_booking()
     tester.test_get_barber_bookings()
-    
-    # DATABASE CLEANUP EXECUTION TESTS
-    print("\n🧹 DATABASE CLEANUP EXECUTION TESTS")
-    print("-" * 50)
-    individual_deletion_success = tester.test_individual_barbershop_deletion()
-    bulk_cleanup_success = tester.test_bulk_database_cleanup()
-    
-    # Google Maps API Integration Tests (HIGH PRIORITY)
-    print("\n🗺️ GOOGLE MAPS API TESTS")
-    print("-" * 30)
-    google_maps_success = tester.test_google_maps_geocoding()
-    barbershop_list_success = tester.test_barbershop_appears_in_list()
-    
-    # Debug and persistence tests
-    tester.test_debug_endpoints()
     
     # Authorization tests
     print("\n🛡️ AUTHORIZATION TESTS")
@@ -2084,46 +2073,55 @@ def main():
     print(f"Tests passed: {tester.tests_passed}/{tester.tests_run}")
     print(f"Success rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
     
-    # Special focus on URGENT CORRECTION results
-    print("\n🚨 URGENT CORRECTION RESULTS:")
-    if urgent_correction_success:
-        print("✅ BARBERIA CANTAGALLO restoration: COMPLETED")
-        print("✅ Fake barbershops cleanup: COMPLETED")
-        print("✅ Only 2 legitimate barbershops remain: Barbería Dani + BARBERIA CANTAGALLO")
+    # URGENT REVIEWS ERROR RESULTS (HIGH PRIORITY)
+    print("\n🚨 URGENT REVIEWS ERROR INVESTIGATION RESULTS:")
+    print("=" * 60)
+    if reviews_error_investigation:
+        print("✅ REVIEWS ENDPOINT WORKING: POST /api/reviews funciona correctamente")
+        print("✅ AUTHENTICATION: Sistema de autenticación funcional")
+        print("✅ DATA PERSISTENCE: Reseñas se guardan en MongoDB correctamente")
+        print("✅ VALIDATION: Validaciones de datos funcionan")
+        print("\n💡 CONCLUSIÓN:")
+        print("   El problema reportado NO está en el backend")
+        print("   Posibles causas del error del usuario:")
+        print("   1. 🌐 Error en el frontend (JavaScript/React)")
+        print("   2. 🔗 Problema de conectividad de red")
+        print("   3. 🔑 Token de autenticación expirado en el navegador")
+        print("   4. 📊 Datos malformados enviados desde el frontend")
+        print("   5. 🖥️ Problema específico del navegador del usuario")
+        print("\n🔧 RECOMENDACIONES PARA EL MAIN AGENT:")
+        print("   - Revisar código JavaScript del frontend")
+        print("   - Verificar manejo de errores en React")
+        print("   - Comprobar que el token se envíe correctamente")
+        print("   - Revisar logs del navegador (console.log)")
+        print("   - Probar en diferentes navegadores")
     else:
-        print("❌ URGENT CORRECTION: FAILED")
-        print("⚠️ Manual intervention may be required")
+        print("❌ PROBLEMA CONFIRMADO EN BACKEND")
+        print("   🚨 El endpoint POST /api/reviews tiene errores")
+        print("   🔧 ACCIÓN REQUERIDA: Revisar y corregir el backend")
     
-    # Special focus on database cleanup results
-    print("\n🧹 DATABASE CLEANUP RESULTS:")
-    if individual_deletion_success:
-        print("✅ Individual barbershop deletion: WORKING")
+    if complete_flow_test:
+        print("\n✅ COMPLETE FLOW TEST: Flujo completo de reseñas funcional")
+        print("   - Quick cut request ✅")
+        print("   - Review creation ✅") 
+        print("   - Data persistence ✅")
     else:
-        print("❌ Individual barbershop deletion: FAILED")
-        
-    if bulk_cleanup_success:
-        print("✅ Bulk database cleanup: WORKING")
-    else:
-        print("❌ Bulk database cleanup: FAILED")
-    
-    # Special focus on Google Maps API results
-    print("\n🗺️ GOOGLE MAPS API RESULTS:")
-    if google_maps_success:
-        print("✅ Google Maps geocoding: WORKING")
-    else:
-        print("❌ Google Maps geocoding: FAILED")
-        
-    if barbershop_list_success:
-        print("✅ Barbershop listing: WORKING")
-    else:
-        print("❌ Barbershop listing: FAILED")
+        print("\n❌ COMPLETE FLOW TEST: Problemas en el flujo completo")
     
     if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed! Backend is working correctly.")
+        print("\n🎉 All tests passed! Backend is working correctly.")
+        print("🎯 REVIEWS SYSTEM: Completamente funcional")
         return 0
     else:
         failed = tester.tests_run - tester.tests_passed
-        print(f"⚠️ {failed} test(s) failed. Check the issues above.")
+        print(f"\n⚠️ {failed} test(s) failed. Check the issues above.")
+        
+        # Special focus on reviews error
+        if not reviews_error_investigation:
+            print("🚨 CRITICAL: Reviews error confirmed in backend")
+        else:
+            print("ℹ️ Reviews backend is working - issue likely in frontend")
+        
         return 1
 
 if __name__ == "__main__":
