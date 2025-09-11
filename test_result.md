@@ -103,24 +103,36 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Usuario reporta múltiples problemas críticos en CÓRTATE.CL:
+  TESTING REQUEST - CÓRTATE.CL NEW FUNCTIONALITIES:
   
-  **PERFIL CLIENTE:**
-  1. No aparece el mapa con las peluquerías registradas (usando Google Maps API)
-  2. Cuando reserva un corte, la solicitud no llega al perfil del barbero
-  3. En "corte rápido" las letras de los números deben ser blancas (no se ven con fondo oscuro)
-  4. En "corte rápido" cuando presiona buscar, no aparece alerta en perfil del barbero
-  
-  **PERFIL BARBERO:**
-  1. En el calendario los números no se ven bien (cambiar a blanco)
-  2. En el calendario no aparecen las reservas de clientes
-  3. En solicitudes no aparecen las solicitudes de corte rápido
-  4. En "Mi negocio" cuando se crea una barbería, no queda guardado persistentemente
-  5. Direcciones de barberías deben integrarse con Google Places API y aparecer automáticamente en mapa
-  
-  **MEJORAS UX/UI:**
-  - Implementar diseño elegante basado en imagen de referencia (tema oscuro con acentos dorados)
-  - Mejorar colores y fuentes siguiendo mockup proporcionado
+  **FUNCIONALIDADES A PROBAR:**
+  1. **Quick Cut Request con nuevo campo preferred_time:**
+     - Crear solicitud de corte rápido con preferred_time: "asap", "30min", "1hour", "2hours"
+     - Verificar que los datos se guarden correctamente en MongoDB
+     - Probar que los barberos reciban las solicitudes con toda la información
+
+  2. **Sistema de Reviews:**
+     - Probar endpoint POST /api/reviews para crear reseñas
+     - Verificar que se guarden rating, comment, barbershop_id, client_id
+     - Probar endpoint GET /api/reviews/barbershop/{barbershop_id}
+
+  3. **Client History endpoint:**
+     - Probar GET /api/client/history 
+     - Verificar que devuelva historial combinado de bookings y quick_cuts completados
+     - Verificar que incluya información de reseñas asociadas
+
+  **FLUJO DE PRUEBA:**
+  1. Usar cuentas existentes de testbarber@test.com y cliente
+  2. Crear solicitud de quick cut con preferred_time
+  3. Como barbero, aceptar la solicitud
+  4. Marcar como completado
+  5. Como cliente, crear reseña
+  6. Verificar que aparezca en el historial del cliente
+
+  **ESPERADO:**
+  - Quick cuts deben tener campos: preferred_time, max_distance, service_location
+  - Reviews deben guardarse correctamente y asociarse al historial
+  - Client history debe mostrar bookings y quick_cuts con reseñas
 
 backend:
   - task: "MongoDB data persistence - User registration"
