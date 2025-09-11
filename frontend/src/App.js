@@ -1224,28 +1224,42 @@ function App() {
             placeholder="Nombre de tu barbería"
             value={formData.name}
             onChange={(e) => setFormData({...formData, name: e.target.value})}
+            className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
             required
           />
           <Input
             placeholder="Teléfono"
             value={formData.phone}
             onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
             required
           />
         </div>
 
-        <Input
-          placeholder="Dirección completa"
-          value={formData.address}
-          onChange={(e) => setFormData({...formData, address: e.target.value})}
-          required
-        />
+        {/* Google Places Autocomplete Address Input */}
+        <div className="space-y-2">
+          <label className="text-white text-sm font-medium">Dirección de tu barbería *</label>
+          <div className="relative">
+            <Input
+              id="address-autocomplete"
+              placeholder="Ingresa la dirección de tu barbería..."
+              value={formData.address}
+              onChange={(e) => setFormData({...formData, address: e.target.value})}
+              className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+              required
+            />
+            <MapPin className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
+          </div>
+          <p className="text-xs text-gray-500">
+            💡 Escribe y selecciona de las sugerencias para obtener la ubicación exacta
+          </p>
+        </div>
 
         <Textarea
           placeholder="Describe tu barbería y tus especialidades..."
           value={formData.description}
           onChange={(e) => setFormData({...formData, description: e.target.value})}
-          className="min-h-[80px]"
+          className="min-h-[80px] bg-gray-800 border-gray-700 text-white placeholder-gray-400"
         />
 
         <div>
