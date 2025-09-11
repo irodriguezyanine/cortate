@@ -467,6 +467,7 @@ function App() {
   // Barber specific states
   const [appointments, setAppointments] = useState([]);
   const [quickCutRequests, setQuickCutRequests] = useState([]);
+  const [barberBookings, setBarberBookings] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [myBarbershop, setMyBarbershop] = useState(null);
   const [showCreateBarbershop, setShowCreateBarbershop] = useState(false);
