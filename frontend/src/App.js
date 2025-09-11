@@ -45,7 +45,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Calendar as CalendarComponent } from './components/ui/calendar';
 import { Textarea } from './components/ui/textarea';
 import { Alert, AlertDescription } from './components/ui/alert';
-import { Textarea } from './components/ui/textarea';
 import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
