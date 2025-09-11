@@ -805,6 +805,83 @@ async def get_client_history(current_user: dict = Depends(get_current_user)):
         logger.error(f"Error fetching client history: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
+@app.put("/api/barbershops/{barbershop_id}")
+async def update_barbershop(
+    barbershop_id: str,
+    barbershop_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        if current_user["user_type"] != "barber":
+            raise HTTPException(status_code=403, detail="Solo barberos pueden actualizar barberías")
+        
+        # Verify barbershop belongs to current user
+        barbershop = await database.barbershops.find_one({
+            "id": barbershop_id,
+            "barber_id": current_user["id"]
+        })
+        if not barbershop:
+            raise HTTPException(status_code=404, detail="Barbería no encontrada")
+        
+        # Update barbershop data
+        await database.barbershops.update_one(
+            {"id": barbershop_id},
+            {"$set": barbershop_data}
+        )
+        
+        # Get updated barbershop
+        updated_barbershop = await database.barbershops.find_one({"id": barbershop_id})
+        if updated_barbershop:
+            updated_barbershop.pop("_id", None)
+        
+        return updated_barbershop
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating barbershop: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+@app.post("/api/reviews/{review_id}/respond")
+async def respond_to_review(
+    review_id: str,
+    response_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        if current_user["user_type"] != "barber":
+            raise HTTPException(status_code=403, detail="Solo barberos pueden responder reseñas")
+        
+        # Find the review
+        review = await database.reviews.find_one({"id": review_id})
+        if not review:
+            raise HTTPException(status_code=404, detail="Reseña no encontrada")
+        
+        # Verify the barbershop belongs to current user
+        barbershop = await database.barbershops.find_one({
+            "id": review["barbershop_id"],
+            "barber_id": current_user["id"]  
+        })
+        if not barbershop:
+            raise HTTPException(status_code=403, detail="No puedes responder esta reseña")
+        
+        # Update review with barber response
+        await database.reviews.update_one(
+            {"id": review_id},
+            {"$set": {
+                "barber_response": response_data.get("response"),
+                "response_date": datetime.now(timezone.utc)
+            }}
+        )
+        
+        return {"message": "Respuesta enviada exitosamente"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error responding to review: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
 # Quick Cut Routes (unchanged from previous version)
 @app.post("/api/quick-cuts/request")
 async def create_quick_cut_request(request_data: QuickCutRequestCreate, current_user: dict = Depends(get_current_user)):
