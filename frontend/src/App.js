@@ -1607,19 +1607,50 @@ function App() {
                 <p className="text-gray-400">No tienes cortes registrados aún</p>
               </div>
             ) : (
-              bookingHistory.map((booking, index) => (
+              bookingHistory.map((item, index) => (
                 <Card key={index} className="bg-gray-800 border-gray-700">
                   <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h4 className="text-white font-medium">{booking.service}</h4>
-                        <p className="text-gray-400 text-sm">{booking.barbershop_name}</p>
-                        <p className="text-amber-400 text-sm">${booking.price?.toLocaleString()}</p>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="text-white font-medium">{item.service}</h4>
+                          <Badge 
+                            variant="outline" 
+                            className={item.type === 'quick_cut' ? "text-amber-400 border-amber-400" : "text-blue-400 border-blue-400"}
+                          >
+                            {item.type === 'quick_cut' ? '⚡ Corte Rápido' : '📅 Reserva'}
+                          </Badge>
+                        </div>
+                        <p className="text-gray-400 text-sm">
+                          {item.barbershop?.name || item.barbershop_name || 'Barbería'}
+                        </p>
+                        <p className="text-amber-400 text-sm">${item.price?.toLocaleString()}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(item.created_at || item.date).toLocaleDateString('es-CL')}
+                        </p>
                       </div>
-                      <Badge variant={booking.status === 'completed' ? 'default' : 'secondary'}>
-                        {booking.status}
+                      <Badge variant={item.status === 'completed' ? 'default' : 'secondary'}>
+                        {item.status}
                       </Badge>
                     </div>
+                    
+                    {/* Show review if exists */}
+                    {item.review && (
+                      <div className="bg-gray-700 p-3 rounded-lg mt-3">
+                        <div className="flex items-center gap-1 mb-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-4 h-4 ${star <= item.review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-400'}`}
+                            />
+                          ))}
+                          <span className="text-white text-sm ml-2">Tu reseña</span>
+                        </div>
+                        {item.review.comment && (
+                          <p className="text-gray-300 text-sm">{item.review.comment}</p>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))
