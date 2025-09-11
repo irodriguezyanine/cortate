@@ -1588,7 +1588,7 @@ function App() {
               mode="single"
               selected={selectedDate}
               onSelect={setSelectedDate}
-              className="rounded-md border border-gray-700"
+              className="rounded-md border border-gray-700 bg-gray-800 text-white [&_.rdp-button]:text-white [&_.rdp-day_selected]:bg-amber-600 [&_.rdp-day_selected]:text-white [&_.rdp-head_cell]:text-gray-400 [&_.rdp-nav_button]:text-white hover:[&_.rdp-day]:bg-gray-700"
             />
           </CardContent>
         </Card>
