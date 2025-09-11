@@ -1928,11 +1928,17 @@ function App() {
                       <div className="text-right">
                         <Badge variant="outline" className="mb-2">
                           <MapPin className="w-3 h-3 mr-1" />
-                          {request.distance} km
+                          {request.distance} km de distancia
                         </Badge>
-                        <div className="text-red-400 font-mono text-lg">
+                        <div className="text-red-400 font-mono text-lg mb-1">
                           ⏰ {getTimeLeft(request.created_at, request.expires_at)}
                         </div>
+                        <p className="text-xs text-gray-400">Tiempo para responder</p>
+                        {request.lat && request.lng && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            📍 Zona: {request.lat.toFixed(3)}, {request.lng.toFixed(3)}
+                          </p>
+                        )}
                       </div>
                     </div>
                     
