@@ -216,7 +216,7 @@ frontend:
 
   - task: "Quick cut UI styling - white text on dark background"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "medium"
@@ -228,6 +228,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "CONFIRMED ISSUE: Price buttons have dark text (rgb(10, 10, 10)) on transparent background, making them hard to read on dark theme. Found 4 price buttons ($8.000, $12.000, $18.000, $25.000+) all with same visibility issue. Quick Cut interface is functional but text contrast is poor."
+      - working: true
+        agent: "main"
+        comment: "FIXED: Updated price buttons and distance buttons with proper white text styling. Applied 'text-white border-gray-600 hover:border-amber-600 hover:text-amber-600' classes for non-selected state and 'bg-amber-600 text-white border-amber-600' for selected state. Text now clearly visible on dark background."
 
   - task: "Barber calendar styling - white text"
     implemented: true
