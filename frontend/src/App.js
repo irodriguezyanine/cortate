@@ -414,10 +414,16 @@ function App() {
       setShowRegister(false);
       setSuccess('Registro exitoso');
       
-      // Si es barbero, mostrar modal para crear barbería
+      // Si es barbero, mostrar modal para crear barbería y cargar datos
       if (userData.userType === 'barber') {
         setTimeout(() => {
+          loadBarberData();
           setShowCreateBarbershop(true);
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          loadBarbershops();
+          loadClientHistory();
         }, 1000);
       }
       
