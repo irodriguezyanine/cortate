@@ -390,6 +390,162 @@ class CortateAPITester:
                 return False
         
         return success
+    def test_create_review(self):
+        """Test creating a review (client only)"""
+        if not self.client_token:
+            print("❌ Skipped - No client token available")
+            return False
+            
+        # First get a barbershop to review
+        success_bs, response_bs = self.run_test(
+            "Get Barbershops for Review",
+            "GET",
+            "api/barbershops",
+            200
+        )
+        
+        if not success_bs or not response_bs.get('barbershops'):
+            print("❌ No barbershops available for review")
+            return False
+            
+        barbershop = response_bs['barbershops'][0]  # Use first available barbershop
+        
+        success, response = self.run_test(
+            "Create Review",
+            "POST",
+            "api/reviews",
+            200,
+            data={
+                "barbershop_id": barbershop['id'],
+                "rating": 5,
+                "comment": "Excelente servicio, muy profesional y rápido. Recomendado 100%."
+            },
+            token=self.client_token
+        )
+        
+        if success and response:
+            # Verify review data
+            if response.get('rating') == 5:
+                print("   ✅ Rating saved correctly: 5")
+            else:
+                print(f"   ❌ Rating incorrect: expected 5, got {response.get('rating')}")
+                return False
+                
+            if response.get('barbershop_id') == barbershop['id']:
+                print(f"   ✅ Barbershop ID saved correctly: {barbershop['id']}")
+            else:
+                print(f"   ❌ Barbershop ID incorrect")
+                return False
+                
+            if response.get('client_id'):
+                print(f"   ✅ Client ID saved correctly: {response.get('client_id')}")
+            else:
+                print("   ❌ Client ID missing")
+                return False
+                
+            # Store review info for later tests
+            self.review_barbershop_id = barbershop['id']
+        
+        return success
+
+    def test_get_barbershop_reviews(self):
+        """Test getting reviews for a barbershop"""
+        if not hasattr(self, 'review_barbershop_id'):
+            print("❌ Skipped - No barbershop ID available from review test")
+            return False
+            
+        success, response = self.run_test(
+            "Get Barbershop Reviews",
+            "GET",
+            f"api/reviews/barbershop/{self.review_barbershop_id}",
+            200
+        )
+        
+        if success and response:
+            reviews = response.get('reviews', [])
+            print(f"   Found {len(reviews)} reviews for barbershop")
+            
+            if reviews:
+                # Check first review structure
+                review = reviews[0]
+                required_fields = ['id', 'client_id', 'client_name', 'barbershop_id', 'rating', 'comment', 'created_at']
+                missing_fields = []
+                
+                for field in required_fields:
+                    if field not in review:
+                        missing_fields.append(field)
+                
+                if missing_fields:
+                    print(f"   ❌ Missing fields in review: {missing_fields}")
+                    return False
+                else:
+                    print("   ✅ All required review fields present")
+                    print(f"   📝 Sample review: Rating {review['rating']}/5 by {review['client_name']}")
+        
+        return success
+
+    def test_client_history_endpoint(self):
+        """Test client history endpoint - should return combined bookings and quick_cuts with reviews"""
+        if not self.client_token:
+            print("❌ Skipped - No client token available")
+            return False
+            
+        success, response = self.run_test(
+            "Get Client History",
+            "GET",
+            "api/client/history",
+            200,
+            token=self.client_token
+        )
+        
+        if success and response:
+            history = response.get('history', [])
+            print(f"   Found {len(history)} items in client history")
+            
+            # Analyze history items
+            bookings_count = 0
+            quick_cuts_count = 0
+            items_with_reviews = 0
+            
+            for item in history:
+                item_type = item.get('type')
+                if item_type == 'booking':
+                    bookings_count += 1
+                elif item_type == 'quick_cut':
+                    quick_cuts_count += 1
+                
+                # Check if item has review associated
+                if 'review' in item:
+                    items_with_reviews += 1
+                
+                # Verify required fields based on type
+                if item_type == 'booking':
+                    required_fields = ['id', 'client_id', 'barbershop_id', 'barber_id', 'service', 'date', 'price', 'status']
+                elif item_type == 'quick_cut':
+                    required_fields = ['id', 'client_id', 'service', 'max_price', 'preferred_time', 'max_distance', 'service_location', 'status']
+                else:
+                    print(f"   ❌ Unknown item type: {item_type}")
+                    continue
+                
+                missing_fields = [field for field in required_fields if field not in item]
+                if missing_fields:
+                    print(f"   ❌ Missing fields in {item_type}: {missing_fields}")
+                    return False
+            
+            print(f"   📊 History breakdown:")
+            print(f"      - Bookings: {bookings_count}")
+            print(f"      - Quick cuts: {quick_cuts_count}")
+            print(f"      - Items with reviews: {items_with_reviews}")
+            
+            # Verify history includes both types if we created them
+            if bookings_count > 0:
+                print("   ✅ Bookings included in history")
+            if quick_cuts_count > 0:
+                print("   ✅ Quick cuts included in history")
+            
+            print("   ✅ Client history endpoint working correctly")
+        
+        return success
 
     def test_get_quick_cut_requests(self):
         """Test getting quick cut requests (barber only)"""
