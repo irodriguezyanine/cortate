@@ -18,6 +18,7 @@ import requests
 import base64
 from PIL import Image
 import io
+import shutil
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
