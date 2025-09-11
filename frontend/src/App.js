@@ -65,6 +65,150 @@ const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 function App() {
   // Initialize toast system
   const { toast, toasts } = useToast();
+
+  // Real-time location tracking
+  const handleLocationUpdate = (location) => {
+    setCurrentLocation(location);
+    if (realTimeTracking && matchedBarber) {
+      updateBarberWithLocation(location);
+    }
+  };
+
+  // Smart notifications system
+  const showNotification = (title, message, type = 'info') => {
+    toast({
+      title,
+      description: message,
+      variant: type
+    });
+
+    // Browser notifications if enabled
+    if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, {
+        body: message,
+        icon: '/logo192.png',
+        badge: '/logo192.png'
+      });
+    }
+  };
+
+  // Request notification permission
+  const requestNotificationPermission = async () => {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      setNotificationsEnabled(permission === 'granted');
+      return permission === 'granted';
+    }
+    return false;
+  };
+
+  // Dynamic pricing calculation
+  const calculateDynamicPrice = (basePrice, demand, distance, timeOfDay, weather) => {
+    if (!dynamicPricing) return basePrice;
+    
+    let multiplier = 1;
+    
+    // Demand surge pricing (like Uber)
+    if (demand > 0.8) multiplier += 0.5;
+    else if (demand > 0.6) multiplier += 0.3;
+    else if (demand > 0.4) multiplier += 0.1;
+    
+    // Distance factor
+    if (distance > 5) multiplier += 0.2;
+    
+    // Time of day (peak hours)
+    const hour = new Date().getHours();
+    if ((hour >= 17 && hour <= 20) || (hour >= 11 && hour <= 14)) {
+      multiplier += 0.2;
+    }
+    
+    return Math.round(basePrice * multiplier);
+  };
+
+  // AI-powered recommendations
+  const generateSmartRecommendations = async () => {
+    try {
+      const userPreferences = {
+        previousServices: bookingHistory.map(b => b.service),
+        averageSpent: totalSpent / Math.max(totalCuts, 1),
+        preferredTimes: bookingHistory.map(b => new Date(b.created_at).getHours()),
+        location: userLocation
+      };
+
+      // Simulate AI recommendations (in real app, call ML API)
+      const recommendations = [
+        {
+          type: 'service',
+          title: 'Servicio Recomendado',
+          description: 'Basado en tu historial, te recomendamos "Corte + Barba"',
+          discount: 15,
+          validUntil: new Date(Date.now() + 24 * 60 * 60 * 1000)
+        },
+        {
+          type: 'barber',
+          title: 'Barbero Destacado',
+          description: 'Juan Carlos tiene 98% de satisfacción en tu zona',
+          badge: 'Top Rated'
+        },
+        {
+          type: 'time',
+          title: 'Mejor Horario',
+          description: 'Los martes a las 3 PM tienes 40% menos tiempo de espera',
+          savings: '15 min'
+        }
+      ];
+
+      setSmartRecommendations(recommendations);
+    } catch (error) {
+      console.error('Error generating recommendations:', error);
+    }
+  };
+
+  // Loyalty program calculations
+  const calculateLoyaltyRewards = (spent, cuts) => {
+    const points = Math.floor(spent / 1000); // 1 point per $1000 spent
+    let level = 'Bronze';
+    
+    if (cuts >= 50) level = 'Platinum';
+    else if (cuts >= 25) level = 'Gold';
+    else if (cuts >= 10) level = 'Silver';
+    
+    setLoyaltyPoints(points);
+    setClientLevel(level);
+    
+    // Check for achievements
+    const newAchievements = [];
+    if (cuts === 1) newAchievements.push({ id: 'first_cut', name: 'Primer Corte', icon: '🎉' });
+    if (cuts === 10) newAchievements.push({ id: 'loyal_client', name: 'Cliente Leal', icon: '💎' });
+    if (cuts === 25) newAchievements.push({ id: 'vip_member', name: 'Miembro VIP', icon: '👑' });
+    
+    if (newAchievements.length > 0) {
+      setAchievements(prev => [...prev, ...newAchievements]);
+      newAchievements.forEach(achievement => {
+        showNotification('¡Logro Desbloqueado!', `${achievement.icon} ${achievement.name}`, 'success');
+      });
+    }
+  };
+
+  // Real-time progress tracking
+  const updateQuickCutProgress = (stage) => {
+    const stages = {
+      'searching': 20,
+      'matched': 40,
+      'barber_on_way': 60,
+      'barber_arrived': 80,
+      'cutting': 90,
+      'completed': 100
+    };
+    
+    setQuickCutProgress(stages[stage] || 0);
+    
+    // Update ETA based on stage
+    if (stage === 'barber_on_way' && matchedBarber?.distance) {
+      const eta = Math.ceil(matchedBarber.distance * 2); // 2 minutes per km estimate
+      setEstimatedArrival(new Date(Date.now() + eta * 60 * 1000));
+    }
+  };
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('map');
   const [map, setMap] = useState(null);
