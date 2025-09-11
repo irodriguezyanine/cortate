@@ -1343,10 +1343,10 @@ def main():
     
     tester = CortateAPITester()
     
-    # SPECIAL REQUEST: Database cleanup analysis
-    print("\n🧹 ANÁLISIS DE LIMPIEZA DE BASE DE DATOS")
+    # SPECIAL REQUEST: Database cleanup analysis and execution
+    print("\n🧹 ANÁLISIS Y LIMPIEZA DE BASE DE DATOS")
     print("=" * 60)
-    cleanup_success = tester.analyze_barbershop_database_cleanup()
+    cleanup_analysis_success = tester.analyze_barbershop_database_cleanup()
     
     # Basic connectivity tests
     print("\n📡 CONNECTIVITY TESTS")
@@ -1370,6 +1370,12 @@ def main():
     print("\n📊 DATA ACCESS TESTS")
     print("-" * 30)
     tester.test_get_barbershops()
+    
+    # DATABASE CLEANUP EXECUTION TESTS
+    print("\n🧹 DATABASE CLEANUP EXECUTION TESTS")
+    print("-" * 50)
+    individual_deletion_success = tester.test_individual_barbershop_deletion()
+    bulk_cleanup_success = tester.test_bulk_database_cleanup()
     
     # Google Maps API Integration Tests (HIGH PRIORITY)
     print("\n🗺️ GOOGLE MAPS API TESTS")
@@ -1424,12 +1430,22 @@ def main():
     print(f"Success rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
     
     # Special focus on database cleanup results
-    print("\n🧹 DATABASE CLEANUP ANALYSIS RESULTS:")
-    if cleanup_success:
+    print("\n🧹 DATABASE CLEANUP RESULTS:")
+    if cleanup_analysis_success:
         print("✅ Database cleanup analysis: COMPLETED")
         print("📋 Detailed cleanup report generated above")
     else:
         print("❌ Database cleanup analysis: FAILED")
+    
+    if individual_deletion_success:
+        print("✅ Individual barbershop deletion: WORKING")
+    else:
+        print("❌ Individual barbershop deletion: FAILED")
+        
+    if bulk_cleanup_success:
+        print("✅ Bulk database cleanup: WORKING")
+    else:
+        print("❌ Bulk database cleanup: FAILED")
     
     # Special focus on Google Maps API results
     print("\n🗺️ GOOGLE MAPS API RESULTS:")
