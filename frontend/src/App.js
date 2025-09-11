@@ -1358,9 +1358,12 @@ function App() {
 
               <Button 
                 onClick={() => {
-                  setQuickCutStatus('idle');
-                  setMatchedBarber(null);
-                  setSuccess('¡Gracias por usar CÓRTATE.CL!');
+                  setCompletedQuickCut({
+                    barber: matchedBarber,
+                    service: selectedService,
+                    price: matchedBarber.price
+                  });
+                  setShowReviewModal(true);
                 }}
                 className="w-full bg-green-600 hover:bg-green-700"
               >
