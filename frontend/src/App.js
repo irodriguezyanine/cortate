@@ -63,6 +63,8 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
 function App() {
+  // Initialize toast system
+  const { toast, toasts } = useToast();
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('map');
   const [map, setMap] = useState(null);
