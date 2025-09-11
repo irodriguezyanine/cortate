@@ -57,6 +57,7 @@ import { LoadingSpinner } from './components/ui/loading-spinner';
 import { Progress } from './components/ui/progress';
 import { LocationTracker } from './components/advanced/LocationTracker';
 import { useToast } from './hooks/useToast';
+import { useGooglePlaces } from './hooks/useGooglePlaces';
 import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
