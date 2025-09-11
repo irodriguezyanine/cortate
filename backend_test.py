@@ -629,6 +629,181 @@ class CortateAPITester:
         
         return success1
 
+    def analyze_barbershop_database_cleanup(self):
+        """Analyze barbershop database for cleanup - identify fake/test barbershops"""
+        print("\n🧹 DATABASE CLEANUP ANALYSIS FOR CÓRTATE.CL")
+        print("=" * 60)
+        print("OBJETIVO: Identificar barberías ficticias o de prueba para eliminación")
+        print("-" * 60)
+        
+        # Get all barbershops
+        success, response = self.run_test(
+            "Get All Barbershops for Analysis",
+            "GET",
+            "api/debug/barbershops",
+            200
+        )
+        
+        if not success or 'barbershops' not in response:
+            print("❌ No se pudieron obtener las barberías para análisis")
+            return False
+            
+        barbershops = response['barbershops']
+        total_barbershops = len(barbershops)
+        
+        print(f"\n📊 RESUMEN INICIAL:")
+        print(f"   Total de barberías en la base de datos: {total_barbershops}")
+        
+        if total_barbershops == 0:
+            print("   ✅ Base de datos limpia - no hay barberías registradas")
+            return True
+        
+        # Analyze each barbershop
+        legitimate_barbershops = []
+        suspicious_barbershops = []
+        test_barbershops = []
+        duplicate_names = {}
+        
+        print(f"\n🔍 ANÁLISIS DETALLADO DE BARBERÍAS:")
+        print("-" * 50)
+        
+        for i, barbershop in enumerate(barbershops, 1):
+            name = barbershop.get('name', 'Sin nombre')
+            barber_id = barbershop.get('barber_id', 'Sin barber_id')
+            address = barbershop.get('address', 'Sin dirección')
+            created_at = barbershop.get('created_at', 'Sin fecha')
+            barbershop_id = barbershop.get('id', 'Sin ID')
+            
+            print(f"\n{i}. BARBERÍA: {name}")
+            print(f"   ID: {barbershop_id}")
+            print(f"   Barber ID: {barber_id}")
+            print(f"   Dirección: {address}")
+            print(f"   Creada: {created_at}")
+            
+            # Check for suspicious patterns
+            is_suspicious = False
+            is_test = False
+            reasons = []
+            
+            # Check for test/fake names
+            test_keywords = [
+                'test', 'prueba', 'fake', 'demo', 'ejemplo', 'sample',
+                'barbería moderna', 'barbería elegante', 'barberia cantagallo'
+            ]
+            
+            name_lower = name.lower()
+            for keyword in test_keywords:
+                if keyword in name_lower:
+                    is_test = True
+                    reasons.append(f"Nombre contiene palabra de prueba: '{keyword}'")
+            
+            # Check for duplicate names
+            if name in duplicate_names:
+                duplicate_names[name].append(barbershop_id)
+                is_suspicious = True
+                reasons.append("Nombre duplicado")
+            else:
+                duplicate_names[name] = [barbershop_id]
+            
+            # Check for missing or invalid barber_id
+            if not barber_id or barber_id == 'Sin barber_id':
+                is_suspicious = True
+                reasons.append("Falta barber_id")
+            
+            # Check for generic addresses
+            generic_addresses = [
+                'santiago', 'chile', 'test', 'prueba', 'ejemplo',
+                'av. providencia', 'las condes'
+            ]
+            
+            address_lower = address.lower()
+            for generic in generic_addresses:
+                if address_lower == generic or address_lower.startswith(generic + ','):
+                    is_suspicious = True
+                    reasons.append(f"Dirección genérica: '{generic}'")
+                    break
+            
+            # Categorize barbershop
+            if is_test:
+                test_barbershops.append({
+                    'barbershop': barbershop,
+                    'reasons': reasons
+                })
+                print(f"   🚨 CATEGORÍA: BARBERÍA DE PRUEBA")
+            elif is_suspicious:
+                suspicious_barbershops.append({
+                    'barbershop': barbershop,
+                    'reasons': reasons
+                })
+                print(f"   ⚠️ CATEGORÍA: SOSPECHOSA")
+            else:
+                legitimate_barbershops.append(barbershop)
+                print(f"   ✅ CATEGORÍA: LEGÍTIMA")
+            
+            if reasons:
+                print(f"   📝 Razones: {', '.join(reasons)}")
+        
+        # Check for duplicates
+        duplicates = {name: ids for name, ids in duplicate_names.items() if len(ids) > 1}
+        
+        # Generate cleanup report
+        print(f"\n📋 REPORTE DE LIMPIEZA RECOMENDADA:")
+        print("=" * 60)
+        
+        print(f"\n✅ BARBERÍAS A MANTENER ({len(legitimate_barbershops)}):")
+        if legitimate_barbershops:
+            for barbershop in legitimate_barbershops:
+                print(f"   - {barbershop.get('name')} (ID: {barbershop.get('id')})")
+                print(f"     Barbero: {barbershop.get('barber_id')}")
+                print(f"     Dirección: {barbershop.get('address')}")
+        else:
+            print("   (Ninguna barbería legítima encontrada)")
+        
+        print(f"\n🚨 BARBERÍAS DE PRUEBA A ELIMINAR ({len(test_barbershops)}):")
+        if test_barbershops:
+            for item in test_barbershops:
+                barbershop = item['barbershop']
+                print(f"   - {barbershop.get('name')} (ID: {barbershop.get('id')})")
+                print(f"     Razones: {', '.join(item['reasons'])}")
+        else:
+            print("   (Ninguna barbería de prueba encontrada)")
+        
+        print(f"\n⚠️ BARBERÍAS SOSPECHOSAS A REVISAR ({len(suspicious_barbershops)}):")
+        if suspicious_barbershops:
+            for item in suspicious_barbershops:
+                barbershop = item['barbershop']
+                print(f"   - {barbershop.get('name')} (ID: {barbershop.get('id')})")
+                print(f"     Razones: {', '.join(item['reasons'])}")
+        else:
+            print("   (Ninguna barbería sospechosa encontrada)")
+        
+        if duplicates:
+            print(f"\n🔄 NOMBRES DUPLICADOS ENCONTRADOS:")
+            for name, ids in duplicates.items():
+                print(f"   - '{name}': {len(ids)} barberías con IDs: {', '.join(ids)}")
+        
+        # Summary and recommendations
+        print(f"\n📊 RESUMEN FINAL:")
+        print(f"   Total barberías: {total_barbershops}")
+        print(f"   Legítimas: {len(legitimate_barbershops)}")
+        print(f"   De prueba (eliminar): {len(test_barbershops)}")
+        print(f"   Sospechosas (revisar): {len(suspicious_barbershops)}")
+        print(f"   Nombres duplicados: {len(duplicates)}")
+        
+        print(f"\n💡 RECOMENDACIONES:")
+        if test_barbershops:
+            print(f"   1. Eliminar inmediatamente {len(test_barbershops)} barberías de prueba")
+        if suspicious_barbershops:
+            print(f"   2. Revisar manualmente {len(suspicious_barbershops)} barberías sospechosas")
+        if duplicates:
+            print(f"   3. Resolver {len(duplicates)} casos de nombres duplicados")
+        if len(legitimate_barbershops) == total_barbershops:
+            print("   ✅ Base de datos parece estar limpia")
+        
+        print(f"\n⚠️ IMPORTANTE: Este es solo un análisis. NO se han eliminado datos.")
+        
+        return True
+
 def main():
     print("🚀 Starting CÓRTATE.CL API Testing...")
     print("=" * 60)
