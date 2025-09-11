@@ -56,6 +56,7 @@ import { Alert, AlertDescription } from './components/ui/alert';
 import { LoadingSpinner } from './components/ui/loading-spinner';
 import { Progress } from './components/ui/progress';
 import { LocationTracker } from './components/advanced/LocationTracker';
+import { BarbershopManagement } from './components/barber/BarbershopManagement';
 import { useToast } from './hooks/useToast';
 import { useGooglePlaces } from './hooks/useGooglePlaces';
 import './App.css';
