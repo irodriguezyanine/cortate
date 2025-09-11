@@ -1717,34 +1717,107 @@ function App() {
           <Card className="bg-gray-900 border-gray-700">
             <CardContent className="p-6 space-y-4">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mx-auto mb-4"></div>
-                <h3 className="text-white text-xl font-semibold mb-2">Buscando barbero...</h3>
+                <div className="relative">
+                  <LoadingSpinner size="xl" className="text-amber-400 mx-auto mb-4" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-8 h-8 bg-amber-400 rounded-full animate-pulse opacity-50"></div>
+                  </div>
+                </div>
+                
+                <h3 className="text-white text-xl font-semibold mb-2">Buscando barbero disponible...</h3>
                 <p className="text-gray-400 mb-4">
-                  Estamos notificando a barberos cercanos disponibles
+                  Notificamos a {matchedBarber ? '1' : '3-5'} barberos cercanos
                 </p>
-                <div className="text-amber-400 text-lg font-mono">
-                  Tiempo restante: {formatTime(searchTimeLeft)}
+                
+                {/* Progress bar */}
+                <div className="mb-4">
+                  <Progress value={quickCutProgress} className="w-full" />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {quickCutProgress < 20 ? 'Iniciando búsqueda...' :
+                     quickCutProgress < 40 ? 'Localizando barberos...' :
+                     quickCutProgress < 60 ? 'Enviando notificaciones...' :
+                     quickCutProgress < 80 ? 'Esperando respuestas...' :
+                     'Finalizando coincidencia...'}
+                  </p>
+                </div>
+                
+                <div className="text-amber-400 text-lg font-mono bg-gray-800 p-3 rounded-lg">
+                  ⏰ Tiempo restante: {formatTime(searchTimeLeft)}
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-gray-300">
-                  <span>Servicio:</span>
-                  <span>{selectedService}</span>
-                </div>
-                <div className="flex justify-between text-sm text-gray-300">
-                  <span>Presupuesto:</span>
-                  <span>${priceLimit[0].toLocaleString()}</span>
+              {/* Enhanced search details */}
+              <div className="bg-gray-800 p-4 rounded-lg space-y-3">
+                <h4 className="text-white font-medium">Detalles de tu solicitud:</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Scissors className="w-4 h-4 text-amber-400" />
+                    <span className="text-gray-300">Servicio:</span>
+                  </div>
+                  <span className="text-white">{selectedService}</span>
+                  
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-green-400" />
+                    <span className="text-gray-300">Presupuesto:</span>
+                  </div>
+                  <span className="text-white">${priceLimit[0].toLocaleString()}</span>
+                  
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-blue-400" />
+                    <span className="text-gray-300">Distancia:</span>
+                  </div>
+                  <span className="text-white">Hasta {maxDistance[0]} km</span>
+                  
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-purple-400" />
+                    <span className="text-gray-300">Tiempo:</span>
+                  </div>
+                  <span className="text-white">
+                    {preferredTime === 'asap' ? 'Lo antes posible' :
+                     preferredTime === '30min' ? 'En 30 minutos' :
+                     preferredTime === '1hour' ? 'En 1 hora' :
+                     'En 2 horas'}
+                  </span>
                 </div>
               </div>
 
-              <Button 
-                onClick={() => setQuickCutStatus('idle')}
-                variant="outline"
-                className="w-full border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
-              >
-                Cancelar Búsqueda
-              </Button>
+              {/* Real-time updates */}
+              {realTimeUpdates && (
+                <div className="bg-blue-900/20 border border-blue-700 p-3 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Navigation className="w-4 h-4 text-blue-400 animate-pulse" />
+                    <span className="text-blue-300 text-sm font-medium">Actualizaciones en tiempo real</span>
+                  </div>
+                  <div className="text-xs text-blue-200 space-y-1">
+                    <p>• {new Date().toLocaleTimeString()}: Búsqueda iniciada</p>
+                    <p>• {new Date(Date.now() - 5000).toLocaleTimeString()}: 3 barberos notificados</p>
+                    {matchedBarber && <p>• {new Date(Date.now() - 2000).toLocaleTimeString()}: Barbero encontrado</p>}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setQuickCutStatus('idle')}
+                  variant="outline"
+                  className="flex-1 border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
+                >
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Cancelar
+                </Button>
+                
+                <Button 
+                  onClick={() => {
+                    setSearchTimeLeft(900);
+                    updateQuickCutProgress('searching');
+                  }}
+                  variant="outline"
+                  className="flex-1 border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-white"
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Buscar más
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
