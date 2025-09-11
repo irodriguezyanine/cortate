@@ -125,9 +125,11 @@ function App() {
 
   useEffect(() => {
     if (user && user.user_type === 'client') {
-      // Initialize map even if no barbershops yet, or when barbershops are loaded
+      // Initialize map when in map tab, with a slight delay for DOM readiness
       if (activeTab === 'map') {
-        setTimeout(initializeMap, 500); // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          initializeMap();
+        }, 1000); // Increased delay to ensure barbershops are loaded
       }
     }
   }, [barbershops, user, activeTab]);
