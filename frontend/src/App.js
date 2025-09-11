@@ -612,6 +612,185 @@ function App() {
       </Dialog>
     );
   };
+
+  // Review Modal Component
+  const ReviewModal = () => {
+    const [uploadingImages, setUploadingImages] = useState(false);
+
+    const handleImageUpload = async (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
+
+      setUploadingImages(true);
+      const uploadedImages = [];
+
+      for (const file of files) {
+        try {
+          // Convert to base64 for preview
+          const reader = new FileReader();
+          reader.onload = () => {
+            uploadedImages.push(reader.result);
+            if (uploadedImages.length === files.length) {
+              setReviewData({...reviewData, images: uploadedImages});
+              setUploadingImages(false);
+            }
+          };
+          reader.readAsDataURL(file);
+        } catch (error) {
+          console.error('Error uploading image:', error);
+        }
+      }
+    };
+
+    const handleSubmitReview = async () => {
+      if (reviewData.rating === 0) {
+        setError('Por favor selecciona una calificación');
+        return;
+      }
+
+      try {
+        setLoading(true);
+        
+        // Submit review to backend
+        const response = await axios.post(`${BACKEND_URL}/api/reviews`, {
+          barbershop_id: completedQuickCut?.barber?.barbershop_id,
+          rating: reviewData.rating,
+          comment: reviewData.comment
+        }, {
+          headers: { 
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        // Reset states
+        setShowReviewModal(false);
+        setQuickCutStatus('idle');
+        setMatchedBarber(null);
+        setCompletedQuickCut(null);
+        setReviewData({ rating: 0, comment: '', images: [] });
+        setSuccess('¡Gracias por tu reseña! El corte se ha agregado a tu historial.');
+        
+        // Refresh client history
+        loadClientHistory();
+        
+      } catch (error) {
+        console.error('Review error:', error);
+        const errorMsg = error.response?.data?.detail || 'Error al enviar la reseña';
+        setError(errorMsg);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    return (
+      <Dialog open={showReviewModal} onOpenChange={setShowReviewModal}>
+        <DialogContent className="bg-gray-900 border-gray-700 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">¿Cómo estuvo tu corte?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Service info */}
+            <div className="bg-gray-800 p-3 rounded-lg">
+              <p className="text-white font-medium">{completedQuickCut?.barber?.name}</p>
+              <p className="text-gray-400 text-sm">{completedQuickCut?.service}</p>
+              <p className="text-amber-400 text-sm">${completedQuickCut?.price?.toLocaleString()}</p>
+            </div>
+
+            {/* Rating stars */}
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Calificación *</label>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setReviewData({...reviewData, rating: star})}
+                    className="text-2xl hover:scale-110 transition-transform"
+                  >
+                    <Star 
+                      className={star <= reviewData.rating ? "fill-amber-400 text-amber-400" : "text-gray-400"}
+                    />
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                {reviewData.rating === 0 && "Selecciona tu calificación"}
+                {reviewData.rating === 1 && "Muy malo"}
+                {reviewData.rating === 2 && "Malo"}
+                {reviewData.rating === 3 && "Regular"}
+                {reviewData.rating === 4 && "Bueno"}
+                {reviewData.rating === 5 && "Excelente"}
+              </p>
+            </div>
+
+            {/* Comment */}
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Comentario (opcional)</label>
+              <Textarea
+                value={reviewData.comment}
+                onChange={(e) => setReviewData({...reviewData, comment: e.target.value})}
+                className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                placeholder="Cuéntanos cómo estuvo tu experiencia..."
+                rows={3}
+              />
+            </div>
+
+            {/* Image upload */}
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Fotos (opcional)</label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="bg-gray-800 border-gray-700 text-white file:bg-amber-600 file:text-white file:border-0 file:rounded file:px-3 file:py-1"
+                  disabled={uploadingImages}
+                />
+                <Camera className="w-5 h-5 text-gray-400" />
+              </div>
+              {reviewData.images.length > 0 && (
+                <div className="flex gap-2 mt-2">
+                  {reviewData.images.map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`Review ${index + 1}`}
+                      className="w-12 h-12 object-cover rounded"
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleSubmitReview}
+                disabled={reviewData.rating === 0 || loading}
+                className="flex-1 bg-amber-600 hover:bg-amber-700"
+              >
+                {loading ? 'Enviando...' : 'Enviar Reseña'}
+              </Button>
+              <Button 
+                onClick={() => {
+                  setShowReviewModal(false);
+                  setQuickCutStatus('idle');
+                  setMatchedBarber(null);
+                  setCompletedQuickCut(null);
+                }}
+                variant="outline"
+                className="flex-1 text-white border-gray-600"
+              >
+                Omitir
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   const LoginForm = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
 
