@@ -483,6 +483,121 @@ class CortateAPITester:
         
         return success
 
+    def test_google_maps_geocoding(self):
+        """Test Google Maps API geocoding functionality with Santiago address"""
+        if not self.barber_token:
+            print("❌ Skipped - No barber token available")
+            return False
+            
+        print("\n🗺️ TESTING GOOGLE MAPS API INTEGRATION")
+        print("-" * 50)
+        
+        # Test creating barbershop with specific Santiago address
+        success, response = self.run_test(
+            "Create Barbershop with Santiago Address (Google Maps Test)",
+            "POST",
+            "api/barbershops",
+            200,
+            data={
+                "name": "Barbería Santiago Maps Test",
+                "description": "Barbería de prueba para validar Google Maps API",
+                "address": "Av. Providencia 1500, Santiago, Chile",
+                "phone": "+56987654321",
+                "services": [
+                    {"name": "Corte de pelo", "price": 15000, "duration": 30},
+                    {"name": "Barba", "price": 10000, "duration": 20}
+                ],
+                "working_hours": {
+                    "monday": {"open": "09:00", "close": "19:00"},
+                    "tuesday": {"open": "09:00", "close": "19:00"},
+                    "wednesday": {"open": "09:00", "close": "19:00"},
+                    "thursday": {"open": "09:00", "close": "19:00"},
+                    "friday": {"open": "09:00", "close": "19:00"},
+                    "saturday": {"open": "10:00", "close": "18:00"},
+                    "sunday": {"closed": True}
+                }
+            },
+            token=self.barber_token
+        )
+        
+        if not success:
+            print("❌ Failed to create barbershop - Google Maps API may have issues")
+            return False
+            
+        # Validate coordinates are in Santiago range
+        if 'lat' in response and 'lng' in response:
+            lat = response['lat']
+            lng = response['lng']
+            
+            print(f"   📍 Coordinates received: lat={lat}, lng={lng}")
+            
+            # Santiago coordinates should be approximately:
+            # Latitude: -33.4xxx (between -33.3 and -33.6)
+            # Longitude: -70.6xxx (between -70.5 and -70.8)
+            
+            santiago_lat_valid = -33.6 <= lat <= -33.3
+            santiago_lng_valid = -70.8 <= lng <= -70.5
+            
+            if santiago_lat_valid and santiago_lng_valid:
+                print("   ✅ Coordinates are within Santiago range")
+                print("   ✅ Google Maps geocoding working correctly")
+                
+                # Store barbershop ID for further testing
+                if 'id' in response:
+                    self.barbershop_id = response['id']
+                    print(f"   📝 Barbershop ID stored: {self.barbershop_id}")
+                
+                return True
+            else:
+                print(f"   ❌ Coordinates outside Santiago range:")
+                print(f"      Expected lat: -33.3 to -33.6, got: {lat}")
+                print(f"      Expected lng: -70.5 to -70.8, got: {lng}")
+                print("   ⚠️ Google Maps API may be using fallback coordinates")
+                return False
+        else:
+            print("   ❌ No coordinates returned in response")
+            print("   ❌ Google Maps geocoding failed")
+            return False
+
+    def test_barbershop_appears_in_list(self):
+        """Test that the created barbershop appears in the barbershops list"""
+        if not hasattr(self, 'barbershop_id') or not self.barbershop_id:
+            print("❌ Skipped - No barbershop ID available from previous test")
+            return False
+            
+        success, response = self.run_test(
+            "Verify Barbershop Appears in List",
+            "GET",
+            "api/barbershops",
+            200
+        )
+        
+        if not success:
+            return False
+            
+        if 'barbershops' in response:
+            barbershops = response['barbershops']
+            
+            # Look for our test barbershop
+            found_barbershop = None
+            for bs in barbershops:
+                if bs.get('id') == self.barbershop_id:
+                    found_barbershop = bs
+                    break
+            
+            if found_barbershop:
+                print(f"   ✅ Barbershop found in list: {found_barbershop.get('name')}")
+                print(f"   📍 Address: {found_barbershop.get('address')}")
+                print(f"   🗺️ Coordinates: lat={found_barbershop.get('lat')}, lng={found_barbershop.get('lng')}")
+                return True
+            else:
+                print(f"   ❌ Barbershop with ID {self.barbershop_id} not found in list")
+                print(f"   📊 Total barbershops in list: {len(barbershops)}")
+                return False
+        else:
+            print("   ❌ No barbershops key in response")
+            return False
+
     def test_debug_endpoints(self):
         """Test debug endpoints to check data persistence"""
         print("\n🔍 DEBUGGING DATA PERSISTENCE")
