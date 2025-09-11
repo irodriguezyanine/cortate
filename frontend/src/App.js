@@ -314,8 +314,31 @@ function App() {
     if (user && user.user_type === 'client') {
       loadBarbershops();
       loadClientHistory();
+      
+      // Initialize enterprise features for clients
+      generateSmartRecommendations();
+      calculateLoyaltyRewards(totalSpent, totalCuts);
+      
+      // Show welcome notification
+      setTimeout(() => {
+        showNotification(
+          `¡Bienvenido, ${user.name}!`,
+          `Nivel ${clientLevel} • ${loyaltyPoints} puntos disponibles`,
+          'success'
+        );
+      }, 1000);
+      
     } else if (user && user.user_type === 'barber') {
       loadBarberData();
+      
+      // Initialize barber analytics
+      setTimeout(() => {
+        showNotification(
+          '🔥 Panel del Barbero',
+          'Gestiona tus servicios y solicitudes',
+          'info'
+        );
+      }, 1000);
     }
   }, [user]);
 
