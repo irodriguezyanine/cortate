@@ -658,6 +658,12 @@ def main():
     print("-" * 30)
     tester.test_get_barbershops()
     
+    # Google Maps API Integration Tests (HIGH PRIORITY)
+    print("\n🗺️ GOOGLE MAPS API TESTS")
+    print("-" * 30)
+    google_maps_success = tester.test_google_maps_geocoding()
+    barbershop_list_success = tester.test_barbershop_appears_in_list()
+    
     # Business logic tests
     print("\n💼 BUSINESS LOGIC TESTS")
     print("-" * 30)
@@ -683,6 +689,18 @@ def main():
     print(f"📊 FINAL RESULTS")
     print(f"Tests passed: {tester.tests_passed}/{tester.tests_run}")
     print(f"Success rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    # Special focus on Google Maps API results
+    print("\n🗺️ GOOGLE MAPS API RESULTS:")
+    if google_maps_success:
+        print("✅ Google Maps geocoding: WORKING")
+    else:
+        print("❌ Google Maps geocoding: FAILED")
+        
+    if barbershop_list_success:
+        print("✅ Barbershop listing: WORKING")
+    else:
+        print("❌ Barbershop listing: FAILED")
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All tests passed! Backend is working correctly.")
