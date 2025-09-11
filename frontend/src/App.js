@@ -1266,6 +1266,7 @@ function App() {
           <label className="text-white text-sm font-medium">Dirección de tu barbería *</label>
           <div className="relative">
             <Input
+              ref={inputRef}
               id="address-autocomplete"
               placeholder="Ingresa la dirección de tu barbería..."
               value={formData.address}
@@ -1273,11 +1274,35 @@ function App() {
               className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
               required
             />
-            <MapPin className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
+            <div className="absolute right-3 top-3 flex items-center gap-1">
+              {selectedPlace && (
+                <CheckCircle className="w-4 h-4 text-green-400" />
+              )}
+              <MapPin className="w-4 h-4 text-gray-400" />
+            </div>
           </div>
-          <p className="text-xs text-gray-500">
-            💡 Escribe y selecciona de las sugerencias para obtener la ubicación exacta
-          </p>
+          <div className="flex items-center gap-2">
+            <Info className="w-4 h-4 text-blue-400" />
+            <p className="text-xs text-gray-400">
+              {isLoaded ? 
+                '💡 Escribe y selecciona de las sugerencias para obtener la ubicación exacta' :
+                '⏳ Cargando Google Places...'
+              }
+            </p>
+          </div>
+          
+          {selectedPlace && (
+            <div className="bg-green-900/20 border border-green-700 p-3 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle className="w-4 h-4 text-green-400" />
+                <span className="text-green-300 text-sm font-medium">Ubicación Confirmada</span>
+              </div>
+              <p className="text-green-200 text-xs">{selectedPlace.formatted_address}</p>
+              <p className="text-green-300 text-xs mt-1">
+                📍 {selectedPlace.lat.toFixed(6)}, {selectedPlace.lng.toFixed(6)}
+              </p>
+            </div>
+          )}
         </div>
 
         <Textarea
