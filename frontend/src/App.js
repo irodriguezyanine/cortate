@@ -74,6 +74,22 @@ function App() {
     }
   };
 
+  // Update barber with current location (for real-time tracking)
+  const updateBarberWithLocation = async (location) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      await axios.post(`${BACKEND_URL}/api/quick-cuts/update-location`, {
+        lat: location.lat,
+        lng: location.lng,
+        accuracy: location.accuracy
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error('Error updating location:', error);
+    }
+  };
+
   // Smart notifications system
   const showNotification = (title, message, type = 'info') => {
     toast({
