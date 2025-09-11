@@ -1087,7 +1087,12 @@ async def delete_barbershop(barbershop_id: str, current_user: dict = Depends(get
         if current_user["user_type"] == "barber" and barbershop["barber_id"] != current_user["id"]:
             # For cleanup purposes, allow any barber to delete test barbershops
             # In production, this should be restricted to admins only
-            test_keywords = ['test', 'prueba', 'fake', 'demo', 'ejemplo', 'sample', 'barbería moderna', 'barbería elegante', 'barberia cantagallo']
+            # NOTE: BARBERIA CANTAGALLO is LEGITIMATE - removed from test keywords
+            test_keywords = [
+                'test', 'prueba', 'fake', 'demo', 'ejemplo', 'sample', 
+                'barbería moderna', 'barbería elegante',
+                'barbershop classic', 'barbería el maestro', 'barbería santiago maps test'
+            ]
             name_lower = barbershop["name"].lower()
             is_test_barbershop = any(keyword in name_lower for keyword in test_keywords)
             
