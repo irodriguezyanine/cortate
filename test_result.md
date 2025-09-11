@@ -198,6 +198,18 @@ backend:
         agent: "testing"
         comment: "FIXED: Google Maps API integration now working correctly. Successfully tested with 'Av. Providencia 1500, Santiago, Chile' - returned accurate coordinates (lat=-33.4274522, lng=-70.6173543) within expected Santiago range. Barbershop creation with geocoding functional. User billing activation resolved the REQUEST_DENIED issues."
 
+  - task: "Database cleanup analysis for CÓRTATE.CL"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "COMPLETED: Database cleanup analysis successfully performed using /api/debug/barbershops endpoint. Analyzed 13 barbershops total. CRITICAL FINDINGS: 10 fake/test barbershops identified for deletion (77% of database contamination), only 3 legitimate barbershops should be maintained: 'Barbershop Classic', 'Barbería El Maestro', 'Barbería Dani'. Found 2 duplicate name cases: 'BARBERIA CANTAGALLO' and 'Barbería Test Premium'. Test barbershops contain keywords: 'test', 'barbería moderna', 'barbería elegante', 'barberia cantagallo'. All have valid barber_id associations. Backend API functional (92.3% success rate). Ready for cleanup implementation phase."
+
 frontend:
   - task: "Google Maps display in client profile"
     implemented: true
