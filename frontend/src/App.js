@@ -35,7 +35,6 @@ import {
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
-import { Textarea } from './components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
@@ -44,6 +43,7 @@ import { Avatar, AvatarImage, AvatarFallback } from './components/ui/avatar';
 import { Slider } from './components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { Calendar as CalendarComponent } from './components/ui/calendar';
+import { Textarea } from './components/ui/textarea';
 import { Alert, AlertDescription } from './components/ui/alert';
 import { Textarea } from './components/ui/textarea';
 import './App.css';
