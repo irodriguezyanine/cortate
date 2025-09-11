@@ -342,6 +342,36 @@ function App() {
     }
   }, [user]);
 
+  // Enterprise features initialization
+  useEffect(() => {
+    // Initialize real-time updates
+    if (realTimeUpdates && quickCutStatus === 'searching') {
+      const interval = setInterval(() => {
+        updateQuickCutProgress('searching');
+      }, 2000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [quickCutStatus, realTimeUpdates]);
+
+  // Dynamic pricing updates
+  useEffect(() => {
+    if (dynamicPricing && selectedService) {
+      const demand = Math.random(); // Simulate demand
+      const distance = maxDistance[0];
+      const dynamicPrice = calculateDynamicPrice(priceLimit[0], demand, distance);
+      
+      if (dynamicPrice !== priceLimit[0]) {
+        setPriceLimit([dynamicPrice]);
+        showNotification(
+          '💰 Precio Dinámico',
+          `Precio ajustado a $${dynamicPrice.toLocaleString()} por demanda actual`,
+          'info'
+        );
+      }
+    }
+  }, [selectedService, maxDistance, dynamicPricing]);
+
   useEffect(() => {
     if (user && user.user_type === 'client') {
       // Initialize map when in map tab, with a slight delay for DOM readiness
