@@ -31,7 +31,15 @@ import {
   TrendingUp,
   History,
   Edit3,
-  Save
+  Save,
+  Navigation,
+  Zap,
+  Shield,
+  Award,
+  Gift,
+  Target,
+  AlertCircle,
+  Info
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
@@ -45,6 +53,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Calendar as CalendarComponent } from './components/ui/calendar';
 import { Textarea } from './components/ui/textarea';
 import { Alert, AlertDescription } from './components/ui/alert';
+import { LoadingSpinner } from './components/ui/loading-spinner';
+import { Progress } from './components/ui/progress';
+import { LocationTracker } from './components/advanced/LocationTracker';
+import { useToast } from './hooks/useToast';
 import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
