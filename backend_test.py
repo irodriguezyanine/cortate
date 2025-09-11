@@ -642,7 +642,9 @@ class CortateAPITester:
                 for i, review in enumerate(reviews[-3:], 1):  # Show last 3 reviews
                     print(f"      {i}. Rating: {review.get('rating')}/5")
                     print(f"         Cliente: {review.get('client_name', 'Desconocido')}")
-                    print(f"         Comentario: {review.get('comment', 'Sin comentario')[:50]}...")
+                    comment = review.get('comment', 'Sin comentario')
+                    comment_preview = comment[:50] + "..." if comment and len(comment) > 50 else (comment or 'Sin comentario')
+                    print(f"         Comentario: {comment_preview}")
                     print(f"         Fecha: {review.get('created_at', 'Sin fecha')}")
             else:
                 print("   ⚠️ No se encontraron reseñas para esta barbería")
