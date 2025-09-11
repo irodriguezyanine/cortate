@@ -125,51 +125,63 @@ user_problem_statement: |
 backend:
   - task: "MongoDB data persistence - User registration"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 2
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
         comment: "Usuario reporta que no se pueden crear barberías persistentemente. Los datos no se guardan correctamente en MongoDB."
+      - working: true
+        agent: "testing"
+        comment: "FIXED: User registration working correctly. Users are being created and persisted in MongoDB. Authentication system (login/register) fully functional for both clients and barbers. JWT tokens generated properly."
 
   - task: "MongoDB data persistence - Barbershop creation"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 2
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
         comment: "Las barberías creadas no persisten en la base de datos. No aparecen en el mapa del cliente."
+      - working: true
+        agent: "testing"
+        comment: "FIXED: Critical routing bug resolved. Issue was FastAPI route order - /api/barbershops/{barbershop_id} was defined before /api/barbershops/my, causing 'my' to be treated as barbershop_id. Fixed by reordering routes. Barbershop creation and persistence now working correctly. Data persists in MongoDB with all required fields."
 
   - task: "Quick cut request system"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
         comment: "Solicitudes de corte rápido no llegan al barbero. Sistema de matching no funciona correctamente."
+      - working: true
+        agent: "testing"
+        comment: "WORKING: Quick cut system functional. Clients can create requests, system finds suitable barbers (4 found in test), requests persist in database with proper expiration. Barbers can view pending requests. Matching algorithm working based on distance and service compatibility."
 
   - task: "Traditional booking system"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
         comment: "Reservas tradicionales no aparecen en el calendario del barbero. Problema de sincronización."
+      - working: true
+        agent: "testing"
+        comment: "WORKING: Traditional booking system functional. Clients can create bookings successfully, data persists in MongoDB with proper structure (booking_id, client_id, barbershop_id, barber_id, service, date, price, status). Bookings created with 'pending' status."
 
   - task: "Google Maps API integration"
     implemented: true
@@ -182,6 +194,9 @@ backend:
       - working: false
         agent: "user"
         comment: "Mapa no se muestra en el perfil del cliente. Falta integración con Google Places API."
+      - working: false
+        agent: "testing"
+        comment: "ISSUE FOUND: Google Geocoding API returning REQUEST_DENIED errors in backend logs. API key may be invalid or has restrictions. Backend falls back to default Santiago coordinates (-33.4489, -70.6693) when geocoding fails. This affects address-to-coordinates conversion for barbershops."
 
 frontend:
   - task: "Google Maps display in client profile"
