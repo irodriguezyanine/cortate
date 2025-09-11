@@ -810,6 +810,11 @@ def main():
     
     tester = CortateAPITester()
     
+    # SPECIAL REQUEST: Database cleanup analysis
+    print("\n🧹 ANÁLISIS DE LIMPIEZA DE BASE DE DATOS")
+    print("=" * 60)
+    cleanup_success = tester.analyze_barbershop_database_cleanup()
+    
     # Basic connectivity tests
     print("\n📡 CONNECTIVITY TESTS")
     print("-" * 30)
@@ -864,6 +869,14 @@ def main():
     print(f"📊 FINAL RESULTS")
     print(f"Tests passed: {tester.tests_passed}/{tester.tests_run}")
     print(f"Success rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    # Special focus on database cleanup results
+    print("\n🧹 DATABASE CLEANUP ANALYSIS RESULTS:")
+    if cleanup_success:
+        print("✅ Database cleanup analysis: COMPLETED")
+        print("📋 Detailed cleanup report generated above")
+    else:
+        print("❌ Database cleanup analysis: FAILED")
     
     # Special focus on Google Maps API results
     print("\n🗺️ GOOGLE MAPS API RESULTS:")
