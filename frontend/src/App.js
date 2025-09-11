@@ -1942,6 +1942,35 @@ function App() {
                       </div>
                     </div>
                     
+                    {/* Additional details */}
+                    <div className="bg-gray-800 p-3 rounded-lg">
+                      <h4 className="text-white text-sm font-medium mb-2">Detalles de la Solicitud:</h4>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-gray-400">Solicitud creada:</span>
+                          <p className="text-white">{new Date(request.created_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Máx. distancia:</span>
+                          <p className="text-white">{request.max_distance || 5} km</p>
+                        </div>
+                        {request.preferred_time !== 'asap' && (
+                          <div>
+                            <span className="text-gray-400">Tiempo deseado:</span>
+                            <p className="text-white">
+                              {request.preferred_time === '30min' ? '30 min' :
+                               request.preferred_time === '1hour' ? '1 hora' :
+                               request.preferred_time === '2hours' ? '2 horas' : 'Flexible'}
+                            </p>
+                          </div>
+                        )}
+                        <div>
+                          <span className="text-gray-400">Estado:</span>
+                          <p className="text-green-400">Pendiente</p>
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div className="flex gap-2">
                       <Button 
                         onClick={() => handleQuickCutResponse(request.id, true)}
