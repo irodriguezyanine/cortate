@@ -2536,7 +2536,7 @@ function App() {
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-white mb-2">Mi Negocio</h2>
-        <p className="text-gray-400">Gestiona tu barbería y servicios</p>
+        <p className="text-gray-400">Gestiona tu barbería profesionalmente</p>
       </div>
 
       {!myBarbershop ? (
@@ -2557,62 +2557,11 @@ function App() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          <Card className="bg-gray-900 border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center justify-between">
-                {myBarbershop.name}
-                <Badge className="bg-green-600">Activa</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <p className="text-gray-300">{myBarbershop.description}</p>
-                <p className="text-gray-400 flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  {myBarbershop.address}
-                </p>
-                <p className="text-gray-400 flex items-center gap-1">
-                  <Phone className="w-4 h-4" />
-                  {myBarbershop.phone}
-                </p>
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  <span className="text-white">{myBarbershop.rating || 0} ({myBarbershop.reviews_count || 0} reseñas)</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-900 border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-white">Servicios</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {myBarbershop.services?.map((service, index) => (
-                  <div key={index} className="flex justify-between items-center p-2 bg-gray-800 rounded">
-                    <span className="text-white">{service.name}</span>
-                    <div className="text-amber-400">
-                      ${service.price?.toLocaleString()} - {service.duration}min
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <Button variant="outline" className="w-full">
-              <Edit3 className="w-4 h-4 mr-2" />
-              Editar Información
-            </Button>
-            <Button variant="outline" className="w-full">
-              <Camera className="w-4 h-4 mr-2" />
-              Subir Fotos
-            </Button>
-          </div>
-        </div>
+        <BarbershopManagement 
+          barbershop={myBarbershop}
+          onUpdate={(updatedBarbershop) => setMyBarbershop(updatedBarbershop)}
+          BACKEND_URL={BACKEND_URL}
+        />
       )}
 
       <div className="max-w-sm mx-auto space-y-4">
