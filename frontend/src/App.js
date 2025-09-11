@@ -1600,6 +1600,105 @@ function App() {
                 </div>
               </div>
 
+              {/* Advanced Features Section */}
+              <div className="bg-gray-800 p-4 rounded-lg space-y-3">
+                <h4 className="text-white font-medium flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-400" />
+                  Características Avanzadas
+                </h4>
+                
+                {/* Real-time tracking toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Navigation className="w-4 h-4 text-blue-400" />
+                    <span className="text-white text-sm">Seguimiento en tiempo real</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={realTimeTracking ? "default" : "outline"}
+                    onClick={() => setRealTimeTracking(!realTimeTracking)}
+                    className={realTimeTracking ? "bg-blue-600 hover:bg-blue-700" : "text-white border-gray-600"}
+                  >
+                    {realTimeTracking ? 'Activado' : 'Activar'}
+                  </Button>
+                </div>
+
+                {/* Location tracker component */}
+                <LocationTracker 
+                  onLocationUpdate={handleLocationUpdate}
+                  enabled={realTimeTracking}
+                />
+
+                {/* Notifications toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-green-400" />
+                    <span className="text-white text-sm">Notificaciones push</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={notificationsEnabled ? "default" : "outline"}
+                    onClick={requestNotificationPermission}
+                    className={notificationsEnabled ? "bg-green-600 hover:bg-green-700" : "text-white border-gray-600"}
+                  >
+                    {notificationsEnabled ? 'Activado' : 'Activar'}
+                  </Button>
+                </div>
+
+                {/* Dynamic pricing indicator */}
+                {dynamicPricing && (
+                  <div className="flex items-center gap-2 p-2 bg-amber-900/30 rounded">
+                    <TrendingUp className="w-4 h-4 text-amber-400" />
+                    <span className="text-amber-300 text-sm">
+                      Precio dinámico activo - Demanda: Alta
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Smart Recommendations */}
+              {smartRecommendations.length > 0 && (
+                <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 p-4 rounded-lg">
+                  <h4 className="text-white font-medium flex items-center gap-2 mb-3">
+                    <Target className="w-4 h-4 text-purple-400" />
+                    Recomendaciones Inteligentes
+                  </h4>
+                  {smartRecommendations.slice(0, 2).map((rec, index) => (
+                    <div key={index} className="bg-gray-800/50 p-3 rounded mb-2 last:mb-0">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-white text-sm font-medium">{rec.title}</p>
+                          <p className="text-gray-400 text-xs">{rec.description}</p>
+                        </div>
+                        {rec.discount && (
+                          <Badge className="bg-purple-600 text-white">
+                            -{rec.discount}%
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Loyalty Points Display */}
+              {loyaltyPoints > 0 && (
+                <div className="bg-gradient-to-r from-amber-900/30 to-yellow-900/30 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Award className="w-5 h-5 text-amber-400" />
+                      <div>
+                        <p className="text-white font-medium">Nivel {clientLevel}</p>
+                        <p className="text-amber-300 text-sm">{loyaltyPoints} puntos</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-amber-600 text-white">
+                      {totalCuts} cortes
+                    </Badge>
+                  </div>
+                </div>
+              )}
+
               <Button 
                 onClick={handleQuickSearch}
                 disabled={!selectedService}
