@@ -164,6 +164,7 @@ class QuickCutRequestCreate(BaseModel):
     max_price: int
     max_distance: Optional[int] = 5
     service_location: Optional[str] = "local"
+    preferred_time: Optional[str] = "asap"
     lat: float
     lng: float
 
