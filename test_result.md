@@ -255,14 +255,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "MongoDB data persistence - User registration"
-    - "MongoDB data persistence - Barbershop creation"
-    - "Quick cut request system"
-    - "Traditional booking system"
-    - "Google Maps display in client profile"
+    - "Google Maps API integration"
   stuck_tasks:
-    - "MongoDB data persistence - User registration"
-    - "MongoDB data persistence - Barbershop creation"
+    - "Google Maps API integration"
   test_all: false
   test_priority: "high_first"
 
