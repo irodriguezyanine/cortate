@@ -25,22 +25,20 @@ export const useGooglePlaces = (apiKey) => {
     if (window.google && window.google.maps && window.google.maps.places) {
       initializeAutocomplete();
     } else {
-      // Load Google Maps API with Places library
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMaps`;
-      script.async = true;
-      script.defer = true;
+      // Wait for the main app to load Google Maps API
+      const checkForGoogleMaps = setInterval(() => {
+        if (window.google && window.google.maps && window.google.maps.places) {
+          clearInterval(checkForGoogleMaps);
+          initializeAutocomplete();
+        }
+      }, 100);
 
-      window.initGoogleMaps = () => {
-        initializeAutocomplete();
-      };
+      // Cleanup interval after 10 seconds
+      setTimeout(() => {
+        clearInterval(checkForGoogleMaps);
+      }, 10000);
 
-      document.head.appendChild(script);
-
-      return () => {
-        document.head.removeChild(script);
-        delete window.initGoogleMaps;
-      };
+      return () => clearInterval(checkForGoogleMaps);
     }
   }, [apiKey]);
 
