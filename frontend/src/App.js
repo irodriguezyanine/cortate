@@ -1578,7 +1578,19 @@ function App() {
       </TabsList>
 
       <TabsContent value="calendar">
-        <BarberCalendar />
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-white mb-2">Gestión de Citas</h2>
+            <p className="text-gray-400">Administra tus citas y reservas</p>
+          </div>
+          
+          <AppointmentManager 
+            appointments={appointments}
+            onUpdate={loadBarberData}
+            currentUser={user}
+            BACKEND_URL={BACKEND_URL}
+          />
+        </div>
       </TabsContent>
 
       <TabsContent value="requests">
