@@ -1087,7 +1087,7 @@ function App() {
                       variant="outline"
                       size="sm"
                       onClick={() => setMaxDistance([km])}
-                      className={maxDistance[0] === km ? "bg-amber-600 text-white" : ""}
+                      className={maxDistance[0] === km ? "bg-amber-600 text-white border-amber-600" : "text-white border-gray-600 hover:border-amber-600 hover:text-amber-600"}
                     >
                       {km}km
                     </Button>
