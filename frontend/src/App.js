@@ -206,10 +206,10 @@ function App() {
   const loadClientHistory = async () => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await axios.get(`${BACKEND_URL}/api/bookings/user`, {
+      const response = await axios.get(`${BACKEND_URL}/api/client/history`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setBookingHistory(response.data.bookings || []);
+      setBookingHistory(response.data.history || []);
     } catch (error) {
       console.error('Error loading client history:', error);
     }
