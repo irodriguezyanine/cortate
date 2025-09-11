@@ -1121,6 +1121,46 @@ async def create_booking(booking_data: BookingCreate, current_user: dict = Depen
 async def test_barber(current_user: dict = Depends(get_current_user)):
     return {"message": "test working", "user_id": current_user["id"], "user_type": current_user["user_type"]}
 
+@app.put("/api/bookings/{booking_id}/status")
+async def update_booking_status(
+    booking_id: str,
+    status_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        if current_user["user_type"] != "barber":
+            raise HTTPException(status_code=403, detail="Solo barberos pueden actualizar reservas")
+        
+        # Find the booking
+        booking = await database.bookings.find_one({"id": booking_id})
+        if not booking:
+            raise HTTPException(status_code=404, detail="Reserva no encontrada")
+        
+        # Verify booking belongs to current barber
+        if booking["barber_id"] != current_user["id"]:
+            raise HTTPException(status_code=403, detail="No puedes modificar esta reserva")
+        
+        # Update booking status
+        new_status = status_data.get("status")
+        if new_status not in ["accepted", "rejected", "completed", "cancelled"]:
+            raise HTTPException(status_code=400, detail="Estado inválido")
+        
+        await database.bookings.update_one(
+            {"id": booking_id},
+            {"$set": {
+                "status": new_status,
+                "updated_at": datetime.now(timezone.utc)
+            }}
+        )
+        
+        return {"message": f"Reserva {new_status} exitosamente"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating booking status: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
 @app.get("/api/bookings/barber")
 async def get_barber_bookings(current_user: dict = Depends(get_current_user)):
     try:
