@@ -2849,13 +2849,6 @@ function App() {
     </div>
   );
 
-  return (
-    <LanguageProvider>
-      <AppContent />
-    </LanguageProvider>
-  );
-}
-
 function AppContent() {
   const { t } = useLanguage();
   
