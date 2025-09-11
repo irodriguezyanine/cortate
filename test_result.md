@@ -334,8 +334,6 @@ metadata:
 test_plan:
   current_focus:
     - "Google Maps display in client profile"
-    - "Quick cut UI styling - white text on dark background"
-    - "Barber calendar styling - white text"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
