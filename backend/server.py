@@ -483,6 +483,28 @@ async def get_barbershops():
         logger.error(f"Error fetching barbershops: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
+@app.get("/api/barbershops/my")
+async def get_my_barbershop(current_user: dict = Depends(get_current_user)):
+    try:
+        if current_user["user_type"] != "barber":
+            raise HTTPException(status_code=403, detail="Solo barberos pueden acceder")
+        
+        # Direct query with explicit barber_id
+        barbershop = await database.barbershops.find_one({"barber_id": current_user["id"]})
+        
+        if not barbershop:
+            return {"barbershop": None, "message": f"No barbershop found for barber_id: {current_user['id']}"}
+        
+        # Clean MongoDB ObjectId
+        if "_id" in barbershop:
+            barbershop.pop("_id")
+        
+        return {"barbershop": barbershop}
+        
+    except Exception as e:
+        logger.error(f"Error in /barbershops/my: {e}")
+        return {"barbershop": None, "error": str(e)}
+
 @app.get("/api/barbershops/{barbershop_id}")
 async def get_barbershop(barbershop_id: str):
     try:
