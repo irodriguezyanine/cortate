@@ -291,8 +291,12 @@ const ReviewModal = ({
 };
 
 function App() {
-  // Initialize toast system
-  const { toast, toasts } = useToast();
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  );
+}
 
   // Real-time location tracking
   const handleLocationUpdate = (location) => {
