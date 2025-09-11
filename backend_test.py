@@ -1995,6 +1995,376 @@ class CortateAPITester:
             print(f"   ❌ Failed to delete test barbershop")
             return False
 
+    def investigate_database_state(self):
+        """CRITICAL INVESTIGATION: Check all MongoDB collections and data state"""
+        print("\n🔍 INVESTIGACIÓN CRÍTICA: ESTADO DE LA BASE DE DATOS MONGODB")
+        print("=" * 80)
+        print("PROBLEMA REPORTADO: Usuario ve solo 3 barberías ficticias en MongoDB Atlas")
+        print("OBJETIVO: Verificar todas las colecciones y datos reales")
+        print("-" * 80)
+        
+        investigation_results = {
+            'users_found': 0,
+            'barbershops_found': 0,
+            'reviews_found': 0,
+            'bookings_found': 0,
+            'quick_cuts_found': 0,
+            'database_name': 'cortate_db',
+            'connection_working': False,
+            'collections_verified': []
+        }
+        
+        # Step 1: Verify database connection and health
+        print("\n1️⃣ VERIFICANDO CONEXIÓN A MONGODB")
+        print("-" * 40)
+        
+        success_health, response_health = self.run_test(
+            "Database Health Check",
+            "GET",
+            "api/health",
+            200
+        )
+        
+        if success_health:
+            investigation_results['connection_working'] = True
+            print("   ✅ Conexión a MongoDB funcionando")
+            print(f"   📊 Respuesta: {response_health}")
+        else:
+            print("   ❌ Error de conexión a MongoDB")
+            return investigation_results
+        
+        # Step 2: Check all collections using debug endpoints
+        print("\n2️⃣ VERIFICANDO TODAS LAS COLECCIONES")
+        print("-" * 40)
+        
+        # Check users collection
+        print("\n   👥 COLECCIÓN: USERS")
+        if not self.client_token:
+            # Register a test user first
+            self.test_register_client()
+        
+        if self.client_token:
+            success_users, response_users = self.run_test(
+                "Debug Users Collection",
+                "GET",
+                "api/debug/user",
+                200,
+                token=self.client_token
+            )
+            
+            if success_users:
+                investigation_results['users_found'] = 1  # At least current user
+                investigation_results['collections_verified'].append('users')
+                print(f"   ✅ Colección 'users' accesible")
+                print(f"   👤 Usuario actual: {response_users.get('user', {}).get('name', 'Desconocido')}")
+            else:
+                print("   ❌ Error accediendo colección 'users'")
+        
+        # Check barbershops collection
+        print("\n   🏪 COLECCIÓN: BARBERSHOPS")
+        success_barbershops, response_barbershops = self.run_test(
+            "Debug Barbershops Collection",
+            "GET",
+            "api/debug/barbershops",
+            200
+        )
+        
+        if success_barbershops and 'barbershops' in response_barbershops:
+            barbershops = response_barbershops['barbershops']
+            investigation_results['barbershops_found'] = len(barbershops)
+            investigation_results['collections_verified'].append('barbershops')
+            
+            print(f"   ✅ Colección 'barbershops' encontrada")
+            print(f"   📊 Total barberías: {len(barbershops)}")
+            
+            if barbershops:
+                print("   📋 Barberías encontradas:")
+                for i, bs in enumerate(barbershops, 1):
+                    name = bs.get('name', 'Sin nombre')
+                    barbershop_id = bs.get('id', 'Sin ID')
+                    barber_id = bs.get('barber_id', 'Sin barber_id')
+                    address = bs.get('address', 'Sin dirección')
+                    created_at = bs.get('created_at', 'Sin fecha')
+                    
+                    print(f"      {i}. {name}")
+                    print(f"         ID: {barbershop_id}")
+                    print(f"         Barbero: {barber_id}")
+                    print(f"         Dirección: {address}")
+                    print(f"         Creada: {created_at}")
+                    
+                    # Identify if it's fake/test
+                    test_keywords = ['test', 'prueba', 'fake', 'demo', 'ejemplo', 'sample']
+                    is_fake = any(keyword in name.lower() for keyword in test_keywords)
+                    if is_fake:
+                        print(f"         🚨 MARCADA COMO: Barbería de prueba/ficticia")
+                    else:
+                        print(f"         ✅ MARCADA COMO: Barbería legítima")
+            else:
+                print("   ⚠️ No se encontraron barberías en la colección")
+        else:
+            print("   ❌ Error accediendo colección 'barbershops'")
+        
+        # Check reviews collection
+        print("\n   ⭐ COLECCIÓN: REVIEWS")
+        # First get a barbershop to check reviews
+        if investigation_results['barbershops_found'] > 0:
+            first_barbershop_id = response_barbershops['barbershops'][0]['id']
+            success_reviews, response_reviews = self.run_test(
+                "Debug Reviews Collection",
+                "GET",
+                f"api/reviews/barbershop/{first_barbershop_id}",
+                200
+            )
+            
+            if success_reviews and 'reviews' in response_reviews:
+                reviews = response_reviews['reviews']
+                investigation_results['reviews_found'] = len(reviews)
+                investigation_results['collections_verified'].append('reviews')
+                
+                print(f"   ✅ Colección 'reviews' accesible")
+                print(f"   📊 Reseñas encontradas para primera barbería: {len(reviews)}")
+                
+                if reviews:
+                    print("   📋 Últimas reseñas:")
+                    for i, review in enumerate(reviews[-3:], 1):  # Show last 3
+                        client_name = review.get('client_name', 'Cliente desconocido')
+                        rating = review.get('rating', 0)
+                        comment = review.get('comment', 'Sin comentario')
+                        created_at = review.get('created_at', 'Sin fecha')
+                        
+                        print(f"      {i}. {client_name} - {rating}/5 estrellas")
+                        print(f"         Comentario: {comment[:50]}...")
+                        print(f"         Fecha: {created_at}")
+            else:
+                print("   ❌ Error accediendo colección 'reviews'")
+        else:
+            print("   ⚠️ No se pueden verificar reviews sin barberías")
+        
+        # Check bookings collection (requires barber token)
+        print("\n   📅 COLECCIÓN: BOOKINGS")
+        if not self.barber_token:
+            self.test_register_barber()
+        
+        if self.barber_token:
+            success_bookings, response_bookings = self.run_test(
+                "Debug Bookings Collection",
+                "GET",
+                "api/bookings/barber",
+                200,
+                token=self.barber_token
+            )
+            
+            if success_bookings and 'bookings' in response_bookings:
+                bookings = response_bookings['bookings']
+                investigation_results['bookings_found'] = len(bookings)
+                investigation_results['collections_verified'].append('bookings')
+                
+                print(f"   ✅ Colección 'bookings' accesible")
+                print(f"   📊 Reservas encontradas: {len(bookings)}")
+                
+                if bookings:
+                    print("   📋 Últimas reservas:")
+                    for i, booking in enumerate(bookings[-3:], 1):
+                        client_name = booking.get('client_name', 'Cliente desconocido')
+                        service = booking.get('service', 'Servicio desconocido')
+                        date = booking.get('date', 'Sin fecha')
+                        status = booking.get('status', 'Sin estado')
+                        
+                        print(f"      {i}. {client_name} - {service}")
+                        print(f"         Fecha: {date}")
+                        print(f"         Estado: {status}")
+            else:
+                print("   ❌ Error accediendo colección 'bookings'")
+        
+        # Check quick_cut_requests collection
+        print("\n   ⚡ COLECCIÓN: QUICK_CUT_REQUESTS")
+        if self.barber_token:
+            success_quick_cuts, response_quick_cuts = self.run_test(
+                "Debug Quick Cut Requests Collection",
+                "GET",
+                "api/quick-cuts/requests",
+                200,
+                token=self.barber_token
+            )
+            
+            if success_quick_cuts and 'requests' in response_quick_cuts:
+                quick_cuts = response_quick_cuts['requests']
+                investigation_results['quick_cuts_found'] = len(quick_cuts)
+                investigation_results['collections_verified'].append('quick_cut_requests')
+                
+                print(f"   ✅ Colección 'quick_cut_requests' accesible")
+                print(f"   📊 Solicitudes de corte rápido: {len(quick_cuts)}")
+                
+                if quick_cuts:
+                    print("   📋 Últimas solicitudes:")
+                    for i, qc in enumerate(quick_cuts[-3:], 1):
+                        client_name = qc.get('client_name', 'Cliente desconocido')
+                        service = qc.get('service', 'Servicio desconocido')
+                        max_price = qc.get('max_price', 0)
+                        preferred_time = qc.get('preferred_time', 'No especificado')
+                        status = qc.get('status', 'Sin estado')
+                        
+                        print(f"      {i}. {client_name} - {service}")
+                        print(f"         Precio máximo: ${max_price}")
+                        print(f"         Tiempo preferido: {preferred_time}")
+                        print(f"         Estado: {status}")
+            else:
+                print("   ❌ Error accediendo colección 'quick_cut_requests'")
+        
+        # Step 3: Test data creation and persistence
+        print("\n3️⃣ PROBANDO CREACIÓN Y PERSISTENCIA DE DATOS")
+        print("-" * 40)
+        
+        # Test user creation
+        print("\n   👤 PROBANDO CREACIÓN DE USUARIO")
+        timestamp = datetime.now().strftime('%H%M%S')
+        test_user_email = f"investigacion{timestamp}@test.com"
+        
+        success_new_user, response_new_user = self.run_test(
+            "Create Test User for Investigation",
+            "POST",
+            "api/auth/register",
+            200,
+            data={
+                "name": "Usuario Investigación",
+                "email": test_user_email,
+                "password": "TestPass123!",
+                "confirmPassword": "TestPass123!",
+                "userType": "client",
+                "phone": "+56912345678",
+                "address": "Santiago, Chile"
+            }
+        )
+        
+        if success_new_user:
+            print("   ✅ Usuario creado exitosamente")
+            print(f"   📧 Email: {test_user_email}")
+            print(f"   🆔 ID: {response_new_user.get('user', {}).get('id', 'Sin ID')}")
+            
+            # Verify user persists by logging in
+            success_login, response_login = self.run_test(
+                "Verify User Persistence",
+                "POST",
+                "api/auth/login",
+                200,
+                data={
+                    "email": test_user_email,
+                    "password": "TestPass123!"
+                }
+            )
+            
+            if success_login:
+                print("   ✅ Usuario persiste correctamente - login exitoso")
+            else:
+                print("   ❌ Usuario NO persiste - login falló")
+        else:
+            print("   ❌ Error creando usuario de prueba")
+        
+        # Test barbershop creation (if we have barber token)
+        if self.barber_token:
+            print("\n   🏪 PROBANDO CREACIÓN DE BARBERÍA")
+            
+            success_new_barbershop, response_new_barbershop = self.run_test(
+                "Create Test Barbershop for Investigation",
+                "POST",
+                "api/barbershops",
+                200,
+                data={
+                    "name": f"Barbería Investigación {timestamp}",
+                    "description": "Barbería creada para investigar persistencia de datos",
+                    "address": "Av. Investigación 123, Santiago",
+                    "phone": "+56987654321",
+                    "services": [
+                        {"name": "Corte de pelo", "price": 15000, "duration": 30}
+                    ],
+                    "working_hours": {
+                        "monday": {"open": "09:00", "close": "19:00"}
+                    }
+                },
+                token=self.barber_token
+            )
+            
+            if success_new_barbershop:
+                print("   ✅ Barbería creada exitosamente")
+                print(f"   🏪 Nombre: Barbería Investigación {timestamp}")
+                print(f"   🆔 ID: {response_new_barbershop.get('id', 'Sin ID')}")
+                
+                # Verify barbershop appears in list
+                success_verify, response_verify = self.run_test(
+                    "Verify Barbershop in List",
+                    "GET",
+                    "api/barbershops",
+                    200
+                )
+                
+                if success_verify:
+                    barbershops = response_verify.get('barbershops', [])
+                    found = any(bs.get('name') == f"Barbería Investigación {timestamp}" for bs in barbershops)
+                    if found:
+                        print("   ✅ Barbería aparece en la lista - persistencia confirmada")
+                    else:
+                        print("   ❌ Barbería NO aparece en la lista - problema de persistencia")
+                else:
+                    print("   ❌ Error verificando lista de barberías")
+            else:
+                print("   ❌ Error creando barbería de prueba")
+        
+        # Step 4: Database configuration verification
+        print("\n4️⃣ VERIFICANDO CONFIGURACIÓN DE BASE DE DATOS")
+        print("-" * 40)
+        
+        print(f"   🗄️ Nombre de base de datos configurado: {investigation_results['database_name']}")
+        print(f"   🔗 URL de MongoDB: {os.getenv('MONGO_URL', 'No configurada')[:50]}...")
+        print(f"   ✅ Conexión funcionando: {investigation_results['connection_working']}")
+        print(f"   📊 Colecciones verificadas: {', '.join(investigation_results['collections_verified'])}")
+        
+        # Step 5: Final diagnosis
+        print("\n5️⃣ DIAGNÓSTICO FINAL")
+        print("=" * 40)
+        
+        print(f"\n📊 RESUMEN DE DATOS ENCONTRADOS:")
+        print(f"   👥 Usuarios: {investigation_results['users_found']}")
+        print(f"   🏪 Barberías: {investigation_results['barbershops_found']}")
+        print(f"   ⭐ Reseñas: {investigation_results['reviews_found']}")
+        print(f"   📅 Reservas: {investigation_results['bookings_found']}")
+        print(f"   ⚡ Cortes rápidos: {investigation_results['quick_cuts_found']}")
+        
+        print(f"\n🔍 ANÁLISIS:")
+        if investigation_results['barbershops_found'] == 3:
+            print("   ⚠️ CONFIRMADO: Solo 3 barberías en la base de datos")
+            print("   💡 Esto coincide con el reporte del usuario")
+        elif investigation_results['barbershops_found'] > 3:
+            print(f"   ✅ Se encontraron {investigation_results['barbershops_found']} barberías")
+            print("   💡 Más datos de los reportados por el usuario")
+        else:
+            print(f"   ❌ Solo {investigation_results['barbershops_found']} barberías encontradas")
+            print("   💡 Menos datos de los esperados")
+        
+        if investigation_results['users_found'] == 0:
+            print("   ⚠️ No se encontraron datos de usuarios registrados")
+        else:
+            print(f"   ✅ Se encontraron datos de usuarios")
+        
+        print(f"\n💡 POSIBLES EXPLICACIONES:")
+        if investigation_results['barbershops_found'] <= 3 and investigation_results['users_found'] <= 1:
+            print("   1. La aplicación está funcionando pero con pocos datos reales")
+            print("   2. Los usuarios no están registrándose masivamente")
+            print("   3. Las barberías no se están registrando en el sistema")
+            print("   4. Podría haber datos en otra base de datos o colección")
+        else:
+            print("   1. Los datos están siendo guardados correctamente")
+            print("   2. El usuario podría estar viendo una vista filtrada")
+            print("   3. Podría haber un problema de sincronización en MongoDB Atlas")
+        
+        print(f"\n🔧 RECOMENDACIONES:")
+        print("   1. Verificar que el usuario esté conectado a la base de datos correcta")
+        print("   2. Revisar filtros o vistas en MongoDB Atlas")
+        print("   3. Confirmar que cortate_db es la base de datos correcta")
+        print("   4. Verificar permisos de acceso en MongoDB Atlas")
+        print("   5. Comprobar si hay múltiples clusters o bases de datos")
+        
+        return investigation_results
+
 def main():
     print("🚀 Starting CÓRTATE.CL API Testing...")
     print("=" * 60)
