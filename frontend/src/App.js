@@ -1554,7 +1554,11 @@ function App() {
       </TabsContent>
 
       <TabsContent value="profile">
-        <ClientProfile />
+        <ProfileManagement 
+          user={user}
+          onUpdate={(updatedUser) => setUser(updatedUser)}
+          BACKEND_URL={BACKEND_URL}
+        />
       </TabsContent>
     </Tabs>
   );
