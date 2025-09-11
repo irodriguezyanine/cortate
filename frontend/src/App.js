@@ -1175,6 +1175,9 @@ function App() {
 
   // Create Barbershop Form
   const CreateBarbershopForm = () => {
+    const { isLoaded, inputRef, setupPlaceChangedListener } = useGooglePlaces(GOOGLE_MAPS_API_KEY);
+    const [selectedPlace, setSelectedPlace] = useState(null);
+    
     const [formData, setFormData] = useState({
       name: '',
       description: '',
@@ -1194,6 +1197,27 @@ function App() {
         sunday: { open: '10:00', close: '15:00', isOpen: false }
       }
     });
+
+    // Set up Google Places listener when loaded
+    useEffect(() => {
+      if (isLoaded) {
+        setupPlaceChangedListener((place) => {
+          setSelectedPlace(place);
+          setFormData(prev => ({
+            ...prev,
+            address: place.formatted_address,
+            lat: place.lat,
+            lng: place.lng
+          }));
+          
+          showNotification(
+            '📍 Ubicación Confirmada',
+            `Dirección: ${place.formatted_address}`,
+            'success'
+          );
+        });
+      }
+    }, [isLoaded, setupPlaceChangedListener]);
 
     const addService = () => {
       setFormData({
