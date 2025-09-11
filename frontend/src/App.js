@@ -205,29 +205,58 @@ const ReviewModal = ({
           {/* Image upload */}
           <div>
             <label className="text-white text-sm font-medium mb-2 block">Fotos (opcional)</label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageUpload}
-                className="bg-gray-800 border-gray-700 text-white file:bg-amber-600 file:text-white file:border-0 file:rounded file:px-3 file:py-1"
-                disabled={uploadingImages}
-              />
-              <Camera className="w-5 h-5 text-gray-400" />
-            </div>
-            {reviewData.images.length > 0 && (
-              <div className="flex gap-2 mt-2">
-                {reviewData.images.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={`Review ${index + 1}`}
-                    className="w-12 h-12 object-cover rounded"
-                  />
-                ))}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="bg-gray-800 border-gray-700 text-white file:bg-amber-600 file:text-white file:border-0 file:rounded file:px-3 file:py-1"
+                  disabled={uploadingImages}
+                />
+                <Camera className="w-5 h-5 text-gray-400" />
               </div>
-            )}
+              
+              {reviewData.images.length > 0 && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-2">
+                    {reviewData.images.map((img, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={img}
+                          alt={`Review ${index + 1}`}
+                          className="w-full h-16 object-cover rounded border border-gray-600"
+                        />
+                        <Button
+                          onClick={() => {
+                            const newImages = reviewData.images.filter((_, i) => i !== index);
+                            setReviewData({...reviewData, images: newImages});
+                          }}
+                          size="sm"
+                          variant="destructive"
+                          className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="bg-blue-900/20 border border-blue-700 p-3 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-blue-300 text-sm font-medium">
+                          {reviewData.images.length} foto{reviewData.images.length !== 1 ? 's' : ''} seleccionada{reviewData.images.length !== 1 ? 's' : ''}
+                        </p>
+                        <p className="text-blue-400 text-xs">Las fotos se subirán al enviar la reseña</p>
+                      </div>
+                      <CheckCircle className="w-5 h-5 text-green-400" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-2">
