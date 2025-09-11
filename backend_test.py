@@ -1264,6 +1264,188 @@ class CortateAPITester:
         
         return success
 
+    def urgent_barbershop_correction(self):
+        """URGENT: Restore BARBERIA CANTAGALLO and clean fake barbershops"""
+        print("\n🚨 URGENT BARBERSHOP CORRECTION")
+        print("=" * 60)
+        print("PROBLEMA: Se eliminó 'BARBERIA CANTAGALLO' que era real")
+        print("OBJETIVO: Restaurar BARBERIA CANTAGALLO y mantener solo barberías legítimas")
+        print("-" * 60)
+        
+        if not self.barber_token:
+            print("❌ Error: Se requiere token de barbero")
+            return False
+        
+        # Step 1: Check current state
+        print("\n1️⃣ VERIFICANDO ESTADO ACTUAL DE BARBERÍAS")
+        success, response = self.run_test(
+            "Get Current Barbershops State",
+            "GET",
+            "api/barbershops",
+            200
+        )
+        
+        if not success or 'barbershops' not in response:
+            print("❌ No se pudieron obtener las barberías actuales")
+            return False
+        
+        current_barbershops = response['barbershops']
+        print(f"   📊 Barberías actuales: {len(current_barbershops)}")
+        
+        # Check what's currently in the database
+        barberia_dani_exists = False
+        barberia_cantagallo_exists = False
+        fake_barbershops = []
+        
+        for barbershop in current_barbershops:
+            name = barbershop.get('name', '')
+            print(f"   - {name} (ID: {barbershop.get('id')})")
+            
+            if 'Barbería Dani' in name:
+                barberia_dani_exists = True
+                print("     ✅ Barbería Dani encontrada (legítima)")
+            elif 'BARBERIA CANTAGALLO' in name.upper():
+                barberia_cantagallo_exists = True
+                print("     ✅ BARBERIA CANTAGALLO encontrada")
+            else:
+                # Check if it's a fake barbershop
+                fake_keywords = [
+                    'barbershop classic', 'barbería el maestro', 'barbería santiago maps test',
+                    'test', 'prueba', 'fake', 'demo', 'ejemplo', 'sample',
+                    'barbería moderna', 'barbería elegante', 'barber shop central',
+                    'corte fino', 'estilo urbano', 'pelo y barba', 'tijeras de oro',
+                    'traditional barber'
+                ]
+                
+                name_lower = name.lower()
+                is_fake = any(keyword in name_lower for keyword in fake_keywords)
+                
+                if is_fake:
+                    fake_barbershops.append(barbershop)
+                    print(f"     🚨 Barbería falsa identificada: {name}")
+                else:
+                    print(f"     ❓ Barbería no clasificada: {name}")
+        
+        # Step 2: Restore BARBERIA CANTAGALLO if missing
+        if not barberia_cantagallo_exists:
+            print("\n2️⃣ RESTAURANDO BARBERIA CANTAGALLO")
+            print("   🔧 Creando nueva barbería 'BARBERIA CANTAGALLO'...")
+            
+            success_restore, response_restore = self.run_test(
+                "Restore BARBERIA CANTAGALLO",
+                "POST",
+                "api/barbershops",
+                200,
+                data={
+                    "name": "BARBERIA CANTAGALLO",
+                    "description": "Barbería tradicional en Santiago, especializada en cortes clásicos y modernos",
+                    "address": "Av. Libertador Bernardo O'Higgins 1234, Santiago, Chile",
+                    "phone": "+56912345678",
+                    "services": [
+                        {"name": "Corte de pelo", "price": 15000, "duration": 30},
+                        {"name": "Barba", "price": 10000, "duration": 20},
+                        {"name": "Corte completo", "price": 22000, "duration": 45}
+                    ],
+                    "working_hours": {
+                        "monday": {"open": "09:00", "close": "19:00"},
+                        "tuesday": {"open": "09:00", "close": "19:00"},
+                        "wednesday": {"open": "09:00", "close": "19:00"},
+                        "thursday": {"open": "09:00", "close": "19:00"},
+                        "friday": {"open": "09:00", "close": "19:00"},
+                        "saturday": {"open": "09:00", "close": "18:00"},
+                        "sunday": {"open": "10:00", "close": "16:00"}
+                    }
+                },
+                token=self.barber_token
+            )
+            
+            if success_restore:
+                print("   ✅ BARBERIA CANTAGALLO restaurada exitosamente")
+                cantagallo_id = response_restore.get('id')
+                print(f"   📝 ID de la nueva barbería: {cantagallo_id}")
+            else:
+                print("   ❌ Error al restaurar BARBERIA CANTAGALLO")
+                return False
+        else:
+            print("\n2️⃣ BARBERIA CANTAGALLO YA EXISTE")
+            print("   ✅ No es necesario restaurar")
+        
+        # Step 3: Clean fake barbershops
+        if fake_barbershops:
+            print(f"\n3️⃣ ELIMINANDO {len(fake_barbershops)} BARBERÍAS FALSAS")
+            deleted_count = 0
+            
+            for barbershop in fake_barbershops:
+                barbershop_id = barbershop.get('id')
+                barbershop_name = barbershop.get('name')
+                
+                print(f"   🗑️ Eliminando: {barbershop_name}")
+                
+                success_delete, response_delete = self.run_test(
+                    f"Delete Fake Barbershop: {barbershop_name}",
+                    "DELETE",
+                    f"api/barbershops/{barbershop_id}",
+                    200,
+                    token=self.barber_token
+                )
+                
+                if success_delete:
+                    deleted_count += 1
+                    print(f"      ✅ Eliminada exitosamente")
+                else:
+                    print(f"      ❌ Error al eliminar")
+            
+            print(f"   📊 Barberías falsas eliminadas: {deleted_count}/{len(fake_barbershops)}")
+        else:
+            print("\n3️⃣ NO HAY BARBERÍAS FALSAS PARA ELIMINAR")
+            print("   ✅ Base de datos ya está limpia")
+        
+        # Step 4: Verify final result
+        print("\n4️⃣ VERIFICANDO RESULTADO FINAL")
+        success_final, response_final = self.run_test(
+            "Verify Final Barbershops State",
+            "GET",
+            "api/barbershops",
+            200
+        )
+        
+        if success_final and 'barbershops' in response_final:
+            final_barbershops = response_final['barbershops']
+            print(f"   📊 Barberías finales: {len(final_barbershops)}")
+            
+            barberia_dani_final = False
+            barberia_cantagallo_final = False
+            
+            print("   📋 BARBERÍAS FINALES:")
+            for barbershop in final_barbershops:
+                name = barbershop.get('name', '')
+                barber_id = barbershop.get('barber_id', '')
+                print(f"      - {name} (Barbero: {barber_id})")
+                
+                if 'Barbería Dani' in name:
+                    barberia_dani_final = True
+                elif 'BARBERIA CANTAGALLO' in name.upper():
+                    barberia_cantagallo_final = True
+            
+            # Verify we have exactly the 2 legitimate barbershops
+            expected_count = 2
+            if len(final_barbershops) == expected_count and barberia_dani_final and barberia_cantagallo_final:
+                print(f"\n🎉 CORRECCIÓN COMPLETADA EXITOSAMENTE")
+                print(f"   ✅ Solo quedan las 2 barberías legítimas:")
+                print(f"      - Barbería Dani")
+                print(f"      - BARBERIA CANTAGALLO")
+                return True
+            else:
+                print(f"\n⚠️ CORRECCIÓN INCOMPLETA")
+                print(f"   Expected: 2 barbershops (Barbería Dani + BARBERIA CANTAGALLO)")
+                print(f"   Found: {len(final_barbershops)} barbershops")
+                print(f"   Barbería Dani: {'✅' if barberia_dani_final else '❌'}")
+                print(f"   BARBERIA CANTAGALLO: {'✅' if barberia_cantagallo_final else '❌'}")
+                return False
+        else:
+            print("   ❌ Error al verificar estado final")
+            return False
+
     def test_individual_barbershop_deletion(self):
         """Test individual barbershop deletion"""
         if not self.barber_token:
